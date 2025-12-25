@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panier d'achat - La p'tite perlouze">
+  <title>Panier - La p'tite perlouze 🌼</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    .cart-item {
+      display: grid;
+      grid-template-columns: 100px 1fr auto;
+      gap: 1.5rem;
+      align-items: center;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--rose-poudre);
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .cart-item-image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 15px;
+    }
+
+    .cart-item-info h3 {
+      color: var(--lavande);
+      margin-bottom: 0.5rem;
+      font-family: var(--font-manuscrite);
+      font-size: 1.3rem;
+    }
+
+    .cart-item-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .quantity-btn-small {
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--lavande);
+      background: white;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+    }
+
+    .quantity-btn-small:hover {
+      background: var(--lavande);
+      color: white;
+    }
+
+    .remove-btn {
+      background: var(--rose-poudre);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .remove-btn:hover {
+      opacity: 0.8;
+    }
+
+    .cart-summary {
+      position: sticky;
+      top: 100px;
+    }
+
+    @media (max-width: 768px) {
+      .cart-item {
+        grid-template-columns: 80px 1fr;
+        gap: 1rem;
+      }
+
+      .cart-item-image {
+        width: 80px;
+        height: 80px;
+      }
+
+      .cart-item-info {
+        min-width: 0;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+      }
+
+      .cart-item-info h3 {
+        font-size: 1.1rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+      }
+
+      .cart-item-actions {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <a href="/" class="logo">La p'tite perlouze</a>
+      <nav>
+        <ul>
+          <li><a href="/">Accueil</a></li>
+          <li><a href="/catalogue">Catalogue</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li>
+            <a href="/boutique" style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);" onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
+              🏡 La Boutique
+            </a>
+          </li>
+          <li>
+            <a href="/panier" class="cart-icon">
+              🛒
+              <span class="cart-count" id="cart-count">0</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Page Panier -->
+  <div class="container">
+    <h1 class="section-title">Mon panier</h1>
+
+    <div id="empty-cart" class="card" style="display: none; text-align: center; padding: 3rem; max-width: 600px; margin: 2rem auto;">
+      <p style="font-size: 1.5rem; color: var(--texte-secondaire); margin-bottom: 1rem;">
+        Votre panier est vide <span class="decoration-heart">♡</span>
+      </p>
+      <p style="color: var(--texte-secondaire); margin-bottom: 2rem;">
+        Découvrez nos magnifiques créations artisanales
+      </p>
+      <a href="/catalogue" class="btn btn-primary">
+        Découvrir le catalogue
+      </a>
+    </div>
+
+    <div id="cart-content" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem;">
+      <!-- Liste des articles -->
+      <div>
+        <div id="cart-items" class="card">
+          <!-- Les articles seront chargés dynamiquement -->
+        </div>
+      </div>
+
+      <!-- Résumé de la commande -->
+      <div id="cart-summary-container" style="display: none;">
+        <div class="card cart-summary">
+          <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem;">
+            Récapitulatif
+          </h2>
+
+          <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>Sous-total</span>
+              <span id="subtotal">0.00 €</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>Livraison</span>
+              <span id="shipping">Gratuite</span>
+            </div>
+            <hr style="border: none; border-top: 2px solid var(--rose-poudre); margin: 1rem 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; color: var(--rose-poudre);">
+              <span>Total</span>
+              <span id="total">0.00 €</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="proceedToCheckout()" style="width: 100%; margin-top: 1rem;">
+            Passer la commande ✨
+          </button>
+
+          <a href="/catalogue" class="btn btn-outline" style="width: 100%; margin-top: 0.5rem; display: block;">
+            Continuer mes achats
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire de paiement (caché au départ) -->
+    <div id="checkout-section" style="display: none; margin-top: 2rem;">
+      <h2 class="section-title">Informations de livraison</h2>
+
+      <div class="card" style="max-width: 800px; margin: 2rem auto;">
+        <form id="checkout-form">
+          <div class="form-group">
+            <label for="customer-name">Nom complet *</label>
+            <input type="text" id="customer-name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="customer-email">Email *</label>
+            <input type="email" id="customer-email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="customer-phone">Téléphone</label>
+            <input type="tel" id="customer-phone">
+          </div>
+
+          <div class="form-group">
+            <label for="customer-address">Adresse complète *</label>
+            <textarea id="customer-address" required rows="4"></textarea>
+          </div>
+
+          <h3 style="color: var(--lavande); margin: 2rem 0 1rem;">Paiement sécurisé</h3>
+
+          <div id="payment-element" style="margin-bottom: 1.5rem;">
+            <!-- Stripe Payment Element sera inséré ici -->
+          </div>
+
+          <div id="payment-message" class="message" style="display: none;"></div>
+
+          <button type="submit" class="btn btn-primary" id="submit-payment" style="width: 100%;">
+            Payer <span id="total-payment">0.00 €</span>
+          </button>
+
+          <button type="button" class="btn btn-outline" onclick="cancelCheckout()" style="width: 100%; margin-top: 1rem;">
+            Annuler
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Page de confirmation (cachée au départ) -->
+    <div id="confirmation-section" style="display: none; margin-top: 2rem;">
+      <div class="card" style="max-width: 600px; margin: 2rem auto; text-align: center; padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">✨</div>
+        <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 2.5rem; margin-bottom: 1rem;">
+          Commande confirmée !
+        </h2>
+        <p style="font-size: 1.2rem; color: var(--texte-secondaire); margin-bottom: 1rem;">
+          Merci pour votre achat <span class="decoration-heart">♡</span>
+        </p>
+        <p style="color: var(--texte-secondaire); margin-bottom: 2rem;">
+          Vous recevrez un email de confirmation avec tous les détails de votre commande.
+        </p>
+        <p style="color: var(--texte-secondaire); margin-bottom: 2rem;">
+          Numéro de commande : <strong id="order-number"></strong>
+        </p>
+        <a href="/" class="btn btn-primary">
+          Retour à l'accueil
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>🌸 La p'tite perlouze 🌸</p>
+    <p>Créations artisanales par Yvonne Lecocq</p>
+    <p><a href="/contact">Nous contacter</a> | <a href="/admin">Espace admin</a> | <a href="http://localhost:8080" id="boutdebois-footer-link">Le petit bout de bois</a></p>
+    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+      © 2025 La p'tite perlouze - Tous droits réservés
+    </p>
+  </footer>
+
+  <!-- Modal de confirmation de suppression -->
+  <div id="remove-modal" onclick="closeRemoveModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(90, 74, 90, 0.6); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center;">
+    <div class="card" onclick="event.stopPropagation()" style="max-width: 400px; margin: 2rem; text-align: center; animation: fadeIn 0.3s ease;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🗑️</div>
+      <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 2rem; margin-bottom: 1rem;">
+        Retirer l'article ?
+      </h2>
+      <p id="remove-modal-text" style="color: var(--texte-secondaire); margin-bottom: 2rem; line-height: 1.6;">
+        Êtes-vous sûr de vouloir retirer cet article de votre panier ?
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-outline" onclick="closeRemoveModal()" style="flex: 1; min-width: 120px;">
+          Annuler
+        </button>
+        <button class="btn btn-primary" onclick="confirmRemoveItem()" style="flex: 1; min-width: 120px;">
+          Retirer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/panier.js"></script>
+  <script>
+    // Charger l'URL du petit bout de bois depuis les paramètres
+    async function loadBoutdeboisUrl() {
+      try {
+        const response = await fetch('/api/settings');
+        const settings = await response.json();
+        if (settings.boutdebois_url) {
+          const link = document.getElementById('boutdebois-footer-link');
+          if (link) {
+            link.href = settings.boutdebois_url;
+          }
+        }
+      } catch (error) {
+        console.error('Erreur chargement URL boutdebois:', error);
+      }
+    }
+    loadBoutdeboisUrl();
+  </script>
+</body>
+</html>

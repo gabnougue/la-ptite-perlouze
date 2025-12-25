@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Catalogue complet de bijoux fantaisie artisanaux - La p'tite perlouze">
+  <title>Catalogue - La p'tite perlouze 🌼</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <a href="/" class="logo">La p'tite perlouze</a>
+      <nav>
+        <ul>
+          <li><a href="/">Accueil</a></li>
+          <li><a href="/catalogue">Catalogue</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li>
+            <a href="/boutique" style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);" onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
+              🏡 La Boutique
+            </a>
+          </li>
+          <li>
+            <a href="/panier" class="cart-icon">
+              🛒
+              <span class="cart-count" id="cart-count">0</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Page Catalogue -->
+  <div class="container">
+    <section class="catalogue-section fade-in">
+      <h1 class="section-title">Notre Collection</h1>
+
+      <!-- Filtres -->
+      <div class="card" style="margin-bottom: 2rem; padding: 2rem;">
+        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">
+          Filtrer les bijoux ✨
+        </h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+          <!-- Filtre par catégorie -->
+          <div class="form-group">
+            <label for="category-filter">Catégorie</label>
+            <select id="category-filter">
+              <option value="Tous">Tous les bijoux</option>
+              <option value="Bijoux de portables">Bijoux de portables</option>
+              <option value="Boucles d'oreilles">Boucles d'oreilles</option>
+              <option value="Bracelets">Bracelets</option>
+              <option value="Bracelets de cheville">Bracelets de cheville</option>
+              <option value="Colliers">Colliers</option>
+              <option value="Cordon lunettes">Cordon lunettes</option>
+              <option value="Mala">Mala</option>
+              <option value="Porte clés">Porte clés</option>
+            </select>
+          </div>
+
+          <!-- Filtre par pierre -->
+          <div class="form-group">
+            <label for="stone-filter">Pierre naturelle</label>
+            <select id="stone-filter">
+              <option value="Toutes">Toutes les pierres</option>
+              <option value="Améthyste">Améthyste</option>
+              <option value="Quartz rose">Quartz rose</option>
+              <option value="Agate">Agate</option>
+              <option value="Aventurine">Aventurine</option>
+              <option value="Citrine">Citrine</option>
+              <option value="Cristal">Cristal</option>
+              <option value="Jaspe">Jaspe</option>
+              <option value="Turquoise">Turquoise</option>
+              <option value="Œil de tigre">Œil de tigre</option>
+              <option value="Obsidienne">Obsidienne</option>
+            </select>
+          </div>
+
+          <!-- Filtre par couleur -->
+          <div class="form-group">
+            <label for="color-filter">Couleur</label>
+            <select id="color-filter">
+              <option value="Toutes">Toutes les couleurs</option>
+              <option value="Violet">Violet</option>
+              <option value="Rose">Rose</option>
+              <option value="Bleu">Bleu</option>
+              <option value="Vert">Vert</option>
+              <option value="Rouge">Rouge</option>
+              <option value="Jaune">Jaune</option>
+              <option value="Blanc">Blanc</option>
+              <option value="Noir">Noir</option>
+              <option value="Marron">Marron</option>
+              <option value="Doré">Doré</option>
+              <option value="Transparent">Transparent</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filtre par prix -->
+        <div class="form-group" style="margin-top: 1.5rem;">
+          <label for="price-filter">Prix maximum : <span id="price-value">100</span> €</label>
+          <input type="range" id="price-filter" min="0" max="100" value="100">
+        </div>
+
+        <div style="text-align: center; margin-top: 1rem;">
+          <button onclick="resetFilters()" class="btn btn-outline">
+            Réinitialiser les filtres
+          </button>
+        </div>
+      </div>
+
+      <!-- Compteur de produits -->
+      <p id="product-count" style="text-align: center; color: var(--texte-secondaire); margin-bottom: 2rem;">
+        Chargement des produits...
+      </p>
+
+      <!-- Grille de produits -->
+      <div id="products-grid" class="grid grid-3">
+        <!-- Les produits seront chargés dynamiquement -->
+      </div>
+
+      <!-- Message si aucun produit -->
+      <div id="no-products" style="display: none; text-align: center; padding: 3rem;">
+        <p style="font-size: 1.3rem; color: var(--texte-secondaire);">
+          Aucun produit trouvé dans cette catégorie pour le moment
+          <span class="decoration-heart">♡</span>
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>🌸 La p'tite perlouze 🌸</p>
+    <p>Créations artisanales par Yvonne Lecocq</p>
+    <p><a href="/contact">Nous contacter</a> | <a href="/admin">Espace admin</a> | <a href="http://localhost:8080" id="boutdebois-footer-link">Le petit bout de bois</a></p>
+    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+      © 2025 La p'tite perlouze - Tous droits réservés
+    </p>
+  </footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/catalogue.js"></script>
+  <script>
+    // Charger l'URL du petit bout de bois depuis les paramètres
+    async function loadBoutdeboisUrl() {
+      try {
+        const response = await fetch('/api/settings');
+        const settings = await response.json();
+        if (settings.boutdebois_url) {
+          const link = document.getElementById('boutdebois-footer-link');
+          if (link) {
+            link.href = settings.boutdebois_url;
+          }
+        }
+      } catch (error) {
+        console.error('Erreur chargement URL boutdebois:', error);
+      }
+    }
+    loadBoutdeboisUrl();
+  </script>
+</body>
+</html>

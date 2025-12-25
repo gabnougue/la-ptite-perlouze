@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="La p'tite perlouze - Bijoux fantaisie artisanaux par Yvonne Lecocq. Bracelets, colliers, boucles d'oreilles en pierres naturelles.">
+  <title>La p'tite perlouze 🌼 Bijoux artisanaux</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <a href="/" class="logo">La p'tite perlouze</a>
+      <nav>
+        <ul>
+          <li><a href="/">Accueil</a></li>
+          <li><a href="/catalogue">Catalogue</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li>
+            <a href="/boutique" style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);" onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
+              🏡 La Boutique
+            </a>
+          </li>
+          <li>
+            <a href="/panier" class="cart-icon">
+              🛒
+              <span class="cart-count" id="cart-count">0</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero fade-in">
+    <h1>Bienvenue dans l'univers de La p'tite perlouze</h1>
+    <p class="decoration-heart">♡</p>
+    <p>Des bijoux fantaisie artisanaux créés avec amour par Yvonne Lecocq</p>
+    <p>Chaque pierre raconte une histoire, chaque bijou porte une intention.</p>
+    <a href="/catalogue" class="btn btn-primary">Découvrir la collection</a>
+  </section>
+
+  <!-- À propos -->
+  <div class="container">
+    <section class="about-section fade-in">
+      <h2 class="section-title">L'histoire de La p'tite perlouze</h2>
+      <div class="card">
+        <p style="text-align: center; font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+          <strong>La p'tite perlouze</strong> et son associé <strong>le petit bout de bois</strong> sont heureux de vous présenter leurs créations !!
+          <span class="decoration-flower">✿</span>
+        </p>
+        <p style="text-align: center; font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 1rem auto;">
+          Tous les pendentifs en bois sont faits main et tous les bijoux sont assemblés à la main également.
+        </p>
+        <p style="text-align: center; font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 1rem auto;">
+          Pour vos demandes personnalisées, merci de nous adresser un mail avec si possible votre tour de poignet et votre date de naissance (l'année n'est pas indispensable)... En fonction de vos besoins, nous vous proposerons quelque chose qui, nous le souhaitons, vous conviendra !
+        </p>
+        <p style="text-align: center; font-size: 1.2rem; line-height: 1.8; max-width: 800px; margin: 1.5rem auto; color: var(--lavande); font-weight: 600;">
+          Plein d'Amour pour tous
+          <span class="decoration-heart">♡</span>
+        </p>
+        <p style="text-align: center; font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 1rem auto; font-style: italic; color: var(--texte-secondaire);">
+          Yvonne et Jean-Michel alias Nénette et Gépetto !
+        </p>
+      </div>
+    </section>
+
+    <!-- Produits phares -->
+    <section class="featured-products fade-in">
+      <h2 class="section-title">Coups de cœur du moment</h2>
+      <div id="featured-products" class="grid grid-3">
+        <!-- Les produits seront chargés dynamiquement -->
+      </div>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="/catalogue" class="btn btn-secondary">Voir toute la collection</a>
+      </div>
+    </section>
+
+    <!-- Catégories -->
+    <section class="categories-section fade-in">
+      <h2 class="section-title">Nos créations</h2>
+      <div class="grid grid-4">
+        <a href="/catalogue?category=Bijoux de portables" class="card category-card" style="text-decoration: none;">
+          <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">📱</div>
+          <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">Bijoux de portables</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">Pour votre téléphone</p>
+        </a>
+
+        <a href="/catalogue?category=Boucles d'oreilles" class="card category-card" style="text-decoration: none;">
+          <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">✨</div>
+          <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">Boucles d'oreilles</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">Légers comme des papillons</p>
+        </a>
+
+        <a href="/catalogue?category=Bracelets" class="card category-card" style="text-decoration: none;">
+          <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">📿</div>
+          <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">Bracelets</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">Délicats et poétiques</p>
+        </a>
+
+        <a href="/catalogue?category=Bracelets de cheville" class="card category-card" style="text-decoration: none;">
+          <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">🦶</div>
+          <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">Bracelets de cheville</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">Esprit bohème</p>
+        </a>
+
+        <a href="/catalogue?category=Colliers" class="card category-card" style="text-decoration: none;">
+          <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">💎</div>
+          <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">Colliers</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">Élégants et lumineux</p>
+        </a>
+
+        <a href="/catalogue?category=Cordon lunettes" class="card category-card" style="text-decoration: none;">
+          <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">👓</div>
+          <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">Cordon lunettes</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">Pratiques et élégants</p>
+        </a>
+
+        <a href="/catalogue?category=Mala" class="card category-card" style="text-decoration: none;">
+          <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">🧘</div>
+          <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">Mala</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">Pour la méditation</p>
+        </a>
+
+        <a href="/catalogue?category=Porte clés" class="card category-card" style="text-decoration: none;">
+          <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">🔑</div>
+          <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">Porte clés</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">Protecteurs quotidiens</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Valeurs -->
+    <section class="values-section fade-in">
+      <h2 class="section-title">Nos valeurs</h2>
+      <div class="grid grid-3">
+        <div class="card">
+          <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">🌿</div>
+          <h3 style="text-align: center; color: var(--rose-poudre); font-weight: 600; margin-bottom: 0.5rem;">Naturel</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">
+            Pierres naturelles authentiques, sélectionnées pour leur beauté unique
+          </p>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">✋</div>
+          <h3 style="text-align: center; color: var(--rose-poudre); font-weight: 600; margin-bottom: 0.5rem;">Artisanal</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">
+            Chaque bijou est créé à la main avec passion et attention
+          </p>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">💝</div>
+          <h3 style="text-align: center; color: var(--rose-poudre); font-weight: 600; margin-bottom: 0.5rem;">Avec amour</h3>
+          <p style="text-align: center; color: var(--texte-secondaire);">
+            Des créations qui portent une intention positive et bienveillante
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section univers jumeau -->
+    <section class="twin-universe"
+             style="background: linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(160, 82, 45, 0.1));
+                    border-radius: 12px; padding: 3rem; margin: 3rem 0; text-align: center;
+                    box-shadow: var(--ombre-douce); border: 3px solid rgba(139, 69, 19, 0.3);">
+      <h2 style="font-size: 2rem; color: var(--texte-principal); margin-bottom: 1rem; font-family: var(--font-manuscrite);">
+        ✨ Découvrez aussi Le petit bout de bois
+      </h2>
+      <p style="font-size: 1.1rem; color: var(--texte-secondaire); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        L'univers complémentaire des créations artisanales en bois de Jean-Michel Nougué-Lecocq.
+        Nos créations s'harmonisent parfaitement !
+      </p>
+      <a href="http://localhost:8080" id="boutdebois-link" class="btn"
+         style="background: linear-gradient(135deg, #8B4513, #A0522D); color: white; display: inline-flex;
+                align-items: center; gap: 0.5rem; box-shadow: var(--ombre-douce); border: none; text-decoration: none;
+                padding: 0.75rem 1.5rem; border-radius: 25px; font-weight: 600; font-family: var(--font-texte);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;"
+         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.15)'"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--ombre-douce)'">
+        Visiter Le petit bout de bois →
+      </a>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>🌸 La p'tite perlouze 🌸</p>
+    <p>Créations artisanales par Yvonne Lecocq</p>
+    <p><a href="/contact">Nous contacter</a> | <a href="/admin">Espace admin</a> | <a href="http://localhost:8080" id="boutdebois-footer-link">Le petit bout de bois</a></p>
+    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+      © 2025 La p'tite perlouze - Tous droits réservés
+    </p>
+  </footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/home.js"></script>
+  <script>
+    // Charger l'URL du petit bout de bois depuis les paramètres
+    async function loadBoutdeboisUrl() {
+      try {
+        const response = await fetch('/api/settings');
+        const settings = await response.json();
+        if (settings.boutdebois_url) {
+          const link = document.getElementById('boutdebois-footer-link');
+          if (link) {
+            link.href = settings.boutdebois_url;
+          }
+        }
+      } catch (error) {
+        console.error('Erreur chargement URL boutdebois:', error);
+      }
+    }
+    loadBoutdeboisUrl();
+  </script>
+</body>
+</html>

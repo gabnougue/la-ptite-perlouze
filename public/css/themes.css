@@ -1,0 +1,228 @@
+/* ═══════════════════════════════════════════════════
+   🎨 Thèmes saisonniers - La p'tite perlouze
+   ═══════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════
+   🎄 NOËL - Rouge, vert, or, blanc (1er décembre - 6 janvier)
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="noel"] {
+  --rose-poudre: #c94f4f;
+  --lavande: #2d5d3a;
+  --blanc-casse: #faf8f3;
+  --dore-clair: #d4af37;
+  --pastel-bleu: #8fb3a8;
+  --pastel-vert: #90c290;
+  --pastel-peche: #e8c4b8;
+
+  --texte-principal: #2d3e2d;
+  --texte-secondaire: #5a6a5a;
+  --texte-clair: #ffffff;
+
+  --ombre-douce: 0 4px 15px rgba(201, 79, 79, 0.25);
+  --ombre-hover: 0 6px 20px rgba(45, 93, 58, 0.35);
+  --gradient-pastel: linear-gradient(135deg, #c94f4f 0%, #2d5d3a 50%, #d4af37 100%);
+
+  --bg-gradient-1: 201, 79, 79;
+  --bg-gradient-2: 45, 93, 58;
+  --bg-gradient-3: 212, 175, 55;
+
+  --theme-emoji: "🎄";
+  --theme-emoji-alt: "🎅";
+}
+
+/* ═══════════════════════════════════════════════════
+   🌸 PRINTEMPS - Rose tendre, vert frais, jaune doux (20 mars - 20 juin)
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="printemps"],
+:root:not([data-theme]) {
+  --rose-poudre: #f5a5b8;
+  --lavande: #c8e6af;
+  --blanc-casse: #fdfbf7;
+  --dore-clair: #fff4a3;
+  --pastel-bleu: #b8d4e8;
+  --pastel-vert: #b8e6c9;
+  --pastel-peche: #ffdfb8;
+
+  --texte-principal: #4a5a4a;
+  --texte-secondaire: #7a8a7a;
+  --texte-clair: #ffffff;
+
+  --ombre-douce: 0 4px 15px rgba(245, 165, 184, 0.3);
+  --ombre-hover: 0 6px 20px rgba(200, 230, 175, 0.4);
+  --gradient-pastel: linear-gradient(135deg, #f5a5b8 0%, #c8e6af 50%, #fff4a3 100%);
+
+  --bg-gradient-1: 245, 165, 184;
+  --bg-gradient-2: 200, 230, 175;
+  --bg-gradient-3: 255, 244, 163;
+
+  --theme-emoji: "🌸";
+  --theme-emoji-alt: "🦋";
+}
+
+/* ═══════════════════════════════════════════════════
+   ☀️ ÉTÉ - Bleu océan, jaune soleil, corail (21 juin - 22 septembre)
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="ete"] {
+  --rose-poudre: #ff9a76;
+  --lavande: #4fa8c5;
+  --blanc-casse: #fffef8;
+  --dore-clair: #ffd966;
+  --pastel-bleu: #87ceeb;
+  --pastel-vert: #90d5c5;
+  --pastel-peche: #ffb88c;
+
+  --texte-principal: #2d4a5a;
+  --texte-secondaire: #5a7a8a;
+  --texte-clair: #ffffff;
+
+  --ombre-douce: 0 4px 15px rgba(255, 154, 118, 0.3);
+  --ombre-hover: 0 6px 20px rgba(79, 168, 197, 0.4);
+  --gradient-pastel: linear-gradient(135deg, #ff9a76 0%, #4fa8c5 50%, #ffd966 100%);
+
+  --bg-gradient-1: 255, 154, 118;
+  --bg-gradient-2: 79, 168, 197;
+  --bg-gradient-3: 255, 217, 102;
+
+  --theme-emoji: "☀️";
+  --theme-emoji-alt: "🏖️";
+}
+
+/* ═══════════════════════════════════════════════════
+   🍂 AUTOMNE - Orange, marron, or, bordeaux (23 septembre - 30 novembre)
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="automne"] {
+  --rose-poudre: #c67b5c;
+  --lavande: #8b5a3c;
+  --blanc-casse: #faf6f0;
+  --dore-clair: #d4a574;
+  --pastel-bleu: #b8a898;
+  --pastel-vert: #a8c098;
+  --pastel-peche: #e8c4a8;
+
+  --texte-principal: #4a3a2a;
+  --texte-secondaire: #7a6a5a;
+  --texte-clair: #ffffff;
+
+  --ombre-douce: 0 4px 15px rgba(198, 123, 92, 0.3);
+  --ombre-hover: 0 6px 20px rgba(139, 90, 60, 0.4);
+  --gradient-pastel: linear-gradient(135deg, #c67b5c 0%, #8b5a3c 50%, #d4a574 100%);
+
+  --bg-gradient-1: 198, 123, 92;
+  --bg-gradient-2: 139, 90, 60;
+  --bg-gradient-3: 212, 165, 116;
+
+  --theme-emoji: "🍂";
+  --theme-emoji-alt: "🍁";
+}
+
+/* ═══════════════════════════════════════════════════
+   🎃 HALLOWEEN - Orange vif, violet, noir (15 octobre - 1er novembre)
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="halloween"] {
+  --rose-poudre: #ff8c42;
+  --lavande: #8b5fbf;
+  --blanc-casse: #f5f3ef;
+  --dore-clair: #ffb347;
+  --pastel-bleu: #b8a8d8;
+  --pastel-vert: #90c880;
+  --pastel-peche: #ffa877;
+
+  --texte-principal: #3a2a4a;
+  --texte-secondaire: #6a5a7a;
+  --texte-clair: #ffffff;
+
+  --ombre-douce: 0 4px 15px rgba(255, 140, 66, 0.35);
+  --ombre-hover: 0 6px 20px rgba(139, 95, 191, 0.45);
+  --gradient-pastel: linear-gradient(135deg, #ff8c42 0%, #8b5fbf 100%);
+
+  --bg-gradient-1: 255, 140, 66;
+  --bg-gradient-2: 139, 95, 191;
+  --bg-gradient-3: 255, 179, 71;
+
+  --theme-emoji: "🎃";
+  --theme-emoji-alt: "👻";
+}
+
+/* ═══════════════════════════════════════════════════
+   💝 SAINT-VALENTIN - Rose fuchsia, rouge, blanc (7-21 février)
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="valentin"] {
+  --rose-poudre: #ff6b9d;
+  --lavande: #c94f6e;
+  --blanc-casse: #fff8fa;
+  --dore-clair: #ffb3d9;
+  --pastel-bleu: #e8c8d8;
+  --pastel-vert: #f5d4e6;
+  --pastel-peche: #ffc8dc;
+
+  --texte-principal: #5a2a3a;
+  --texte-secondaire: #8a5a6a;
+  --texte-clair: #ffffff;
+
+  --ombre-douce: 0 4px 15px rgba(255, 107, 157, 0.35);
+  --ombre-hover: 0 6px 20px rgba(201, 79, 110, 0.45);
+  --gradient-pastel: linear-gradient(135deg, #ff6b9d 0%, #c94f6e 100%);
+
+  --bg-gradient-1: 255, 107, 157;
+  --bg-gradient-2: 201, 79, 110;
+  --bg-gradient-3: 255, 179, 217;
+
+  --theme-emoji: "💝";
+  --theme-emoji-alt: "💕";
+}
+
+/* ═══════════════════════════════════════════════════
+   ❄️ HIVER - Bleu glacé, blanc, argent (7 janvier - 19 mars)
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="hiver"] {
+  --rose-poudre: #b8d4e8;
+  --lavande: #7ba7c5;
+  --blanc-casse: #f8fbff;
+  --dore-clair: #d4e4f7;
+  --pastel-bleu: #c8e0f0;
+  --pastel-vert: #b8d8d8;
+  --pastel-peche: #d4e4f4;
+
+  --texte-principal: #2d4a5a;
+  --texte-secondaire: #5a7a8a;
+  --texte-clair: #ffffff;
+
+  --ombre-douce: 0 4px 15px rgba(184, 212, 232, 0.35);
+  --ombre-hover: 0 6px 20px rgba(123, 167, 197, 0.45);
+  --gradient-pastel: linear-gradient(135deg, #b8d4e8 0%, #7ba7c5 50%, #d4e4f7 100%);
+
+  --bg-gradient-1: 184, 212, 232;
+  --bg-gradient-2: 123, 167, 197;
+  --bg-gradient-3: 212, 228, 247;
+
+  --theme-emoji: "❄️";
+  --theme-emoji-alt: "⛄";
+}
+
+/* ═══════════════════════════════════════════════════
+   🌺 THÈME ROSE CLASSIQUE (manuel uniquement)
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="rose"] {
+  --rose-poudre: #f4c2c2;
+  --lavande: #d4a5d4;
+  --blanc-casse: #faf8f5;
+  --dore-clair: #f5d5a8;
+  --pastel-bleu: #b8d4e8;
+  --pastel-vert: #c8e6c9;
+  --pastel-peche: #ffd4a3;
+
+  --texte-principal: #5a4a5a;
+  --texte-secondaire: #8a7a8a;
+  --texte-clair: #ffffff;
+
+  --ombre-douce: 0 4px 15px rgba(244, 194, 194, 0.3);
+  --ombre-hover: 0 6px 20px rgba(212, 165, 212, 0.4);
+  --gradient-pastel: linear-gradient(135deg, #f4c2c2 0%, #d4a5d4 100%);
+
+  --bg-gradient-1: 244, 194, 194;
+  --bg-gradient-2: 212, 165, 212;
+  --bg-gradient-3: 245, 213, 168;
+
+  --theme-emoji: "🌺";
+  --theme-emoji-alt: "🌸";
+}

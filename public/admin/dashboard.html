@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin - La p'tite perlouze</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .admin-header {
+      background: var(--gradient-pastel);
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .admin-nav {
+      background: white;
+      padding: 1rem 2rem;
+      box-shadow: var(--ombre-douce);
+      margin-bottom: 2rem;
+    }
+
+    .admin-nav ul {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .admin-nav a {
+      text-decoration: none;
+      color: var(--texte-principal);
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .admin-nav a:hover {
+      color: var(--lavande);
+      background: rgba(var(--bg-gradient-1), 0.2);
+    }
+
+    .admin-nav a.active {
+      background: var(--lavande);
+      color: white;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .stat-card .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--lavande);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card .stat-label {
+      color: var(--texte-secondaire);
+      font-size: 0.9rem;
+    }
+
+    .section-content {
+      display: none;
+    }
+
+    .section-content.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: var(--gradient-pastel);
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: rgba(var(--bg-gradient-1), 0.1);
+    }
+
+    .badge {
+      padding: 0.3rem 0.8rem;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: var(--lavande);
+      color: white;
+    }
+
+    .badge-warning {
+      background: var(--rose-poudre);
+      color: white;
+    }
+
+    .badge-info {
+      background: var(--pastel-bleu);
+      color: white;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .btn-small {
+      padding: 0.4rem 1rem;
+      font-size: 0.9rem;
+      margin: 0 0.25rem;
+    }
+
+    button[disabled],
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Thèmes */
+    .theme-option:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .theme-option.selected {
+      border: 3px solid var(--texte-principal) !important;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Responsive Mobile */
+    @media (max-width: 768px) {
+      /* Header Admin */
+      .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      .admin-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .admin-header > div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+      }
+
+      .admin-header #admin-username {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      /* Navigation Admin */
+      .admin-nav {
+        padding: 0.5rem;
+      }
+
+      .admin-nav ul {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .admin-nav a {
+        display: block;
+        text-align: center;
+      }
+
+      /* Stats Grid */
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .stat-card {
+        padding: 1.5rem;
+      }
+
+      /* Section Header */
+      .section-header-mobile {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+      }
+
+      .section-header-mobile .btn {
+        width: 100%;
+      }
+
+      /* Tables - transformation en cards sur mobile */
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+
+      tr {
+        margin-bottom: 1rem;
+        border: 2px solid var(--rose-poudre);
+        border-radius: 15px;
+        padding: 1rem;
+        background: white;
+      }
+
+      td {
+        border: none;
+        position: relative;
+        padding: 0.8rem 0.8rem 0.8rem 45%;
+        text-align: right;
+      }
+
+      td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.8rem;
+        width: 40%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        color: var(--lavande);
+        text-align: left;
+      }
+
+      td:last-child {
+        border-bottom: 0;
+      }
+
+      /* Ajuster les actions sur mobile */
+      td .btn-small {
+        display: block;
+        width: 100%;
+        margin: 0.25rem 0;
+      }
+
+      /* Images produits dans les tables */
+      td img {
+        max-width: 80px;
+        height: auto;
+      }
+
+      /* Modal sur mobile */
+      .modal {
+        padding: 1rem;
+      }
+
+      .modal-content {
+        padding: 1.5rem;
+        max-height: 85vh;
+      }
+
+      .modal-content h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Admin -->
+  <div class="admin-header">
+    <h1 style="font-family: var(--font-titre); margin: 0;">🌸 Dashboard Admin</h1>
+    <div>
+      <span id="admin-username" style="margin-right: 1rem;"></span>
+      <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1.5rem;">
+        Déconnexion
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation Admin -->
+  <nav class="admin-nav">
+    <ul>
+      <li><a href="#stats" class="nav-link active" onclick="showSection('stats')">Statistiques</a></li>
+      <li><a href="#products" class="nav-link" onclick="showSection('products')">Produits</a></li>
+      <li style="position: relative;">
+        <a href="#orders" class="nav-link" onclick="showSection('orders')">
+          Commandes
+          <span id="orders-badge" class="notification-badge" style="display: none;">0</span>
+        </a>
+      </li>
+      <li style="position: relative;">
+        <a href="#contacts" class="nav-link" onclick="showSection('contacts')">
+          Messages
+          <span id="messages-badge" class="notification-badge" style="display: none;">0</span>
+        </a>
+      </li>
+      <li><a href="#boutique" class="nav-link" onclick="showSection('boutique')">Boutique</a></li>
+      <li><a href="#settings" class="nav-link" onclick="showSection('settings')">Paramètres</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <!-- Section Statistiques -->
+    <section id="stats-section" class="section-content active fade-in">
+      <h2 class="section-title">Statistiques</h2>
+      <div class="stats-grid">
+        <div class="card stat-card">
+          <div class="stat-value" id="stat-products">0</div>
+          <div class="stat-label">Produits</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-value" id="stat-orders">0</div>
+          <div class="stat-label">Commandes</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-value" id="stat-revenue">0 €</div>
+          <div class="stat-label">Chiffre d'affaires</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-value" id="stat-messages">0</div>
+          <div class="stat-label">Messages non lus</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Produits -->
+    <section id="products-section" class="section-content">
+      <div class="section-header-mobile" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 class="section-title" style="margin: 0;">Gestion des produits</h2>
+        <button onclick="openProductModal()" class="btn btn-primary">
+          Ajouter un produit
+        </button>
+      </div>
+      <div class="card">
+        <table id="products-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Nom</th>
+              <th>Catégorie</th>
+              <th>Prix</th>
+              <th>Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Chargé dynamiquement -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section Commandes -->
+    <section id="orders-section" class="section-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 class="section-title" style="margin: 0;">Commandes</h2>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="hide-delivered" onchange="displayOrders()" style="width: 18px; height: 18px; cursor: pointer;">
+          <label for="hide-delivered" style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer les commandes livrées</label>
+        </div>
+      </div>
+      <div class="card">
+        <table id="orders-table">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Client</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Chargé dynamiquement -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section Messages -->
+    <section id="contacts-section" class="section-content">
+      <h2 class="section-title">Messages de contact</h2>
+      <div class="card">
+        <table id="contacts-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Message</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Chargé dynamiquement -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section Boutique -->
+    <section id="boutique-section" class="section-content">
+      <h2 class="section-title">🏡 Gestion de la Boutique</h2>
+
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
+          📸 Images de la boutique
+        </h3>
+        <p style="color: var(--texte-secondaire); margin-bottom: 1.5rem;">
+          Gérez les photos de votre boutique qui s'affichent sur la page "La Boutique"
+        </p>
+
+        <!-- Upload nouvelle image -->
+        <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(var(--bg-gradient-1), 0.1); border-radius: 12px;">
+          <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">
+            Ajouter une nouvelle photo
+          </label>
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <input type="file" id="boutique-image-input" accept="image/*"
+                   style="flex: 1; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px;">
+            <button onclick="uploadBoutiqueImage()" class="btn btn-primary">
+              Ajouter
+            </button>
+          </div>
+          <small style="display: block; margin-top: 0.5rem; color: var(--texte-secondaire);">
+            💡 Les images du dossier /images/boutique/ sont automatiquement importées
+          </small>
+        </div>
+
+        <!-- Grille des images existantes -->
+        <div id="boutique-images-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+          <!-- Images chargées dynamiquement -->
+        </div>
+
+        <div id="boutique-images-hint" style="margin-top: 1rem; padding: 1rem; background: rgba(var(--bg-gradient-2), 0.1); border-radius: 8px; display: none;">
+          <small style="color: var(--texte-secondaire);">
+            💡 <strong>Astuce :</strong> Utilisez les boutons ◀ ▶ pour réorganiser les images. L'ordre d'affichage correspond à l'ordre dans cette grille.
+          </small>
+        </div>
+
+        <div id="no-boutique-images" style="text-align: center; padding: 3rem; color: var(--texte-secondaire); display: none;">
+          Aucune image pour le moment. Ajoutez votre première photo de la boutique ! 📸
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Paramètres -->
+    <section id="settings-section" class="section-content">
+      <h2 class="section-title">Paramètres du site</h2>
+
+      <!-- Paramètres généraux -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
+          ⚙️ Paramètres généraux
+        </h3>
+        <form id="settings-form" style="max-width: 600px;">
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Email de contact</label>
+            <input type="email" id="setting-contact-email" placeholder="contact@laptiteperlouze.fr"
+                   style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte);">
+          </div>
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">
+              🪵 URL du Petit bout de bois
+            </label>
+            <input type="url" id="setting-boutdebois-url" placeholder="http://localhost:3001"
+                   style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
+            <small style="color: var(--texte-secondaire); font-size: 0.9rem; display: block; margin-top: 0.5rem;">
+              L'URL de base de la boutique Le petit bout de bois (par défaut : http://localhost:3001)
+            </small>
+          </div>
+          <button type="button" onclick="saveGeneralSettings()" class="btn btn-primary">Enregistrer les paramètres</button>
+        </form>
+      </div>
+
+      <!-- Thème du site -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
+          🎨 Thème du site
+        </h3>
+        <p style="color: var(--texte-secondaire); margin-bottom: 1.5rem;">
+          Choisissez le thème de couleur pour personnaliser l'apparence de votre boutique selon les saisons
+        </p>
+
+        <!-- Thème automatique -->
+        <p style="color: var(--texte-principal); font-weight: 600; margin-bottom: 1rem;">Thème automatique :</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+          <div class="theme-option" data-theme="auto" onclick="selectTheme('auto')" style="cursor: pointer; padding: 1.5rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f5a5b8 0%, #4fa8c5 50%, #c67b5c 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎨</div>
+            <div style="color: white; font-weight: 700; font-size: 1.1rem;">Automatique</div>
+            <div style="color: white; font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">Le thème change selon la saison</div>
+          </div>
+        </div>
+
+        <!-- Thèmes saisonniers -->
+        <p style="color: var(--texte-principal); font-weight: 600; margin-bottom: 1rem;">Thèmes saisonniers :</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+          <div class="theme-option" data-theme="noel" onclick="selectTheme('noel')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #c94f4f 0%, #2d5d3a 50%, #d4af37 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎄</div>
+            <div style="color: white; font-weight: 600;">Noël</div>
+          </div>
+
+          <div class="theme-option" data-theme="printemps" onclick="selectTheme('printemps')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f5a5b8 0%, #c8e6af 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌸</div>
+            <div style="color: white; font-weight: 600;">Printemps</div>
+          </div>
+
+          <div class="theme-option" data-theme="ete" onclick="selectTheme('ete')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff9a76 0%, #4fa8c5 50%, #ffd966 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">☀️</div>
+            <div style="color: white; font-weight: 600;">Été</div>
+          </div>
+
+          <div class="theme-option" data-theme="automne" onclick="selectTheme('automne')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #c67b5c 0%, #8b5a3c 50%, #d4a574 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🍂</div>
+            <div style="color: white; font-weight: 600;">Automne</div>
+          </div>
+
+          <div class="theme-option" data-theme="halloween" onclick="selectTheme('halloween')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff8c42 0%, #8b5fbf 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎃</div>
+            <div style="color: white; font-weight: 600;">Halloween</div>
+          </div>
+
+          <div class="theme-option" data-theme="valentin" onclick="selectTheme('valentin')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff6b9d 0%, #c94f6e 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💝</div>
+            <div style="color: white; font-weight: 600;">St-Valentin</div>
+          </div>
+
+          <div class="theme-option" data-theme="hiver" onclick="selectTheme('hiver')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #b8d4e8 0%, #7ba7c5 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">❄️</div>
+            <div style="color: white; font-weight: 600;">Hiver</div>
+          </div>
+        </div>
+
+        <!-- Thème classique -->
+        <p style="color: var(--texte-principal); font-weight: 600; margin-bottom: 1rem;">Thème classique :</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="theme-option" data-theme="rose" onclick="selectTheme('rose')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f4c2c2 0%, #d4a5d4 100%); box-shadow: 0 0 0 0 transparent;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌺</div>
+            <div style="color: white; font-weight: 600;">Rose</div>
+          </div>
+        </div>
+
+        <p id="theme-status" style="text-align: center; color: var(--texte-secondaire); font-size: 0.9rem; font-style: italic;">
+          Thème actuel : <strong id="current-theme-name">Automatique</strong>
+        </p>
+      </div>
+
+      <!-- Catégories -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
+          Catégories de bijoux
+        </h3>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <input type="text" id="new-category" placeholder="Nouvelle catégorie" style="flex: 1; min-width: 200px;">
+          <button onclick="addCategory()" class="btn btn-primary">Ajouter</button>
+        </div>
+        <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
+          <strong>Catégories existantes :</strong>
+        </p>
+        <div id="categories-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+          <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
+        </div>
+      </div>
+
+      <!-- Pierres -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
+          Pierres naturelles
+        </h3>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <input type="text" id="new-stone" placeholder="Nouvelle pierre" style="flex: 1; min-width: 200px;">
+          <button onclick="addStone()" class="btn btn-primary">Ajouter</button>
+        </div>
+        <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
+          <strong>Pierres existantes :</strong>
+        </p>
+        <div id="stones-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+          <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
+        </div>
+      </div>
+
+      <!-- Couleurs -->
+      <div class="card">
+        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
+          Couleurs
+        </h3>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <input type="text" id="new-color" placeholder="Nouvelle couleur" style="flex: 1; min-width: 200px;">
+          <button onclick="addColor()" class="btn btn-primary">Ajouter</button>
+        </div>
+        <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
+          <strong>Couleurs existantes :</strong>
+        </p>
+        <div id="colors-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+          <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal Produit -->
+  <div id="product-modal" class="modal">
+    <div class="modal-content">
+      <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); margin-bottom: 1.5rem;" id="modal-title">
+        Ajouter un produit
+      </h2>
+      <form id="product-form" enctype="multipart/form-data">
+        <input type="hidden" id="product-id">
+
+        <div class="form-group">
+          <label for="product-name">Nom du bijou *</label>
+          <input type="text" id="product-name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="product-category">Catégorie *</label>
+          <select id="product-category" required>
+            <!-- Chargé dynamiquement -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="product-stones">Pierres naturelles *</label>
+          <select id="product-stones" multiple required style="min-height: 120px;">
+            <!-- Chargé dynamiquement -->
+          </select>
+          <small style="color: var(--texte-secondaire); font-size: 0.9rem;">Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs pierres</small>
+        </div>
+
+        <div class="form-group">
+          <label for="product-colors">Couleurs</label>
+          <select id="product-colors" multiple style="min-height: 120px;">
+            <!-- Chargé dynamiquement -->
+          </select>
+          <small style="color: var(--texte-secondaire); font-size: 0.9rem;">Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs couleurs</small>
+        </div>
+
+        <div class="form-group">
+          <label for="product-description">Description *</label>
+          <textarea id="product-description" rows="4" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="product-price">Prix (€) *</label>
+          <input type="number" id="product-price" step="0.01" min="0" required>
+        </div>
+
+        <div class="form-group">
+          <label for="product-stock">Stock *</label>
+          <input type="number" id="product-stock" min="0" required>
+        </div>
+
+        <div class="form-group">
+          <label for="product-images">Images</label>
+          <input type="file" id="product-images" accept="image/*" multiple>
+          <small style="color: var(--texte-secondaire); font-size: 0.9rem; display: block; margin-top: 0.5rem;">
+            Vous pouvez sélectionner plusieurs images (maintenez Ctrl ou Cmd)
+          </small>
+          <div id="images-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <!-- Aperçu des images -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="product-boutdebois-link">
+            🪵 Lien vers Le petit bout de bois (optionnel)
+          </label>
+          <input type="url" id="product-boutdebois-link" placeholder="http://localhost:3001/produit/15">
+          <small style="color: var(--texte-secondaire); font-size: 0.9rem; display: block; margin-top: 0.5rem;">
+            💡 <strong>Astuce :</strong> Si ce bijou a une création en bois assortie sur Le petit bout de bois, ajoutez le lien ici pour créer une passerelle entre les deux boutiques
+          </small>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;">
+            Enregistrer
+          </button>
+          <button type="button" onclick="closeProductModal()" class="btn btn-outline" style="flex: 1;">
+            Annuler
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de confirmation -->
+  <div id="confirm-modal" class="modal" style="z-index: 10001;">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+      <h3 id="confirm-title" style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1rem;">
+        Confirmation
+      </h3>
+      <p id="confirm-message" style="margin-bottom: 2rem; color: var(--texte-principal);">
+        Êtes-vous sûr ?
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button id="confirm-cancel" class="btn btn-outline">
+          Annuler
+        </button>
+        <button id="confirm-ok" class="btn btn-primary">
+          Confirmer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

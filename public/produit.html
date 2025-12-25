@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Détails du bijou - La p'tite perlouze">
+  <title>Produit - La p'tite perlouze 🌼</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .product-detail {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+
+    .product-detail-image {
+      width: 100%;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: var(--ombre-douce);
+    }
+
+    .product-detail-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .quantity-selector {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .quantity-btn {
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--lavande);
+      background: white;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quantity-btn:hover:not(:disabled) {
+      background: var(--lavande);
+      color: white;
+    }
+
+    .quantity-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .quantity-value {
+      font-size: 1.3rem;
+      font-weight: bold;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    /* Styles du carrousel */
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 20px;
+      box-shadow: var(--ombre-douce);
+    }
+
+    .carousel-images {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+    }
+
+    .carousel-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      border-radius: 20px;
+    }
+
+    .carousel-image.active {
+      opacity: 1;
+    }
+
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      color: var(--lavande);
+      font-size: 2rem;
+      padding: 1rem 1.2rem;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      z-index: 10;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .carousel-btn:hover {
+      background: var(--lavande);
+      color: white;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .carousel-btn-prev {
+      left: 1rem;
+    }
+
+    .carousel-btn-next {
+      right: 1rem;
+    }
+
+    .carousel-dots {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .carousel-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid var(--lavande);
+    }
+
+    .carousel-dot:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: scale(1.2);
+    }
+
+    .carousel-dot.active {
+      background: var(--lavande);
+      transform: scale(1.3);
+    }
+
+    @media (max-width: 768px) {
+      .product-detail {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .carousel-btn {
+        font-size: 1.5rem;
+        padding: 0.8rem 1rem;
+      }
+
+      .carousel-btn-prev {
+        left: 0.5rem;
+      }
+
+      .carousel-btn-next {
+        right: 0.5rem;
+      }
+
+      .carousel-dots {
+        bottom: 0.5rem;
+      }
+
+      .carousel-dot {
+        width: 10px;
+        height: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <a href="/" class="logo">La p'tite perlouze</a>
+      <nav>
+        <ul>
+          <li><a href="/">Accueil</a></li>
+          <li><a href="/catalogue">Catalogue</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li>
+            <a href="/boutique" style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);" onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
+              🏡 La Boutique
+            </a>
+          </li>
+          <li>
+            <a href="/panier" class="cart-icon">
+              🛒
+              <span class="cart-count" id="cart-count">0</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Page Produit -->
+  <div class="container">
+    <a href="/catalogue" class="btn btn-outline" style="margin-top: 2rem; display: inline-block;">
+      ← Retour au catalogue
+    </a>
+
+    <section id="product-detail-section" class="fade-in">
+      <!-- Le contenu sera chargé dynamiquement -->
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>🌸 La p'tite perlouze 🌸</p>
+    <p>Créations artisanales par Yvonne Lecocq</p>
+    <p><a href="/contact">Nous contacter</a> | <a href="/admin">Espace admin</a> | <a href="http://localhost:8080" id="boutdebois-footer-link">Le petit bout de bois</a></p>
+    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+      © 2025 La p'tite perlouze - Tous droits réservés
+    </p>
+  </footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/produit.js"></script>
+  <script>
+    // Charger l'URL du petit bout de bois depuis les paramètres
+    async function loadBoutdeboisUrl() {
+      try {
+        const response = await fetch('/api/settings');
+        const settings = await response.json();
+        if (settings.boutdebois_url) {
+          const link = document.getElementById('boutdebois-footer-link');
+          if (link) {
+            link.href = settings.boutdebois_url;
+          }
+        }
+      } catch (error) {
+        console.error('Erreur chargement URL boutdebois:', error);
+      }
+    }
+    loadBoutdeboisUrl();
+  </script>
+</body>
+</html>

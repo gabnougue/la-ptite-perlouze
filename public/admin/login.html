@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion Admin - La p'tite perlouze</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: var(--ombre-douce);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-header h1 {
+      font-family: var(--font-titre);
+      color: var(--lavande);
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-header p {
+      color: var(--texte-secondaire);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container fade-in">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>🌸 La p'tite perlouze</h1>
+        <p>Espace administrateur</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Nom d'utilisateur</label>
+          <input type="text" id="username" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" required>
+        </div>
+
+        <div id="login-message" style="display: none; margin-bottom: 1rem;"></div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          Se connecter
+        </button>
+
+        <a href="/" class="btn btn-outline" style="width: 100%; margin-top: 1rem; display: block;">
+          Retour au site
+        </a>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script>
+    // Vérifier si déjà connecté
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/admin/check-auth');
+        const data = await response.json();
+        if (data.authenticated) {
+          window.location.href = '/admin/dashboard';
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification:', error);
+      }
+    }
+
+    // Gérer la connexion
+    async function handleLogin(event) {
+      event.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const messageDiv = document.getElementById('login-message');
+      const submitButton = event.target.querySelector('button[type="submit"]');
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Connexion...';
+
+      try {
+        const response = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          messageDiv.className = 'message message-success';
+          messageDiv.textContent = 'Connexion réussie ! Redirection...';
+          messageDiv.style.display = 'block';
+
+          setTimeout(() => {
+            window.location.href = '/admin/dashboard';
+          }, 1000);
+        } else {
+          messageDiv.className = 'message message-error';
+          messageDiv.textContent = result.error || 'Identifiants incorrects';
+          messageDiv.style.display = 'block';
+          submitButton.disabled = false;
+          submitButton.textContent = 'Se connecter';
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        messageDiv.className = 'message message-error';
+        messageDiv.textContent = 'Erreur de connexion au serveur';
+        messageDiv.style.display = 'block';
+        submitButton.disabled = false;
+        submitButton.textContent = 'Se connecter';
+      }
+    }
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+
+      const loginForm = document.getElementById('login-form');
+      loginForm.addEventListener('submit', handleLogin);
+    });
+  </script>
+</body>
+</html>

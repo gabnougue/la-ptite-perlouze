@@ -1,0 +1,42 @@
+# Dépendances
+node_modules/
+package-lock.json
+
+# Variables d'environnement (SENSIBLE - NE JAMAIS COMMITER)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Base de données (contient données locales)
+*.db
+*.sqlite
+database.db
+database.sqlite
+
+# Uploads utilisateurs (images produits uploadées)
+public/images/uploads/*
+!public/images/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Système
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dossier Claude (si existant)
+.claude/

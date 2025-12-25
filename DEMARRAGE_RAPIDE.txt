@@ -1,0 +1,57 @@
+╔═══════════════════════════════════════════════════════╗
+║                                                       ║
+║         🌸 La p'tite perlouze 🌸                      ║
+║                                                       ║
+║         Démarrage rapide en 3 commandes              ║
+║                                                       ║
+╚═══════════════════════════════════════════════════════╝
+
+
+📋 TOUT EST DÉJÀ INSTALLÉ !
+
+✅ La base de données est créée
+✅ 6 produits d'exemple sont ajoutés
+✅ L'administrateur est créé
+
+
+🚀 POUR DÉMARRER LE SERVEUR :
+
+    npm start
+
+
+📍 ACCÈS AU SITE :
+
+    Site public : http://localhost:3000
+    Admin       : http://localhost:3000/admin
+
+
+🔐 CONNEXION ADMIN :
+
+    Identifiant : admin
+    Mot de passe : ***MOT_DE_PASSE_RETIRE***
+
+
+🎯 PROCHAINES ÉTAPES :
+
+1. Configurer Stripe (voir GUIDE_DEMARRAGE.md)
+2. Ajouter vos photos de bijoux
+3. Modifier/supprimer les produits d'exemple
+
+
+📚 DOCUMENTATION :
+
+    - README.md              → Documentation complète
+    - GUIDE_DEMARRAGE.md     → Guide pas à pas
+    - FONCTIONNALITES.md     → Liste des fonctionnalités
+
+
+💡 BESOIN D'AIDE ?
+
+    Consultez les fichiers de documentation ci-dessus !
+
+
+═══════════════════════════════════════════════════════
+
+           Créé avec 💜 pour Yvonne Lecocq
+
+═══════════════════════════════════════════════════════

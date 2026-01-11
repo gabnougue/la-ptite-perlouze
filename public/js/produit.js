@@ -130,7 +130,7 @@ function displayProduct(product) {
         ${product.boutdebois_link ? `
           <a href="${product.boutdebois_link}" class="btn btn-outline"
              style="background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%); color: white; border: none; margin-top: 1rem; display: block; text-align: center;">
-            🪵 Voir les créations en bois assorties sur Le petit bout de bois →
+            🪵 Voir les créations en bois assorties sur Le ptit bout de bois →
           </a>
         ` : ''}
       </div>

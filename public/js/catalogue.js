@@ -80,8 +80,8 @@ function applyFilters() {
   const colorFilter = document.getElementById('color-filter').value;
   const priceFilter = parseFloat(document.getElementById('price-filter').value);
 
-  // Filtrer d'abord sans le filtre de prix pour calculer le max
-  let productsBeforePrice = allProducts.filter(product => {
+  // Appliquer tous les filtres en une seule fois
+  let filteredProducts = allProducts.filter(product => {
     // Filtre catégorie
     if (categoryFilter !== 'Tous' && product.category !== categoryFilter) {
       return false;
@@ -97,15 +97,12 @@ function applyFilters() {
       return false;
     }
 
+    // Filtre prix
+    if (product.price > priceFilter) {
+      return false;
+    }
+
     return true;
-  });
-
-  // Mettre à jour le max du filtre de prix selon les produits filtrés
-  updatePriceFilterMax(productsBeforePrice);
-
-  // Appliquer ensuite le filtre de prix
-  let filteredProducts = productsBeforePrice.filter(product => {
-    return product.price <= priceFilter;
   });
 
   displayProducts(filteredProducts);
@@ -136,6 +133,7 @@ function displayProducts(products) {
 function createProductCard(product) {
   const card = document.createElement('div');
   card.className = 'card product-card fade-in';
+  card.style.cursor = 'pointer';
 
   // Utiliser la première image du carrousel si disponible, sinon l'image unique
   let imageSrc;
@@ -162,18 +160,23 @@ function createProductCard(product) {
       <p class="product-description">${product.description}</p>
       <p class="product-price">${product.price.toFixed(2)} €</p>
       ${product.stock > 0
-        ? `<button class="btn btn-primary" onclick="addToCart(${product.id})">
+        ? `<button class="btn btn-primary" onclick="event.stopPropagation(); addToCart(${product.id})">
              Ajouter au panier
            </button>`
         : `<button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">
              Rupture de stock
            </button>`
       }
-      <a href="/produit/${product.id}" class="btn btn-outline" style="margin-top: 0.5rem;">
+      <a href="/produit/${product.id}" class="btn btn-outline" style="margin-top: 0.5rem;" onclick="event.stopPropagation();">
         Voir détails
       </a>
     </div>
   `;
+
+  // Ajouter un gestionnaire de clic sur toute la carte
+  card.addEventListener('click', () => {
+    window.location.href = `/produit/${product.id}`;
+  });
 
   return card;
 }
@@ -284,8 +287,10 @@ function resetFilters() {
   document.getElementById('category-filter').value = 'Tous';
   document.getElementById('stone-filter').value = 'Toutes';
   document.getElementById('color-filter').value = 'Toutes';
-  document.getElementById('price-filter').value = 100;
-  document.getElementById('price-value').textContent = '100';
+
+  // Réinitialiser le filtre de prix avec le maximum dynamique
+  initializePriceFilter();
+
   applyFilters();
 }
 

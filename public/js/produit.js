@@ -50,6 +50,12 @@ async function loadProduct() {
 function displayProduct(product) {
   const section = document.getElementById('product-detail-section');
 
+  // Récupérer la couleur lavande du thème actuel
+  const lavandeColor = getComputedStyle(document.documentElement).getPropertyValue('--lavande').trim();
+  // Convertir en rgba pour l'opacité
+  const lavandeRgba = lavandeColor.replace('rgb', 'rgba').replace(')', ', 0.95)');
+  const lavandeFull = lavandeColor.replace('rgb', 'rgba').replace(')', ', 1)');
+
   // Gérer les images : carrousel si plusieurs images, sinon image unique
   let imageHTML;
   if (product.images && product.images.length > 1) {
@@ -69,8 +75,32 @@ function displayProduct(product) {
           ${imagesHTML}
         </div>
         ${product.images.length > 1 ? `
-          <button class="carousel-btn carousel-btn-prev" onclick="changeSlide(-1)">❮</button>
-          <button class="carousel-btn carousel-btn-next" onclick="changeSlide(1)">❯</button>
+          <button onclick="changeSlide(-1)"
+                  style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+                         background: ${lavandeRgba}; border: none; border-radius: 12px;
+                         width: 48px; height: 48px; cursor: pointer;
+                         box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease;
+                         display: flex; align-items: center; justify-content: center;
+                         backdrop-filter: blur(4px);"
+                  onmouseover="this.style.background='${lavandeFull}'; this.style.transform='translateY(-50%) translateX(-4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'"
+                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button onclick="changeSlide(1)"
+                  style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+                         background: ${lavandeRgba}; border: none; border-radius: 12px;
+                         width: 48px; height: 48px; cursor: pointer;
+                         box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease;
+                         display: flex; align-items: center; justify-content: center;
+                         backdrop-filter: blur(4px);"
+                  onmouseover="this.style.background='${lavandeFull}'; this.style.transform='translateY(-50%) translateX(4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'"
+                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
           <div class="carousel-dots">
             ${dotsHTML}
           </div>

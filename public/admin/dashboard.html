@@ -100,6 +100,53 @@
       background: rgba(var(--bg-gradient-1), 0.1);
     }
 
+    /* Styles spécifiques pour la table des threads */
+    #threads-table th,
+    #threads-table td {
+      padding: 1.25rem;
+      white-space: normal;
+      vertical-align: middle;
+    }
+
+    #threads-table th:first-child,
+    #threads-table td:first-child {
+      min-width: 160px;
+    }
+
+    #threads-table th:nth-child(2),
+    #threads-table td:nth-child(2) {
+      min-width: 200px;
+    }
+
+    #threads-table th:nth-child(5) {
+      min-width: 180px;
+      text-align: left;
+    }
+
+    #threads-table td:nth-child(5) {
+      min-width: 180px;
+      text-align: right;
+    }
+
+    /* Boutons d'action plus compacts et côte à côte */
+    #threads-table td[data-label="Actions"] {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    #threads-table .btn-small {
+      padding: 0.4rem 0.6rem;
+      font-size: 1rem;
+      margin: 0 0 0 0.3rem;
+      display: inline-block;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    #threads-table td[data-label="Actions"] .btn-small:first-child {
+      margin-left: 0;
+    }
+
     .badge {
       padding: 0.3rem 0.8rem;
       border-radius: 15px;
@@ -353,15 +400,15 @@
         </div>
         <div class="card stat-card">
           <div class="stat-value" id="stat-orders">0</div>
-          <div class="stat-label">Commandes</div>
+          <div class="stat-label">Commandes en cours</div>
         </div>
         <div class="card stat-card">
           <div class="stat-value" id="stat-revenue">0 €</div>
           <div class="stat-label">Chiffre d'affaires</div>
         </div>
         <div class="card stat-card">
-          <div class="stat-value" id="stat-messages">0</div>
-          <div class="stat-label">Messages non lus</div>
+          <div class="stat-value" id="stat-outofstock">0</div>
+          <div class="stat-label">Rupture de stock</div>
         </div>
       </div>
     </section>
@@ -423,16 +470,21 @@
 
     <!-- Section Messages -->
     <section id="contacts-section" class="section-content">
-      <h2 class="section-title">Messages de contact</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 class="section-title" style="margin: 0;">💬 Conversations clients</h2>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input type="checkbox" id="hide-closed-threads" onchange="loadThreads()" style="width: 18px; height: 18px; cursor: pointer;">
+          <label for="hide-closed-threads" style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer les conversations closes</label>
+        </div>
+      </div>
       <div class="card">
-        <table id="contacts-table">
+        <table id="threads-table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Message</th>
               <th>Statut</th>
+              <th>Client</th>
+              <th>Dernier message</th>
+              <th>Date</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -467,9 +519,6 @@
               Ajouter
             </button>
           </div>
-          <small style="display: block; margin-top: 0.5rem; color: var(--texte-secondaire);">
-            💡 Les images du dossier /images/boutique/ sont automatiquement importées
-          </small>
         </div>
 
         <!-- Grille des images existantes -->
@@ -595,14 +644,21 @@
         <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
           Catégories de bijoux
         </h3>
-        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-          <input type="text" id="new-category" placeholder="Nouvelle catégorie" style="flex: 1; min-width: 200px;">
-          <button onclick="addCategory()" class="btn btn-primary">Ajouter</button>
+        <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <input type="text" id="new-category" placeholder="Nom de la catégorie" style="flex: 2; min-width: 200px;">
+            <input type="text" id="new-category-emoji" placeholder="Emoji" maxlength="4" style="flex: 0 0 100px;">
+            <input type="text" id="new-category-description" placeholder="Description courte" style="flex: 2; min-width: 200px;">
+          </div>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button onclick="addCategory()" id="category-submit-btn" class="btn btn-primary" style="width: fit-content;">Ajouter la catégorie</button>
+            <button onclick="cancelEditCategory()" id="category-cancel-btn" class="btn btn-outline" style="width: fit-content; display: none;">Annuler</button>
+          </div>
         </div>
         <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
           <strong>Catégories existantes :</strong>
         </p>
-        <div id="categories-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+        <div id="categories-list" style="display: grid; gap: 0.75rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
           <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
         </div>
       </div>

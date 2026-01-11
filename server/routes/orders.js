@@ -25,7 +25,7 @@ router.post('/create-payment-intent', async (req, res) => {
 // Créer une commande
 router.post('/', async (req, res) => {
   try {
-    const { customer, items, total, paymentIntentId } = req.body;
+    const { customer, items, subtotal, shippingCost, total, paymentIntentId } = req.body;
 
     // Vérifier le stock pour chaque produit
     for (const item of items) {
@@ -39,13 +39,15 @@ router.post('/', async (req, res) => {
 
     // Créer la commande
     const orderResult = await db.run(
-      `INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, total, stripe_payment_id, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, subtotal, shipping_cost, total, stripe_payment_id, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         customer.name,
         customer.email,
         customer.phone,
         customer.address,
+        subtotal || 0,
+        shippingCost || 0,
         total,
         paymentIntentId,
         'pending'

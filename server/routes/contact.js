@@ -22,6 +22,18 @@ router.post('/', async (req, res) => {
     // Récupérer le contact créé pour l'email
     const contact = await db.get('SELECT * FROM contacts WHERE id = ?', [result.id]);
 
+    // Créer automatiquement un thread de conversation
+    const threadResult = await db.run(
+      'INSERT INTO message_threads (contact_id, subject, customer_name, customer_email, status, last_message_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
+      [contact.id, `Message de ${name}`, name, email, 'open']
+    );
+
+    // Ajouter le message initial au thread
+    await db.run(
+      'INSERT INTO thread_messages (thread_id, sender_type, sender_name, sender_email, message) VALUES (?, ?, ?, ?, ?)',
+      [threadResult.id, 'customer', name, email, message]
+    );
+
     // Envoyer l'email de notification
     await sendContactNotification(contact);
 

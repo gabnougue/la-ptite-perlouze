@@ -6,8 +6,30 @@ let stripe;
 let elements;
 let clientSecret;
 
+// Afficher un loader de paiement
+function showPaymentLoader() {
+  const paymentElement = document.getElementById('payment-element');
+  if (paymentElement) {
+    paymentElement.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; min-height: 200px;">
+        <div style="width: 50px; height: 50px; border: 4px solid var(--lavande-clair); border-top: 4px solid var(--lavande); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p style="margin-top: 1.5rem; color: var(--texte-secondaire); font-size: 0.95rem;">Chargement du module de paiement sécurisé...</p>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+  }
+}
+
 // Initialiser Stripe (sera fait lors du checkout)
 async function initializeStripe(amount) {
+  // Afficher le loader
+  showPaymentLoader();
+
   // Récupérer la clé publique Stripe depuis le serveur
   if (!stripe) {
     try {
@@ -21,7 +43,7 @@ async function initializeStripe(amount) {
       stripe = Stripe(configData.publicKey);
     } catch (error) {
       console.error('Erreur lors de la récupération de la configuration Stripe:', error);
-      showMessage('Paiement temporairement indisponible', 'error');
+      showMessage('⚠️ Problème de connexion : Le service de paiement est temporairement indisponible. Vérifiez votre connexion internet et réessayez.', 'error');
       return false;
     }
   }
@@ -33,7 +55,16 @@ async function initializeStripe(amount) {
       body: JSON.stringify({ amount })
     });
 
+    if (!response.ok) {
+      throw new Error('Le service de paiement est temporairement indisponible.');
+    }
+
     const data = await response.json();
+
+    if (!data.clientSecret) {
+      throw new Error('Erreur lors de l\'initialisation du paiement');
+    }
+
     clientSecret = data.clientSecret;
 
     // Récupérer les couleurs du thème actif
@@ -82,7 +113,25 @@ async function initializeStripe(amount) {
     return true;
   } catch (error) {
     console.error('Erreur lors de l\'initialisation du paiement:', error);
-    showMessage('Erreur lors de l\'initialisation du paiement', 'error');
+
+    // Afficher un message d'erreur dans le conteneur de paiement
+    const paymentElement = document.getElementById('payment-element');
+    if (paymentElement) {
+      paymentElement.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; min-height: 200px; background: #fff3f3; border: 2px solid var(--rose-poudre); border-radius: 15px;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+          <h3 style="color: var(--texte-principal); margin-bottom: 0.5rem; text-align: center;">Problème de connexion</h3>
+          <p style="color: var(--texte-secondaire); font-size: 0.95rem; text-align: center; max-width: 400px;">
+            Le service de paiement est temporairement indisponible. Veuillez vérifier votre connexion internet et réessayer.
+          </p>
+          <button onclick="cancelCheckout()" class="btn btn-outline" style="margin-top: 1.5rem;">
+            Retour au panier
+          </button>
+        </div>
+      `;
+    }
+
+    showMessage('⚠️ Problème de connexion : Le service de paiement est temporairement indisponible. Vérifiez votre connexion internet et réessayez.', 'error');
     return false;
   }
 }
@@ -231,21 +280,58 @@ function closeRemoveModal() {
   itemToRemoveIndex = null;
 }
 
+// Variable globale pour stocker les détails de livraison
+let shippingDetails = null;
+
 // Mettre à jour le résumé du panier
-function updateCartSummary() {
+async function updateCartSummary() {
   const cart = JSON.parse(localStorage.getItem('cart') || '[]');
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 0; // Livraison gratuite
-  const total = subtotal + shipping;
 
-  document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' €';
-  document.getElementById('total').textContent = total.toFixed(2) + ' €';
+  // Calculer les frais de livraison via l'API
+  try {
+    const response = await fetch('/api/shipping/calculate?subtotal=' + subtotal);
+    shippingDetails = await response.json();
+
+    const shippingCost = shippingDetails.shippingCost || 0;
+    const total = shippingDetails.total || subtotal;
+
+    // Mettre à jour l'affichage
+    document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' €';
+
+    // Affichage des frais de livraison
+    if (shippingCost === 0) {
+      document.getElementById('shipping').textContent = 'Gratuite';
+      document.getElementById('shipping').style.color = 'var(--lavande)';
+      document.getElementById('shipping').style.fontWeight = '600';
+    } else {
+      document.getElementById('shipping').textContent = shippingCost.toFixed(2) + ' €';
+      document.getElementById('shipping').style.color = '';
+      document.getElementById('shipping').style.fontWeight = '';
+    }
+
+    // Afficher le message contextuel
+    const messageElement = document.getElementById('shipping-message');
+    if (messageElement && shippingDetails.message) {
+      messageElement.textContent = shippingDetails.message;
+    }
+
+    document.getElementById('total').textContent = total.toFixed(2) + ' €';
+  } catch (error) {
+    console.error('Erreur calcul frais de livraison:', error);
+    // Fallback en cas d'erreur
+    document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' €';
+    document.getElementById('shipping').textContent = 'Gratuite';
+    document.getElementById('total').textContent = subtotal.toFixed(2) + ' €';
+  }
 }
 
 // Passer à l'étape de paiement
 async function proceedToCheckout() {
   const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  // Utiliser le total calculé avec les frais de livraison
+  const total = shippingDetails?.total || cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   // Afficher le formulaire de checkout
   document.getElementById('cart-items').style.display = 'none';
@@ -253,7 +339,7 @@ async function proceedToCheckout() {
   document.getElementById('checkout-section').style.display = 'block';
   document.getElementById('total-payment').textContent = total.toFixed(2) + ' €';
 
-  // Initialiser Stripe
+  // Initialiser Stripe (l'erreur sera gérée dans la fonction avec un message visuel)
   await initializeStripe(total);
 }
 
@@ -300,7 +386,9 @@ async function handlePayment(event) {
     // Si le paiement est réussi, créer la commande
     if (paymentIntent.status === 'succeeded') {
       const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const shippingCost = shippingDetails?.shippingCost || 0;
+      const total = shippingDetails?.total || subtotal;
 
       const orderData = {
         customer: {
@@ -310,6 +398,8 @@ async function handlePayment(event) {
           address: customerAddress
         },
         items: cart,
+        subtotal: subtotal,
+        shippingCost: shippingCost,
         total: total,
         paymentIntentId: paymentIntent.id
       };
@@ -383,6 +473,7 @@ function showMessage(message, type = 'info') {
   messageDiv.style.position = 'fixed';
   messageDiv.style.zIndex = '10000';
   messageDiv.style.maxWidth = '300px';
+  messageDiv.style.color = 'white'; // Texte toujours en blanc
 
   // Position adaptée selon la taille d'écran
   if (window.innerWidth <= 768) {

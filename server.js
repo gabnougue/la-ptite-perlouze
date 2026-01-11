@@ -32,6 +32,8 @@ const contactRoutes = require('./server/routes/contact');
 const settingsRoutes = require('./server/routes/settings');
 const boutiqueRoutes = require('./server/routes/boutique');
 const configRoutes = require('./server/routes/config');
+const shippingRoutes = require('./server/routes/shipping');
+const messagesRoutes = require('./server/routes/messages');
 
 app.use('/api/products', productsRoutes);
 app.use('/api/orders', ordersRoutes);
@@ -40,6 +42,8 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/boutique', boutiqueRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/shipping', shippingRoutes);
+app.use('/api/messages', messagesRoutes);
 
 // Route principale
 app.get('/', (req, res) => {

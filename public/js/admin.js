@@ -1279,7 +1279,7 @@ async function saveGeneralSettings() {
       body: JSON.stringify({ value: contactEmail })
     });
 
-    // Mettre à jour l'URL du petit bout de bois
+    // Mettre à jour l'URL du ptit bout de bois
     await fetch('/api/settings/boutdebois_url', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

@@ -190,7 +190,7 @@ async function loadSiteSettings() {
     const response = await fetch('/api/settings');
     const settings = await response.json();
 
-    // Mettre à jour le lien vers Le petit bout de bois
+    // Mettre à jour le lien vers Le ptit bout de bois
     if (settings.boutdebois_url) {
       const boutdeboisLink = document.getElementById('boutdebois-link');
       if (boutdeboisLink) {

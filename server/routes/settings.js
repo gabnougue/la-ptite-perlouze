@@ -72,20 +72,47 @@ router.get('/categories', async (req, res) => {
 // Ajouter une catégorie
 router.post('/categories', requireAdmin, async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, emoji, description } = req.body;
 
     if (!name || name.trim() === '') {
       return res.status(400).json({ error: 'Le nom est requis' });
     }
 
-    const result = await db.run('INSERT INTO categories (name) VALUES (?)', [name.trim()]);
-    res.json({ success: true, id: result.id, name: name.trim() });
+    const result = await db.run(
+      'INSERT INTO categories (name, emoji, description) VALUES (?, ?, ?)',
+      [name.trim(), emoji || '✨', description || '']
+    );
+    res.json({ success: true, id: result.id, name: name.trim(), emoji: emoji || '✨', description: description || '' });
   } catch (err) {
     console.error('Erreur:', err);
     if (err.code === 'SQLITE_CONSTRAINT') {
       return res.status(400).json({ error: 'Cette catégorie existe déjà' });
     }
     res.status(500).json({ error: 'Erreur lors de l\'ajout' });
+  }
+});
+
+// Modifier une catégorie
+router.put('/categories/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, emoji, description } = req.body;
+
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Le nom est requis' });
+    }
+
+    await db.run(
+      'UPDATE categories SET name = ?, emoji = ?, description = ? WHERE id = ?',
+      [name.trim(), emoji || '✨', description || '', id]
+    );
+    res.json({ success: true, id: parseInt(id), name: name.trim(), emoji: emoji || '✨', description: description || '' });
+  } catch (err) {
+    console.error('Erreur:', err);
+    if (err.code === 'SQLITE_CONSTRAINT') {
+      return res.status(400).json({ error: 'Cette catégorie existe déjà' });
+    }
+    res.status(500).json({ error: 'Erreur lors de la modification' });
   }
 });
 

@@ -410,15 +410,15 @@ router.delete('/contacts/:id', requireAuth, async (req, res) => {
 router.get('/stats', requireAuth, async (req, res) => {
   try {
     const totalProducts = await db.get('SELECT COUNT(*) as count FROM products');
-    const totalOrders = await db.get('SELECT COUNT(*) as count FROM orders');
-    const totalRevenue = await db.get('SELECT SUM(total) as sum FROM orders WHERE status = "confirmed"');
-    const pendingMessages = await db.get('SELECT COUNT(*) as count FROM contacts WHERE status = "nouveau"');
+    const ongoingOrders = await db.get('SELECT COUNT(*) as count FROM orders WHERE status != "delivered"');
+    const totalRevenue = await db.get('SELECT SUM(total) as sum FROM orders WHERE status = "delivered"');
+    const outOfStock = await db.get('SELECT COUNT(*) as count FROM products WHERE stock = 0');
 
     res.json({
       totalProducts: totalProducts?.count || 0,
-      totalOrders: totalOrders?.count || 0,
+      ongoingOrders: ongoingOrders?.count || 0,
       totalRevenue: totalRevenue?.sum || 0,
-      pendingMessages: pendingMessages?.count || 0
+      outOfStock: outOfStock?.count || 0
     });
   } catch (error) {
     console.error('Erreur lors de la récupération des stats:', error);

@@ -41,6 +41,7 @@ async function loadFeaturedProducts() {
 function createProductCard(product) {
   const card = document.createElement('div');
   card.className = 'card product-card fade-in';
+  card.style.cursor = 'pointer';
 
   // Utiliser la première image du carrousel si disponible, sinon l'image unique
   let imageSrc;
@@ -59,14 +60,19 @@ function createProductCard(product) {
       <p class="product-stones">${product.stones}</p>
       <p class="product-description">${truncateText(product.description, 80)}</p>
       <p class="product-price">${product.price.toFixed(2)} €</p>
-      <button class="btn btn-primary" onclick="addToCart(${product.id})">
+      <button class="btn btn-primary" onclick="event.stopPropagation(); addToCart(${product.id})">
         Ajouter au panier
       </button>
-      <a href="/produit/${product.id}" class="btn btn-outline" style="margin-top: 0.5rem;">
+      <a href="/produit/${product.id}" class="btn btn-outline" style="margin-top: 0.5rem;" onclick="event.stopPropagation();">
         Voir détails
       </a>
     </div>
   `;
+
+  // Ajouter un gestionnaire de clic sur toute la carte
+  card.addEventListener('click', () => {
+    window.location.href = `/produit/${product.id}`;
+  });
 
   return card;
 }
@@ -151,6 +157,33 @@ function showMessage(message, type = 'info') {
   }, 3000);
 }
 
+// Charger les catégories
+async function loadCategories() {
+  try {
+    const response = await fetch('/api/settings/categories');
+    const categories = await response.json();
+
+    const container = document.getElementById('categories-grid');
+
+    if (categories.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: var(--texte-secondaire); grid-column: 1 / -1;">Aucune catégorie disponible pour le moment.</p>';
+      return;
+    }
+
+    container.innerHTML = categories.map(category => `
+      <a href="/catalogue?category=${encodeURIComponent(category.name)}" class="card category-card" style="text-decoration: none;">
+        <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">${category.emoji || '✨'}</div>
+        <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">${category.name}</h3>
+        <p style="text-align: center; color: var(--texte-secondaire);">${category.description || ''}</p>
+      </a>
+    `).join('');
+  } catch (error) {
+    console.error('Erreur lors du chargement des catégories:', error);
+    const container = document.getElementById('categories-grid');
+    container.innerHTML = '<p style="text-align: center; color: var(--texte-secondaire); grid-column: 1 / -1;">Impossible de charger les catégories pour le moment.</p>';
+  }
+}
+
 // Charger les paramètres du site
 async function loadSiteSettings() {
   try {
@@ -173,5 +206,6 @@ async function loadSiteSettings() {
 document.addEventListener('DOMContentLoaded', () => {
   updateCartCount();
   loadFeaturedProducts();
+  loadCategories();
   loadSiteSettings();
 });

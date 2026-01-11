@@ -374,6 +374,11 @@ nav a.active::after {
 .btn-small {
   padding: 0.5rem 1rem;
   font-size: 0.85rem;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -718,6 +723,15 @@ footer a:hover {
     font-size: 1.5rem;
   }
 
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .hero {
+    padding: 3rem 1.5rem;
+    margin: 1.5rem 1rem;
+  }
+
   .hero h1 {
     font-size: 2.5rem;
   }
@@ -963,4 +977,44 @@ input[type="range"]::-moz-range-thumb:hover {
   min-width: 20px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(244, 114, 182, 0.4);
+}
+
+/* Cacher les spinners des inputs number */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Personnalisation des inputs file */
+input[type="file"] {
+  font-family: var(--font-texte);
+  font-size: 0.95rem;
+  color: var(--texte-principal);
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+  background: var(--gradient-pastel);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-family: var(--font-texte);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--ombre-douce);
+  margin-right: 1rem;
+}
+
+input[type="file"]::file-selector-button:hover {
+  box-shadow: var(--ombre-hover);
+  transform: translateY(-2px);
+  filter: brightness(1.1);
 }

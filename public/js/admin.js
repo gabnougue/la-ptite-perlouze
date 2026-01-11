@@ -3,6 +3,9 @@
 // ═══════════════════════════════════════════════════
 
 let currentEditProductId = null;
+let currentProductImages = [];
+let newImagesToUpload = [];
+let imagesToDelete = []; // IDs des images à supprimer (appliqué à la sauvegarde)
 
 // ═══════════════════════════════════════════════════
 // Popup de confirmation personnalisée
@@ -115,7 +118,7 @@ function showSection(section) {
   } else if (section === 'orders') {
     loadOrders();
   } else if (section === 'contacts') {
-    loadContacts();
+    loadThreads();
   } else if (section === 'boutique') {
     loadBoutiqueImages();
   } else if (section === 'settings') {
@@ -130,9 +133,9 @@ async function loadStats() {
     const stats = await response.json();
 
     document.getElementById('stat-products').textContent = stats.totalProducts;
-    document.getElementById('stat-orders').textContent = stats.totalOrders;
+    document.getElementById('stat-orders').textContent = stats.ongoingOrders;
     document.getElementById('stat-revenue').textContent = stats.totalRevenue.toFixed(2) + ' €';
-    document.getElementById('stat-messages').textContent = stats.pendingMessages;
+    document.getElementById('stat-outofstock').textContent = stats.outOfStock;
   } catch (error) {
     console.error('Erreur:', error);
   }
@@ -224,6 +227,9 @@ async function openProductModal(productId = null) {
     title.textContent = 'Ajouter un produit';
     // Réinitialiser les images pour l'ajout
     currentProductImages = [];
+    newImagesToUpload = [];
+    imagesToDelete = [];
+    window.allImagesOrder = [];
     displayExistingImages([]);
   }
 
@@ -289,6 +295,10 @@ function closeProductModal() {
   const modal = document.getElementById('product-modal');
   modal.classList.remove('active');
   currentEditProductId = null;
+  currentProductImages = [];
+  newImagesToUpload = [];
+  imagesToDelete = [];
+  window.allImagesOrder = [];
 }
 
 // Charger les données d'un produit
@@ -321,177 +331,62 @@ async function loadProductData(productId) {
       });
     }
 
-    // Afficher les images existantes
-    displayExistingImages(product.images || []);
+    // Charger les images existantes et réinitialiser les nouvelles
+    currentProductImages = product.images || [];
+    newImagesToUpload = [];
+    imagesToDelete = [];
+    window.allImagesOrder = [];
+    displayAllImages();
   } catch (error) {
     console.error('Erreur:', error);
   }
 }
 
-// Variable globale pour stocker les images du produit en cours d'édition
-let currentProductImages = [];
-
-// Afficher les images existantes avec contrôles
+// Afficher les images existantes avec contrôles (redirige vers displayAllImages)
 function displayExistingImages(images) {
-  const previewContainer = document.getElementById('images-preview');
-  previewContainer.innerHTML = '';
+  if (images) {
+    currentProductImages = images;
+  }
+  displayAllImages();
+}
 
-  currentProductImages = images || [];
 
-  if (currentProductImages.length === 0) {
-    previewContainer.innerHTML = `
-      <div style="grid-column: 1 / -1; padding: 1rem; text-align: center; color: var(--texte-secondaire);">
-        Aucune image pour ce produit
-      </div>
-    `;
-    return;
+// Supprimer une image du produit (marque pour suppression, appliqué à la sauvegarde)
+function deleteImageFromProduct(imageId, index) {
+  // Pas de confirmation ici, juste marquer pour suppression
+  // Ajouter à la liste des images à supprimer
+  if (!imagesToDelete.includes(imageId)) {
+    imagesToDelete.push(imageId);
   }
 
-  currentProductImages.forEach((image, index) => {
-    const imageDiv = document.createElement('div');
-    imageDiv.className = 'image-item';
-    imageDiv.style.position = 'relative';
-    imageDiv.style.display = 'inline-block';
-    imageDiv.style.marginRight = '0.5rem';
-    imageDiv.style.marginBottom = '0.5rem';
-
-    const img = document.createElement('img');
-    img.src = `/images/uploads/${image.image_path}`;
-    img.alt = `Image ${index + 1}`;
-    img.style.width = '120px';
-    img.style.height = '120px';
-    img.style.objectFit = 'cover';
-    img.style.borderRadius = '10px';
-    img.style.border = image.is_primary ? '3px solid var(--pastel-vert)' : '2px solid var(--lavande)';
-
-    // Badge de position
-    const badge = document.createElement('span');
-    badge.textContent = image.is_primary ? '★ Principale' : `${index + 1}`;
-    badge.style.position = 'absolute';
-    badge.style.top = '5px';
-    badge.style.left = '5px';
-    badge.style.background = image.is_primary ? 'var(--pastel-vert)' : 'var(--lavande)';
-    badge.style.color = 'white';
-    badge.style.padding = '3px 8px';
-    badge.style.borderRadius = '5px';
-    badge.style.fontSize = '0.75rem';
-    badge.style.fontWeight = 'bold';
-
-    // Bouton de suppression
-    const deleteBtn = document.createElement('button');
-    deleteBtn.innerHTML = '✕';
-    deleteBtn.type = 'button';
-    deleteBtn.style.position = 'absolute';
-    deleteBtn.style.top = '5px';
-    deleteBtn.style.right = '5px';
-    deleteBtn.style.background = 'var(--rose-poudre)';
-    deleteBtn.style.color = 'white';
-    deleteBtn.style.border = 'none';
-    deleteBtn.style.borderRadius = '50%';
-    deleteBtn.style.width = '24px';
-    deleteBtn.style.height = '24px';
-    deleteBtn.style.cursor = 'pointer';
-    deleteBtn.style.fontSize = '14px';
-    deleteBtn.style.fontWeight = 'bold';
-    deleteBtn.style.display = 'flex';
-    deleteBtn.style.alignItems = 'center';
-    deleteBtn.style.justifyContent = 'center';
-    deleteBtn.onclick = () => deleteImageFromProduct(image.id, index);
-
-    // Boutons de réorganisation
-    const controlsDiv = document.createElement('div');
-    controlsDiv.style.position = 'absolute';
-    controlsDiv.style.bottom = '5px';
-    controlsDiv.style.left = '50%';
-    controlsDiv.style.transform = 'translateX(-50%)';
-    controlsDiv.style.display = 'flex';
-    controlsDiv.style.gap = '5px';
-
-    if (index > 0) {
-      const moveUpBtn = document.createElement('button');
-      moveUpBtn.innerHTML = '◀';
-      moveUpBtn.type = 'button';
-      moveUpBtn.style.background = 'rgba(255, 255, 255, 0.9)';
-      moveUpBtn.style.color = 'var(--lavande)';
-      moveUpBtn.style.border = 'none';
-      moveUpBtn.style.borderRadius = '50%';
-      moveUpBtn.style.width = '24px';
-      moveUpBtn.style.height = '24px';
-      moveUpBtn.style.cursor = 'pointer';
-      moveUpBtn.style.fontSize = '12px';
-      moveUpBtn.style.fontWeight = 'bold';
-      moveUpBtn.onclick = () => moveImage(index, index - 1);
-      controlsDiv.appendChild(moveUpBtn);
+  // Retirer visuellement de allImagesOrder
+  if (window.allImagesOrder && window.allImagesOrder.length > 0) {
+    const globalIndex = window.allImagesOrder.findIndex(item =>
+      item.type === 'existing' && item.data.id === imageId
+    );
+    if (globalIndex !== -1) {
+      window.allImagesOrder.splice(globalIndex, 1);
     }
+  }
 
-    if (index < currentProductImages.length - 1) {
-      const moveDownBtn = document.createElement('button');
-      moveDownBtn.innerHTML = '▶';
-      moveDownBtn.type = 'button';
-      moveDownBtn.style.background = 'rgba(255, 255, 255, 0.9)';
-      moveDownBtn.style.color = 'var(--lavande)';
-      moveDownBtn.style.border = 'none';
-      moveDownBtn.style.borderRadius = '50%';
-      moveDownBtn.style.width = '24px';
-      moveDownBtn.style.height = '24px';
-      moveDownBtn.style.cursor = 'pointer';
-      moveDownBtn.style.fontSize = '12px';
-      moveDownBtn.style.fontWeight = 'bold';
-      moveDownBtn.onclick = () => moveImage(index, index + 1);
-      controlsDiv.appendChild(moveDownBtn);
+  // Aussi supprimer de currentProductImages
+  currentProductImages.splice(index, 1);
+
+  // Reconstruire les tableaux à partir de allImagesOrder
+  currentProductImages = [];
+  newImagesToUpload = [];
+
+  window.allImagesOrder.forEach((item, idx) => {
+    if (item.type === 'existing') {
+      item.data.display_order = idx;
+      item.data.is_primary = idx === 0 ? 1 : 0;
+      currentProductImages.push(item.data);
+    } else {
+      newImagesToUpload.push(item.data);
     }
-
-    imageDiv.appendChild(img);
-    imageDiv.appendChild(badge);
-    imageDiv.appendChild(deleteBtn);
-    imageDiv.appendChild(controlsDiv);
-    previewContainer.appendChild(imageDiv);
   });
 
-  // Message informatif
-  const infoDiv = document.createElement('div');
-  infoDiv.style.gridColumn = '1 / -1';
-  infoDiv.style.padding = '0.5rem';
-  infoDiv.style.background = 'var(--fond-secondaire)';
-  infoDiv.style.borderRadius = '8px';
-  infoDiv.style.fontSize = '0.9rem';
-  infoDiv.style.color = 'var(--texte-secondaire)';
-  infoDiv.style.marginTop = '0.5rem';
-  infoDiv.innerHTML = `
-    <strong>💡 Astuce :</strong> Utilisez les boutons ◀ ▶ pour réorganiser les images. La première image sera l'image principale.
-  `;
-  previewContainer.appendChild(infoDiv);
-}
-
-// Supprimer une image du produit
-async function deleteImageFromProduct(imageId, index) {
-  const confirmed = await showConfirm(
-    'Voulez-vous vraiment supprimer cette image ?',
-    'Supprimer l\'image'
-  );
-
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/admin/product-images/${imageId}`, {
-      method: 'DELETE'
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showMessage('Image supprimée', 'success');
-      currentProductImages.splice(index, 1);
-      displayExistingImages(currentProductImages);
-    } else {
-      showMessage('Erreur lors de la suppression', 'error');
-    }
-  } catch (error) {
-    console.error('Erreur:', error);
-    showMessage('Erreur lors de la suppression', 'error');
-  }
+  displayAllImages();
 }
 
 // Déplacer une image dans l'ordre
@@ -508,7 +403,7 @@ async function moveImage(fromIndex, toIndex) {
   });
 
   // Rafraîchir l'affichage
-  displayExistingImages(currentProductImages);
+  displayAllImages();
 
   // Sauvegarder l'ordre dans la base de données
   try {
@@ -593,19 +488,19 @@ async function handleProductSubmit(event) {
   formData.append('color_ids', JSON.stringify(selectedColors));
 
   // ENSUITE: Ajouter les fichiers (images) à la fin
-  const imageFiles = document.getElementById('product-images').files;
-  if (imageFiles && imageFiles.length > 0) {
-    console.log(`Envoi de ${imageFiles.length} image(s)`);
-    if (imageFiles.length > 10) {
-      showMessage('Vous ne pouvez sélectionner que 10 images maximum', 'error');
+  if (newImagesToUpload && newImagesToUpload.length > 0) {
+    console.log(`Envoi de ${newImagesToUpload.length} nouvelle(s) image(s)`);
+    const totalImages = currentProductImages.length + newImagesToUpload.length;
+    if (totalImages > 10) {
+      showMessage(`Vous ne pouvez avoir que 10 images maximum (actuellement ${currentProductImages.length} existantes + ${newImagesToUpload.length} nouvelles)`, 'error');
       return;
     }
-    for (let i = 0; i < imageFiles.length; i++) {
-      console.log(`Ajout image ${i + 1}:`, imageFiles[i].name);
-      formData.append('images', imageFiles[i]);
+    for (let i = 0; i < newImagesToUpload.length; i++) {
+      console.log(`Ajout image ${i + 1}:`, newImagesToUpload[i].name);
+      formData.append('images', newImagesToUpload[i]);
     }
   } else {
-    console.log('Aucune image sélectionnée');
+    console.log('Aucune nouvelle image à uploader');
   }
 
   try {
@@ -637,6 +532,95 @@ async function handleProductSubmit(event) {
     const result = await response.json();
 
     if (result.success) {
+      // Traiter d'abord les suppressions d'images
+      if (currentEditProductId && imagesToDelete.length > 0) {
+        for (const imageId of imagesToDelete) {
+          try {
+            await fetch(`/api/admin/product-images/${imageId}`, {
+              method: 'DELETE'
+            });
+          } catch (error) {
+            console.error(`Erreur suppression image ${imageId}:`, error);
+          }
+        }
+      }
+
+      // Si on a uploadé de nouvelles images et qu'on a un ordre global mixte
+      if (newImagesToUpload.length > 0 && window.allImagesOrder && window.allImagesOrder.length > 0) {
+        const productId = result.product_id || currentEditProductId;
+
+        if (productId) {
+          // Attendre un peu que les images soient bien enregistrées
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          // Recharger le produit pour obtenir les IDs des nouvelles images
+          const productResponse = await fetch(`/api/products/${productId}`);
+          const productData = await productResponse.json();
+
+          if (productData && productData.images) {
+            // Créer un mapping des images par leur position
+            // On doit faire correspondre les nouvelles images uploadées avec celles retournées
+            const allUploadedImages = productData.images;
+
+            // Reconstruire l'ordre selon allImagesOrder
+            const finalOrder = [];
+            let existingImageIndex = 0;
+            let newImageIndex = 0;
+
+            window.allImagesOrder.forEach((item, globalIndex) => {
+              if (item.type === 'existing') {
+                // Trouver l'image existante par son ID
+                const existingImg = allUploadedImages.find(img => img.id === item.data.id);
+                if (existingImg) {
+                  finalOrder.push({
+                    id: existingImg.id,
+                    display_order: globalIndex + 1,
+                    is_primary: globalIndex === 0 ? 1 : 0
+                  });
+                }
+              } else {
+                // Pour les nouvelles images, on prend les dernières images uploadées
+                // (celles qui n'ont pas d'ID dans notre currentProductImages)
+                const newImages = allUploadedImages.filter(img =>
+                  !currentProductImages.find(existing => existing.id === img.id)
+                );
+
+                if (newImages[newImageIndex]) {
+                  finalOrder.push({
+                    id: newImages[newImageIndex].id,
+                    display_order: globalIndex + 1,
+                    is_primary: globalIndex === 0 ? 1 : 0
+                  });
+                  newImageIndex++;
+                }
+              }
+            });
+
+            // Envoyer la réorganisation finale
+            if (finalOrder.length > 0) {
+              await fetch(`/api/admin/products/${productId}/reorder-images`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ images: finalOrder })
+              });
+            }
+          }
+        }
+      } else if (currentEditProductId && currentProductImages.length > 0) {
+        // Si c'est une modification sans nouvelles images, sauvegarder l'ordre des existantes
+        await fetch(`/api/admin/products/${currentEditProductId}/reorder-images`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            images: currentProductImages.map(img => ({
+              id: img.id,
+              display_order: img.display_order,
+              is_primary: img.is_primary
+            }))
+          })
+        });
+      }
+
       showMessage(currentEditProductId ? 'Produit modifié' : 'Produit ajouté', 'success');
       closeProductModal();
       loadProducts();
@@ -894,56 +878,70 @@ function updateOrdersBadge() {
   }
 }
 
-// Variable globale pour stocker les contacts
-let allContacts = [];
+// Variable globale pour stocker les threads
+let allThreads = [];
 
-// Charger les messages
-async function loadContacts() {
+// Charger les threads de conversation
+async function loadThreads() {
   try {
-    const response = await fetch('/api/admin/contacts');
-    allContacts = await response.json();
+    const response = await fetch('/api/messages/threads');
+    allThreads = await response.json();
     updateMessagesBadge();
 
-    const tbody = document.querySelector('#contacts-table tbody');
+    const tbody = document.querySelector('#threads-table tbody');
     tbody.innerHTML = '';
 
-    if (allContacts.length === 0) {
+    // Filtrer les threads si la checkbox est cochée
+    const hideClosed = document.getElementById('hide-closed-threads')?.checked;
+    const filteredThreads = hideClosed ? allThreads.filter(t => t.status !== 'closed') : allThreads;
+
+    if (filteredThreads.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center; padding: 3rem; color: var(--texte-secondaire);">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">✉️</div>
-            <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Aucun message de contact</p>
-            <p style="font-size: 0.9rem;">Les messages des visiteurs apparaîtront ici</p>
+          <td colspan="5" style="text-align: center; padding: 3rem; color: var(--texte-secondaire);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">💬</div>
+            <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Aucune conversation</p>
+            <p style="font-size: 0.9rem;">Les conversations avec les clients apparaîtront ici</p>
           </td>
         </tr>
       `;
       return;
     }
 
-    allContacts.forEach(contact => {
+    filteredThreads.forEach(thread => {
       const row = document.createElement('tr');
-      const date = new Date(contact.created_at).toLocaleDateString('fr-FR');
+      const date = new Date(thread.last_message_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const unreadCount = thread.unread_count || 0;
 
       row.innerHTML = `
-        <td data-label="Date">${date}</td>
-        <td data-label="Nom">${contact.name}</td>
-        <td data-label="Email">${contact.email}</td>
-        <td data-label="Message" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          ${contact.message}
-        </td>
         <td data-label="Statut">
-          ${contact.status === 'nouveau'
-            ? '<span class="badge badge-warning">Nouveau</span>'
-            : '<span class="badge badge-success">Lu</span>'
-          }
+          <div>
+            ${thread.status === 'open'
+              ? '<span class="badge badge-success">Ouvert</span>'
+              : '<span class="badge badge-info">Fermé</span>'
+            }
+          </div>
+          ${unreadCount > 0 ? `<div style="margin-top: 0.5rem;"><span class="badge badge-warning">${unreadCount} nouveau(x)</span></div>` : ''}
         </td>
+        <td data-label="Client">
+          <div><strong>${thread.customer_name}</strong></div>
+          <small style="color: var(--texte-secondaire);">${thread.customer_email}</small>
+        </td>
+        <td data-label="Dernier message" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span style="font-weight: ${thread.last_sender === 'customer' ? 'bold' : 'normal'};">
+            ${thread.last_message || '-'}
+          </span>
+        </td>
+        <td data-label="Date">${date}</td>
         <td data-label="Actions">
-          <button onclick="viewContact(${contact.id})" class="btn btn-secondary btn-small" title="Voir le message">
+          <button onclick="viewThread(${thread.id})" class="btn btn-secondary btn-small" title="Voir la conversation">
             👁️
           </button>
-          <button onclick="deleteContact(${contact.id})" class="btn btn-secondary btn-small" title="Supprimer">
-            🗑️
-          </button>
+          ${thread.status === 'open'
+            ? `<button onclick="closeThread(${thread.id})" class="btn btn-secondary btn-small" style="font-size: 1.2rem;" title="Fermer">✓</button>`
+            : `<button onclick="reopenThread(${thread.id})" class="btn btn-secondary btn-small" style="font-size: 1.1rem;" title="Rouvrir">↻</button>`
+          }
+          <button onclick="deleteThread(${thread.id})" class="btn btn-secondary btn-small" title="Supprimer">🗑️</button>
         </td>
       `;
 
@@ -956,7 +954,7 @@ async function loadContacts() {
 
 // Mettre à jour la bulle de notification des messages
 function updateMessagesBadge() {
-  const unreadCount = allContacts.filter(c => c.status === 'nouveau').length;
+  const unreadCount = allThreads.reduce((sum, thread) => sum + (thread.unread_count || 0), 0);
   const badge = document.getElementById('messages-badge');
 
   if (badge) {
@@ -969,83 +967,249 @@ function updateMessagesBadge() {
   }
 }
 
-// Marquer un message comme lu
-async function markAsRead(contactId) {
+// Voir une conversation complète
+async function viewThread(threadId) {
   try {
-    const response = await fetch(`/api/admin/contacts/${contactId}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'lu' })
+    // Marquer comme lu
+    await fetch(`/api/messages/threads/${threadId}/mark-read`, {
+      method: 'POST'
     });
 
-    const result = await response.json();
+    // Recharger les threads pour mettre à jour le badge
+    loadThreads();
 
-    if (result.success) {
-      showMessage('Message marqué comme lu', 'success');
-      loadContacts();
-      loadStats();
-    }
+    const response = await fetch(`/api/messages/threads/${threadId}/messages`);
+    const messages = await response.json();
+    const thread = allThreads.find(t => t.id === threadId);
+
+    if (!thread) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.style.zIndex = '10001';
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+          <div>
+            <h3 style="margin: 0; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem;">
+              ${thread.subject}
+            </h3>
+            <p style="margin: 0.5rem 0 0 0; color: var(--texte-secondaire); font-size: 0.9rem;">
+              <strong>${thread.customer_name}</strong> (${thread.customer_email})
+            </p>
+          </div>
+          <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--texte-secondaire);">×</button>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto; background: var(--fond-secondaire); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; max-height: 50vh;">
+          ${messages.map(msg => {
+            const isCustomer = msg.sender_type === 'customer';
+            return `
+              <div style="margin-bottom: 1.5rem; display: flex; justify-content: ${isCustomer ? 'flex-start' : 'flex-end'};">
+                <div style="max-width: 70%; background: ${isCustomer ? 'white' : 'var(--lavande)'}; color: ${isCustomer ? 'var(--texte-principal)' : 'white'}; padding: 1rem; border-radius: 15px; box-shadow: var(--ombre-douce);">
+                  <div style="margin-bottom: 0.5rem;">
+                    <strong>${msg.sender_name}</strong>
+                    <span style="font-size: 0.85rem; opacity: 0.8; margin-left: 0.5rem;">
+                      ${new Date(msg.created_at).toLocaleString('fr-FR')}
+                    </span>
+                  </div>
+                  <div style="white-space: pre-wrap; line-height: 1.5;">${msg.message}</div>
+                  ${msg.has_attachments && msg.attachments ? `
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid ${isCustomer ? '#eee' : 'rgba(255,255,255,0.3)'};">
+                      <strong style="font-size: 0.9rem;">📎 Pièces jointes:</strong>
+                      ${msg.attachments.map(att => `
+                        <div style="margin-top: 0.5rem;">
+                          <a href="/attachments/${att.file_path}" target="_blank" style="color: ${isCustomer ? 'var(--lavande)' : 'white'}; text-decoration: underline;">
+                            ${att.filename}
+                          </a>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div>
+          <button onclick="replyToThread(${threadId})" class="btn btn-primary" style="width: 100%; padding: 1rem;">
+            💬 Répondre
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
   } catch (error) {
     console.error('Erreur:', error);
+    showMessage('Erreur lors du chargement de la conversation', 'error');
   }
 }
 
-// Voir le détail d'un message
-function viewContact(contactId) {
-  const contact = allContacts.find(c => c.id === contactId);
-  if (!contact) return;
+// Répondre à un thread
+function replyToThread(threadId) {
+  const thread = allThreads.find(t => t.id === threadId);
+  if (!thread) return;
 
   const modal = document.createElement('div');
   modal.className = 'modal active';
+  modal.style.zIndex = '10002';
   modal.innerHTML = `
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Message de ${contact.name}</h3>
-        <button class="modal-close" onclick="this.closest('.modal').remove()">×</button>
+    <div class="modal-content" style="max-width: 700px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="margin: 0; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem;">
+          Répondre à ${thread.customer_name}
+        </h3>
+        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--texte-secondaire);">×</button>
       </div>
 
-      <div style="margin-bottom: 1.5rem;">
-        <p style="margin: 0.5rem 0;"><strong>Email:</strong> ${contact.email}</p>
-        <p style="margin: 0.5rem 0;"><strong>Date:</strong> ${new Date(contact.created_at).toLocaleString('fr-FR')}</p>
-        <p style="margin: 0.5rem 0;"><strong>Statut:</strong> ${contact.status === 'nouveau' ? 'Nouveau' : 'Lu'}</p>
-      </div>
+      <form id="reply-form" onsubmit="sendReply(event, ${threadId})">
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">
+            Votre message
+          </label>
+          <textarea id="reply-message" required rows="8"
+            style="width: 100%; padding: 1rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); resize: vertical;"
+            placeholder="Écrivez votre réponse..."></textarea>
+        </div>
 
-      <div style="background: var(--gris-clair); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-        <h4 style="margin: 0 0 1rem 0; color: var(--texte-principal);">Message:</h4>
-        <p style="white-space: pre-wrap; margin: 0; line-height: 1.6;">${contact.message}</p>
-      </div>
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">
+            Pièces jointes (optionnel)
+          </label>
+          <input type="file" id="reply-attachments" multiple accept="image/*,.pdf"
+            style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px;">
+          <small style="display: block; margin-top: 0.5rem; color: var(--texte-secondaire);">
+            Jusqu'à 5 fichiers (images ou PDF, 10 Mo maximum par fichier)
+          </small>
+        </div>
 
-      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-        ${contact.status === 'nouveau' ? `
-          <button onclick="markAsRead(${contact.id}); this.closest('.modal').remove();" class="btn btn-primary">
-            Marquer comme lu
+        <div style="display: flex; gap: 1rem;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;">
+            Envoyer la réponse
           </button>
-        ` : ''}
-        <button onclick="this.closest('.modal').remove();" class="btn btn-secondary">Fermer</button>
-      </div>
+          <button type="button" onclick="this.closest('.modal').remove()" class="btn btn-outline" style="flex: 1;">
+            Annuler
+          </button>
+        </div>
+      </form>
     </div>
   `;
 
   document.body.appendChild(modal);
 }
 
-// Supprimer un message
-async function deleteContact(contactId) {
-  if (!confirm('Voulez-vous vraiment supprimer ce message ? Cette action est irréversible.')) {
+// Envoyer une réponse
+async function sendReply(event, threadId) {
+  event.preventDefault();
+
+  const messageInput = document.getElementById('reply-message');
+  const attachmentsInput = document.getElementById('reply-attachments');
+  const message = messageInput.value.trim();
+
+  if (!message) {
+    showMessage('Le message est requis', 'error');
     return;
   }
 
+  const formData = new FormData();
+  formData.append('message', message);
+
+  // Ajouter les pièces jointes
+  if (attachmentsInput.files.length > 0) {
+    for (let i = 0; i < Math.min(attachmentsInput.files.length, 5); i++) {
+      formData.append('attachments', attachmentsInput.files[i]);
+    }
+  }
+
   try {
-    const response = await fetch(`/api/admin/contacts/${contactId}`, {
+    const response = await fetch(`/api/messages/threads/${threadId}/reply`, {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showMessage('Réponse envoyée avec succès', 'success');
+      // Fermer tous les modals
+      document.querySelectorAll('.modal').forEach(m => m.remove());
+      // Recharger les threads
+      loadThreads();
+    } else {
+      showMessage(result.error || 'Erreur lors de l\'envoi', 'error');
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    showMessage('Erreur lors de l\'envoi de la réponse', 'error');
+  }
+}
+
+// Fermer un thread
+async function closeThread(threadId) {
+  try {
+    const response = await fetch(`/api/messages/threads/${threadId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'closed' })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showMessage('Conversation fermée', 'success');
+      loadThreads();
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    showMessage('Erreur lors de la fermeture', 'error');
+  }
+}
+
+// Rouvrir un thread
+async function reopenThread(threadId) {
+  try {
+    const response = await fetch(`/api/messages/threads/${threadId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'open' })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showMessage('Conversation rouverte', 'success');
+      loadThreads();
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    showMessage('Erreur lors de la réouverture', 'error');
+  }
+}
+
+// Supprimer un thread
+async function deleteThread(threadId) {
+  const confirmed = await showConfirm({
+    title: 'Supprimer cette conversation ?',
+    message: 'Cette action est irréversible. Tous les messages et pièces jointes seront définitivement supprimés.',
+    icon: '🗑️',
+    confirmText: 'Supprimer',
+    cancelText: 'Annuler'
+  });
+
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch(`/api/messages/threads/${threadId}`, {
       method: 'DELETE'
     });
 
     const result = await response.json();
 
     if (result.success) {
-      showMessage('Message supprimé avec succès', 'success');
-      loadContacts();
-      loadStats();
+      showMessage('Conversation supprimée avec succès', 'success');
+      loadThreads();
     } else {
       showMessage('Erreur lors de la suppression', 'error');
     }
@@ -1137,10 +1301,25 @@ async function loadCategories() {
 
     const container = document.getElementById('categories-list');
     container.innerHTML = categories.map(cat => `
-      <span class="badge badge-info" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;">
-        ${cat.name}
-        <button onclick="deleteCategory(${cat.id})" style="background: none; border: none; cursor: pointer; color: white; font-size: 1.2rem; line-height: 1;">×</button>
-      </span>
+      <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: white; border-radius: 10px; border: 2px solid var(--lavande);">
+        <div style="font-size: 2rem;">${cat.emoji || '✨'}</div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; color: var(--lavande);">${cat.name}</div>
+          <div style="font-size: 0.9rem; color: var(--texte-secondaire);">${cat.description || ''}</div>
+        </div>
+        <button onclick="editCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}', '${(cat.emoji || '✨').replace(/'/g, "\\'")}', '${(cat.description || '').replace(/'/g, "\\'")}')"
+                class="btn btn-small btn-outline" style="padding: 0.3rem 0.8rem;">
+          Modifier
+        </button>
+        <button onclick="deleteCategory(${cat.id})"
+                style="background: var(--rose-poudre); color: white; border: none; padding: 0.4rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;
+                       width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"
+                onmouseover="this.style.transform='scale(1.1) rotate(90deg)'; this.style.boxShadow='0 4px 10px rgba(244, 194, 194, 0.4)'; this.style.opacity='0.9'"
+                onmouseout="this.style.transform='scale(1) rotate(0deg)'; this.style.boxShadow='none'; this.style.opacity='1'"
+                title="Supprimer">
+          ✕
+        </button>
+      </div>
     `).join('');
   } catch (error) {
     console.error('Erreur:', error);
@@ -1149,8 +1328,13 @@ async function loadCategories() {
 
 // Ajouter une catégorie
 async function addCategory() {
-  const input = document.getElementById('new-category');
-  const name = input.value.trim();
+  const nameInput = document.getElementById('new-category');
+  const emojiInput = document.getElementById('new-category-emoji');
+  const descriptionInput = document.getElementById('new-category-description');
+
+  const name = nameInput.value.trim();
+  const emoji = emojiInput.value.trim() || '✨';
+  const description = descriptionInput.value.trim();
 
   if (!name) {
     showMessage('Veuillez entrer un nom', 'error');
@@ -1161,14 +1345,16 @@ async function addCategory() {
     const response = await fetch('/api/settings/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
+      body: JSON.stringify({ name, emoji, description })
     });
 
     const result = await response.json();
 
     if (result.success) {
       showMessage('Catégorie ajoutée', 'success');
-      input.value = '';
+      nameInput.value = '';
+      emojiInput.value = '';
+      descriptionInput.value = '';
       loadCategories();
     } else {
       showMessage(result.error || 'Erreur lors de l\'ajout', 'error');
@@ -1177,6 +1363,88 @@ async function addCategory() {
     console.error('Erreur:', error);
     showMessage('Erreur lors de l\'ajout', 'error');
   }
+}
+
+// Annuler la modification d'une catégorie
+function cancelEditCategory() {
+  const nameInput = document.getElementById('new-category');
+  const emojiInput = document.getElementById('new-category-emoji');
+  const descriptionInput = document.getElementById('new-category-description');
+  const submitButton = document.getElementById('category-submit-btn');
+  const cancelButton = document.getElementById('category-cancel-btn');
+
+  // Réinitialiser les champs
+  nameInput.value = '';
+  emojiInput.value = '';
+  descriptionInput.value = '';
+
+  // Remettre le bouton en mode "Ajouter"
+  submitButton.textContent = 'Ajouter la catégorie';
+  submitButton.onclick = addCategory;
+
+  // Cacher le bouton annuler
+  cancelButton.style.display = 'none';
+}
+
+// Modifier une catégorie
+async function editCategory(id, currentName, currentEmoji, currentDescription) {
+  const nameInput = document.getElementById('new-category');
+  const emojiInput = document.getElementById('new-category-emoji');
+  const descriptionInput = document.getElementById('new-category-description');
+  const submitButton = document.getElementById('category-submit-btn');
+  const cancelButton = document.getElementById('category-cancel-btn');
+
+  // Pré-remplir les champs avec les valeurs actuelles
+  nameInput.value = currentName;
+  emojiInput.value = currentEmoji;
+  descriptionInput.value = currentDescription;
+
+  // Afficher le bouton annuler
+  cancelButton.style.display = 'block';
+
+  // Changer le bouton en mode "Mettre à jour"
+  submitButton.textContent = 'Mettre à jour';
+  submitButton.onclick = async () => {
+    const name = nameInput.value.trim();
+    const emoji = emojiInput.value.trim() || '✨';
+    const description = descriptionInput.value.trim();
+
+    if (!name) {
+      showMessage('Veuillez entrer un nom', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/settings/categories/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, emoji, description })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showMessage('Catégorie modifiée', 'success');
+        nameInput.value = '';
+        emojiInput.value = '';
+        descriptionInput.value = '';
+        loadCategories();
+        // Remettre le bouton en mode "Ajouter"
+        submitButton.textContent = 'Ajouter la catégorie';
+        submitButton.onclick = addCategory;
+        // Cacher le bouton annuler
+        cancelButton.style.display = 'none';
+      } else {
+        showMessage(result.error || 'Erreur lors de la modification', 'error');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      showMessage('Erreur lors de la modification', 'error');
+    }
+  };
+
+  // Scroll vers le haut pour voir les champs
+  document.getElementById('new-category').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // Supprimer une catégorie
@@ -1454,7 +1722,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadStats();
     loadProducts();
     loadOrders();
-    loadContacts();
+    loadThreads();
     loadCurrentTheme(); // Charger le thème actuel
 
     // Écouter la soumission du formulaire produit
@@ -1477,80 +1745,334 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// Prévisualiser les nouvelles images sélectionnées
+// Ajouter de nouvelles images à la sélection
 function previewNewImages(event) {
   const files = event.target.files;
 
   if (!files || files.length === 0) {
-    // Si aucun fichier, réafficher les images existantes
-    displayExistingImages(currentProductImages);
     return;
   }
 
+  // Ajouter les nouveaux fichiers au tableau existant (accumulation)
+  Array.from(files).forEach(file => {
+    newImagesToUpload.push(file);
+
+    // Ajouter aussi à allImagesOrder
+    if (!window.allImagesOrder) {
+      window.allImagesOrder = [];
+    }
+    window.allImagesOrder.push({
+      type: 'new',
+      data: file
+    });
+  });
+
+  // Réinitialiser l'input pour permettre de sélectionner à nouveau les mêmes fichiers si nécessaire
+  event.target.value = '';
+
+  // Réafficher toutes les images
+  displayAllImages();
+}
+
+// Afficher toutes les images (existantes + nouvelles) de manière intégrée
+function displayAllImages() {
   const previewContainer = document.getElementById('images-preview');
+  previewContainer.innerHTML = '';
 
-  // Afficher d'abord les images existantes
-  displayExistingImages(currentProductImages);
+  // Utiliser allImagesOrder s'il existe, sinon créer le tableau à partir des tableaux séparés
+  let allImages = [];
 
-  // Ajouter un séparateur
-  if (currentProductImages.length > 0) {
-    const separator = document.createElement('div');
-    separator.style.gridColumn = '1 / -1';
-    separator.style.borderTop = '2px dashed var(--lavande)';
-    separator.style.margin = '1rem 0';
-    previewContainer.appendChild(separator);
+  if (window.allImagesOrder && window.allImagesOrder.length > 0) {
+    // Utiliser l'ordre global sauvegardé
+    allImages = window.allImagesOrder.map((item, index) => ({
+      type: item.type,
+      data: item.data,
+      originalIndex: index
+    }));
+  } else {
+    // Créer un nouveau tableau mixte et l'enregistrer
+    currentProductImages.forEach((image, index) => {
+      allImages.push({
+        type: 'existing',
+        data: image,
+        originalIndex: index
+      });
+    });
 
-    const newImagesTitle = document.createElement('div');
-    newImagesTitle.style.gridColumn = '1 / -1';
-    newImagesTitle.style.padding = '0.5rem';
-    newImagesTitle.style.background = 'var(--pastel-vert)';
-    newImagesTitle.style.color = 'white';
-    newImagesTitle.style.borderRadius = '8px';
-    newImagesTitle.style.fontSize = '0.9rem';
-    newImagesTitle.style.fontWeight = 'bold';
-    newImagesTitle.textContent = `➕ ${files.length} nouvelle(s) image(s) à ajouter`;
-    previewContainer.appendChild(newImagesTitle);
+    newImagesToUpload.forEach((file, index) => {
+      allImages.push({
+        type: 'new',
+        data: file,
+        originalIndex: index
+      });
+    });
+
+    // Sauvegarder dans allImagesOrder
+    window.allImagesOrder = allImages;
   }
 
-  // Afficher un aperçu de chaque nouvelle image
-  Array.from(files).forEach((file, index) => {
-    const reader = new FileReader();
+  const totalImages = allImages.length;
 
-    reader.onload = function(e) {
-      const imageDiv = document.createElement('div');
-      imageDiv.style.position = 'relative';
-      imageDiv.style.display = 'inline-block';
-      imageDiv.style.marginRight = '0.5rem';
-      imageDiv.style.marginBottom = '0.5rem';
+  // Si aucune image, afficher un message
+  if (totalImages === 0) {
+    previewContainer.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 1rem; text-align: center; color: var(--texte-secondaire);">
+        Aucune image pour ce produit
+      </div>
+    `;
+    return;
+  }
 
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.alt = `Nouvelle image ${index + 1}`;
-      img.style.width = '120px';
-      img.style.height = '120px';
-      img.style.objectFit = 'cover';
-      img.style.borderRadius = '10px';
-      img.style.border = '3px solid var(--pastel-vert)';
+  // Afficher toutes les images de manière intégrée
+  allImages.forEach((item, globalIndex) => {
+    const imageDiv = document.createElement('div');
+    imageDiv.className = 'image-item';
+    imageDiv.style.position = 'relative';
+    imageDiv.style.display = 'inline-block';
+    imageDiv.style.width = '120px';
+    imageDiv.style.height = '120px';
+    imageDiv.style.marginRight = '0.35rem';
+    imageDiv.style.marginBottom = '0.35rem';
+    imageDiv.style.overflow = 'hidden';
+    imageDiv.style.borderRadius = '10px';
 
-      const badge = document.createElement('span');
-      badge.textContent = `Nouvelle`;
-      badge.style.position = 'absolute';
-      badge.style.top = '5px';
-      badge.style.left = '5px';
+    const img = document.createElement('img');
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.display = 'block';
+
+    // Badge de position
+    const badge = document.createElement('span');
+    badge.style.position = 'absolute';
+    badge.style.top = '5px';
+    badge.style.left = '5px';
+    badge.style.color = 'white';
+    badge.style.padding = '3px 8px';
+    badge.style.borderRadius = '5px';
+    badge.style.fontSize = '0.75rem';
+    badge.style.fontWeight = 'bold';
+    badge.style.zIndex = '2';
+
+    // Bouton de suppression (décalé vers la droite pour ne pas empiéter sur le badge)
+    const deleteBtn = document.createElement('button');
+    deleteBtn.innerHTML = '✕';
+    deleteBtn.type = 'button';
+    deleteBtn.style.position = 'absolute';
+    deleteBtn.style.top = '5px';
+    deleteBtn.style.right = '5px';
+    deleteBtn.style.background = 'var(--rose-poudre)';
+    deleteBtn.style.color = 'white';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.borderRadius = '50%';
+    deleteBtn.style.width = '24px';
+    deleteBtn.style.height = '24px';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.fontSize = '14px';
+    deleteBtn.style.fontWeight = 'bold';
+    deleteBtn.style.display = 'flex';
+    deleteBtn.style.alignItems = 'center';
+    deleteBtn.style.justifyContent = 'center';
+    deleteBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+    deleteBtn.style.zIndex = '2';
+
+    // Boutons de réorganisation
+    const controlsDiv = document.createElement('div');
+    controlsDiv.style.position = 'absolute';
+    controlsDiv.style.bottom = '8px';
+    controlsDiv.style.left = '50%';
+    controlsDiv.style.transform = 'translateX(-50%)';
+    controlsDiv.style.display = 'flex';
+    controlsDiv.style.gap = '5px';
+    controlsDiv.style.zIndex = '2';
+
+    let moveUpBtn = null;
+    let moveDownBtn = null;
+
+    if (globalIndex > 0) {
+      moveUpBtn = document.createElement('button');
+      moveUpBtn.innerHTML = '◀';
+      moveUpBtn.type = 'button';
+      moveUpBtn.style.background = 'rgba(255, 255, 255, 0.9)';
+      moveUpBtn.style.border = 'none';
+      moveUpBtn.style.borderRadius = '50%';
+      moveUpBtn.style.width = '24px';
+      moveUpBtn.style.height = '24px';
+      moveUpBtn.style.cursor = 'pointer';
+      moveUpBtn.style.fontSize = '12px';
+      moveUpBtn.style.fontWeight = 'bold';
+      moveUpBtn.style.display = 'flex';
+      moveUpBtn.style.alignItems = 'center';
+      moveUpBtn.style.justifyContent = 'center';
+      moveUpBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)';
+      moveUpBtn.onclick = () => moveImageGlobally(globalIndex, globalIndex - 1);
+      controlsDiv.appendChild(moveUpBtn);
+    }
+
+    if (globalIndex < totalImages - 1) {
+      moveDownBtn = document.createElement('button');
+      moveDownBtn.innerHTML = '▶';
+      moveDownBtn.type = 'button';
+      moveDownBtn.style.background = 'rgba(255, 255, 255, 0.9)';
+      moveDownBtn.style.border = 'none';
+      moveDownBtn.style.borderRadius = '50%';
+      moveDownBtn.style.width = '24px';
+      moveDownBtn.style.height = '24px';
+      moveDownBtn.style.cursor = 'pointer';
+      moveDownBtn.style.fontSize = '12px';
+      moveDownBtn.style.fontWeight = 'bold';
+      moveDownBtn.style.display = 'flex';
+      moveDownBtn.style.alignItems = 'center';
+      moveDownBtn.style.justifyContent = 'center';
+      moveDownBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)';
+      moveDownBtn.onclick = () => moveImageGlobally(globalIndex, globalIndex + 1);
+      controlsDiv.appendChild(moveDownBtn);
+    }
+
+    if (item.type === 'existing') {
+      // Image existante
+      const image = item.data;
+      img.src = `/images/uploads/${image.image_path}`;
+      img.alt = `Image ${globalIndex + 1}`;
+      
+      // Bordure sur le conteneur
+      imageDiv.style.border = globalIndex === 0 ? '3px solid var(--pastel-vert)' : '2px solid var(--lavande)';
+
+      badge.textContent = globalIndex === 0 ? '★ Principale' : `${globalIndex + 1}`;
+      badge.style.background = globalIndex === 0 ? 'var(--pastel-vert)' : 'var(--lavande)';
+
+      moveUpBtn && (moveUpBtn.style.color = 'var(--lavande)');
+      moveDownBtn && (moveDownBtn.style.color = 'var(--lavande)');
+
+      deleteBtn.onclick = () => deleteImageFromProduct(image.id, item.originalIndex);
+    } else {
+      // Nouvelle image
+      const file = item.data;
+      img.alt = `Nouvelle image ${globalIndex + 1}`;
+      
+      // Bordure sur le conteneur
+      imageDiv.style.border = globalIndex === 0 ? '3px solid var(--pastel-vert)' : '3px solid var(--pastel-vert)';
+      img.style.opacity = '0.95';
+
+      badge.textContent = globalIndex === 0 ? '★ Nouvelle' : `✨ ${globalIndex + 1}`;
       badge.style.background = 'var(--pastel-vert)';
-      badge.style.color = 'white';
-      badge.style.padding = '3px 8px';
-      badge.style.borderRadius = '5px';
-      badge.style.fontSize = '0.75rem';
-      badge.style.fontWeight = 'bold';
 
-      imageDiv.appendChild(img);
-      imageDiv.appendChild(badge);
-      previewContainer.appendChild(imageDiv);
-    };
+      moveUpBtn && (moveUpBtn.style.color = 'var(--pastel-vert)');
+      moveDownBtn && (moveDownBtn.style.color = 'var(--pastel-vert)');
 
-    reader.readAsDataURL(file);
+      deleteBtn.onclick = () => removeNewImageGlobally(globalIndex);
+
+      // Lire le fichier et afficher l'image
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    imageDiv.appendChild(img);
+    imageDiv.appendChild(badge);
+    imageDiv.appendChild(deleteBtn);
+    imageDiv.appendChild(controlsDiv);
+    previewContainer.appendChild(imageDiv);
   });
+
+  // Message informatif
+  if (totalImages > 0) {
+    const infoDiv = document.createElement('div');
+    infoDiv.style.gridColumn = '1 / -1';
+    infoDiv.style.padding = '0.5rem';
+    infoDiv.style.background = 'var(--fond-secondaire)';
+    infoDiv.style.borderRadius = '8px';
+    infoDiv.style.fontSize = '0.9rem';
+    infoDiv.style.color = 'var(--texte-secondaire)';
+    infoDiv.style.marginTop = '0.5rem';
+    infoDiv.innerHTML = `
+      <strong>💡 Astuce :</strong> Utilisez les boutons ◀ ▶ pour réorganiser toutes les images ensemble. Les images avec ✨ seront ajoutées lors de la sauvegarde.
+    `;
+    previewContainer.appendChild(infoDiv);
+  }
+}
+
+// Variable globale pour garder l'ordre mixte des images
+if (typeof window.allImagesOrder === 'undefined') {
+  window.allImagesOrder = [];
+}
+
+// Déplacer une image dans l'ordre global (existantes + nouvelles mélangées)
+function moveImageGlobally(fromIndex, toIndex) {
+  // Si allImagesOrder est vide, le créer à partir des tableaux actuels
+  if (window.allImagesOrder.length === 0) {
+    currentProductImages.forEach(img => window.allImagesOrder.push({ type: 'existing', data: img }));
+    newImagesToUpload.forEach(file => window.allImagesOrder.push({ type: 'new', data: file }));
+  }
+
+  // Échanger les positions dans le tableau global
+  const temp = window.allImagesOrder[fromIndex];
+  window.allImagesOrder[fromIndex] = window.allImagesOrder[toIndex];
+  window.allImagesOrder[toIndex] = temp;
+
+  // Reconstruire les tableaux séparés à partir de allImagesOrder
+  currentProductImages = [];
+  newImagesToUpload = [];
+
+  window.allImagesOrder.forEach((item, index) => {
+    if (item.type === 'existing') {
+      // Mettre à jour display_order et is_primary
+      item.data.display_order = index;
+      item.data.is_primary = index === 0 ? 1 : 0;
+      currentProductImages.push(item.data);
+    } else {
+      newImagesToUpload.push(item.data);
+    }
+  });
+
+  // Ne plus sauvegarder immédiatement, l'ordre sera appliqué à la sauvegarde du formulaire
+
+  displayAllImages();
+}
+
+// Fonction asynchrone pour sauvegarder l'ordre des images
+async function saveImageOrderAsync(productId) {
+  try {
+    await fetch(`/api/admin/products/${productId}/reorder-images`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        images: currentProductImages.map(img => ({
+          id: img.id,
+          display_order: img.display_order,
+          is_primary: img.is_primary
+        }))
+      })
+    });
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde de l\'ordre:', error);
+  }
+}
+
+// Supprimer une nouvelle image de la liste (globalIndex = position dans l'affichage complet)
+function removeNewImageGlobally(globalIndex) {
+  // Supprimer de allImagesOrder
+  if (window.allImagesOrder && window.allImagesOrder.length > globalIndex) {
+    window.allImagesOrder.splice(globalIndex, 1);
+  }
+
+  // Reconstruire les tableaux séparés à partir de allImagesOrder
+  currentProductImages = [];
+  newImagesToUpload = [];
+
+  window.allImagesOrder.forEach((item, index) => {
+    if (item.type === 'existing') {
+      item.data.display_order = index;
+      item.data.is_primary = index === 0 ? 1 : 0;
+      currentProductImages.push(item.data);
+    } else {
+      newImagesToUpload.push(item.data);
+    }
+  });
+
+  displayAllImages();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1596,13 +2118,14 @@ function displayBoutiqueImages() {
       <!-- Bouton supprimer en haut à droite -->
       <button onclick="deleteBoutiqueImage(${img.id})"
               style="position: absolute; top: 0.75rem; right: 0.75rem; z-index: 10;
-                     background: var(--rose-poudre); color: white; border: none;
-                     width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+                     background: var(--lavande); color: white; border: none;
+                     width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
                      display: flex; align-items: center; justify-content: center;
-                     font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"
-              onmouseover="this.style.background='var(--lavande)'; this.style.transform='scale(1.1)'"
-              onmouseout="this.style.background='var(--rose-poudre)'; this.style.transform='scale(1)'">
-        🗑️
+                     font-size: 1.2rem; font-weight: 700; transition: all 0.3s ease;
+                     box-shadow: 0 2px 8px rgba(212, 165, 212, 0.3);"
+              onmouseover="this.style.transform='scale(1.1) rotate(90deg)'; this.style.boxShadow='0 4px 12px rgba(212, 165, 212, 0.5)'; this.style.opacity='0.9'"
+              onmouseout="this.style.transform='scale(1) rotate(0deg)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.3)'; this.style.opacity='1'">
+        ✕
       </button>
 
       <img src="${img.image_path}" alt="Boutique"
@@ -1612,18 +2135,26 @@ function displayBoutiqueImages() {
         <button onclick="moveBoutiqueImage(${img.id}, -1)"
                 class="btn-small btn-secondary"
                 ${index === 0 ? 'disabled' : ''}
-                style="padding: 0.5rem 0.75rem; font-size: 1rem; border-radius: 12px; min-width: 40px; height: 40px;
-                       display: flex; align-items: center; justify-content: center;">
+                style="padding: 0.5rem; font-size: 1rem; border-radius: 8px; width: 36px; height: 36px;
+                       display: flex; align-items: center; justify-content: center; cursor: pointer;">
           ◀
         </button>
-        <span style="color: var(--texte-secondaire); font-size: 0.85rem; min-width: 80px; text-align: center;">
-          Position ${index + 1}
-        </span>
+        <div style="display: flex; align-items: center; gap: 0.3rem;">
+          <span style="color: var(--texte-secondaire); font-size: 0.85rem; white-space: nowrap;">Position</span>
+          <input type="number"
+                 value="${index + 1}"
+                 min="1"
+                 max="${boutiqueImages.length}"
+                 onchange="changeBoutiqueImagePosition(${img.id}, this.value)"
+                 style="width: 45px; padding: 0.4rem; text-align: center; border: 2px solid var(--lavande);
+                        border-radius: 8px; font-size: 0.9rem; font-weight: 600; -moz-appearance: textfield;"
+                 onwheel="this.blur()">
+        </div>
         <button onclick="moveBoutiqueImage(${img.id}, 1)"
                 class="btn-small btn-secondary"
                 ${index === boutiqueImages.length - 1 ? 'disabled' : ''}
-                style="padding: 0.5rem 0.75rem; font-size: 1rem; border-radius: 12px; min-width: 40px; height: 40px;
-                       display: flex; align-items: center; justify-content: center;">
+                style="padding: 0.5rem; font-size: 1rem; border-radius: 8px; width: 36px; height: 36px;
+                       display: flex; align-items: center; justify-content: center; cursor: pointer;">
           ▶
         </button>
       </div>
@@ -1730,6 +2261,60 @@ async function moveBoutiqueImage(id, direction) {
     });
 
     displayBoutiqueImages();
+  } catch (error) {
+    console.error('Erreur réorganisation:', error);
+    showMessage('Erreur lors de la réorganisation', 'error');
+    loadBoutiqueImages(); // Recharger pour rétablir l'ordre
+  }
+}
+
+// Changer directement la position d'une image de boutique
+async function changeBoutiqueImagePosition(id, newPosition) {
+  const newPos = parseInt(newPosition);
+
+  // Validation
+  if (isNaN(newPos) || newPos < 1 || newPos > boutiqueImages.length) {
+    showMessage('Position invalide', 'error');
+    displayBoutiqueImages(); // Réafficher pour rétablir la valeur
+    return;
+  }
+
+  const currentIndex = boutiqueImages.findIndex(img => img.id === id);
+  if (currentIndex === -1) return;
+
+  // Si c'est déjà la bonne position, ne rien faire
+  if (currentIndex + 1 === newPos) return;
+
+  // Déplacer l'élément à la nouvelle position
+  const [movedImage] = boutiqueImages.splice(currentIndex, 1);
+  boutiqueImages.splice(newPos - 1, 0, movedImage);
+
+  // Mettre à jour les display_order
+  const updatedImages = boutiqueImages.map((img, idx) => ({
+    id: img.id,
+    display_order: idx + 1
+  }));
+
+  try {
+    const response = await fetch('/api/boutique/images/reorder', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ images: updatedImages })
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de la réorganisation');
+    }
+
+    // Mettre à jour l'affichage local
+    boutiqueImages.forEach((img, idx) => {
+      img.display_order = idx + 1;
+    });
+
+    displayBoutiqueImages();
+    showMessage('Position mise à jour', 'success');
   } catch (error) {
     console.error('Erreur réorganisation:', error);
     showMessage('Erreur lors de la réorganisation', 'error');

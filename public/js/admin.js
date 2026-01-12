@@ -1663,6 +1663,38 @@ async function loadCurrentTheme() {
 
 // Sélectionner un thème
 async function selectTheme(theme) {
+  // Afficher un loader pendant le changement
+  const loader = document.createElement('div');
+  loader.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 2rem 3rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 100000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  `;
+  loader.innerHTML = `
+    <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--lavande); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <p style="margin: 0; color: var(--texte-principal); font-weight: 600;">Changement de thème...</p>
+  `;
+  
+  // Ajouter l'animation de rotation si elle n'existe pas
+  if (!document.getElementById('loader-style')) {
+    const style = document.createElement('style');
+    style.id = 'loader-style';
+    style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+  }
+  
+  document.body.appendChild(loader);
+  
   try {
     const response = await fetch('/api/settings/theme', {
       method: 'POST',
@@ -1673,25 +1705,53 @@ async function selectTheme(theme) {
     const result = await response.json();
 
     if (result.success) {
-      // Si le thème est en mode automatique, recharger la page pour appliquer la détection
+      // Appliquer le thème immédiatement côté admin
       if (theme === 'auto') {
-        showMessage(`Mode automatique activé ! Le thème s'adaptera aux saisons.`, 'success');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+        // Pour auto, calculer le thème saisonnier
+        const seasonalTheme = getSeasonalTheme();
+        document.documentElement.setAttribute('data-theme', seasonalTheme);
+        localStorage.setItem('perlouze-theme-setting', 'auto');
+        localStorage.setItem('perlouze-theme', seasonalTheme);
       } else {
-        // Appliquer le thème directement
         document.documentElement.setAttribute('data-theme', theme);
-        updateThemeSelection(theme);
-        showMessage(`Thème ${themeNames[theme]} appliqué avec succès`, 'success');
+        localStorage.setItem('perlouze-theme-setting', theme);
+        localStorage.setItem('perlouze-theme', theme);
       }
+      
+      updateThemeSelection(theme);
+      
+      // Retirer le loader
+      document.body.removeChild(loader);
+      
+      showMessage(`Thème ${themeNames[theme]} appliqué avec succès`, 'success');
     } else {
+      document.body.removeChild(loader);
       showMessage(result.error || 'Erreur lors du changement de thème', 'error');
     }
   } catch (error) {
     console.error('Erreur:', error);
+    document.body.removeChild(loader);
     showMessage('Erreur lors du changement de thème', 'error');
   }
+}
+
+/**
+ * Fonction pour calculer le thème saisonnier (copie de theme.js)
+ */
+function getSeasonalTheme() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+
+  if ((month === 10 && day >= 15) || (month === 11 && day === 1)) return 'halloween';
+  if ((month === 12) || (month === 1 && day <= 6)) return 'noel';
+  if (month === 2 && day >= 1 && day <= 21) return 'valentin';
+  if ((month === 1 && day >= 7) || month === 2 || (month === 3 && day <= 19)) return 'hiver';
+  if ((month === 3 && day >= 20) || month === 4 || month === 5 || (month === 6 && day <= 20)) return 'printemps';
+  if ((month === 6 && day >= 21) || month === 7 || month === 8 || (month === 9 && day <= 22)) return 'ete';
+  if ((month === 9 && day >= 23) || (month === 10 && day < 15) || (month === 11 && day >= 2)) return 'automne';
+  
+  return 'printemps';
 }
 
 // Mettre à jour la sélection visuelle du thème

@@ -109,7 +109,7 @@ function applyFilters() {
   updateProductCount(filteredProducts.length);
 }
 
-// Afficher les produits
+// Afficher les produits (optimisé avec DocumentFragment pour éviter les reflows)
 function displayProducts(products) {
   const container = document.getElementById('products-grid');
   const noProductsDiv = document.getElementById('no-products');
@@ -121,18 +121,24 @@ function displayProducts(products) {
   }
 
   noProductsDiv.style.display = 'none';
-  container.innerHTML = '';
+
+  // Utiliser un DocumentFragment pour construire tout le contenu hors du DOM
+  const fragment = document.createDocumentFragment();
 
   products.forEach(product => {
     const productCard = createProductCard(product);
-    container.appendChild(productCard);
+    fragment.appendChild(productCard);
   });
+
+  // Vider et ajouter tout en une seule opération (un seul reflow)
+  container.innerHTML = '';
+  container.appendChild(fragment);
 }
 
 // Créer une carte de produit
 function createProductCard(product) {
   const card = document.createElement('div');
-  card.className = 'card product-card fade-in';
+  card.className = 'card product-card';
   card.style.cursor = 'pointer';
 
   // Utiliser la première image du carrousel si disponible, sinon l'image unique

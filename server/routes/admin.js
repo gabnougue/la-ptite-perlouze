@@ -74,12 +74,9 @@ router.post('/login', async (req, res) => {
 
 // Logout admin
 router.post('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Erreur lors de la déconnexion' });
-    }
-    res.json({ success: true });
-  });
+  // Avec cookie-session, on détruit la session en la mettant à null
+  req.session = null;
+  res.json({ success: true });
 });
 
 // Vérifier l'authentification

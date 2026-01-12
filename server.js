@@ -1,5 +1,5 @@
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const path = require('path');
 require('dotenv').config();
 
@@ -11,17 +11,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Configuration des sessions
-app.use(session({
-  name: 'perlouze.sid', // Nom unique du cookie pour ce site
-  secret: process.env.SESSION_SECRET || 'secret-key-laptiteperlouze',
-  resave: false,
-  saveUninitialized: false,
-  rolling: true, // Renouvelle la session à chaque requête
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 365 * 24 * 60 * 60 * 1000 // 1 an - pratiquement pas d'expiration
-  }
+// Configuration des sessions avec cookie-session (compatible Vercel serverless)
+app.use(cookieSession({
+  name: 'perlouze.sid',
+  keys: [process.env.SESSION_SECRET || 'secret-key-laptiteperlouze'],
+  maxAge: 365 * 24 * 60 * 60 * 1000, // 1 an
+  secure: process.env.NODE_ENV === 'production',
+  httpOnly: true,
+  sameSite: 'lax'
 }));
 
 // Routes API

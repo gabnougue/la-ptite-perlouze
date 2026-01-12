@@ -49,6 +49,12 @@ async function loadProduct() {
 // Afficher le produit
 function displayProduct(product) {
   const section = document.getElementById('product-detail-section');
+  
+  // Masquer le skeleton loader
+  const skeletonLoader = document.getElementById('skeleton-loader');
+  if (skeletonLoader) {
+    skeletonLoader.style.display = 'none';
+  }
 
   // Récupérer la couleur lavande du thème actuel
   const lavandeColor = getComputedStyle(document.documentElement).getPropertyValue('--lavande').trim();
@@ -350,6 +356,13 @@ function showMessage(message, type = 'info') {
 // Afficher une erreur
 function showError() {
   const section = document.getElementById('product-detail-section');
+  
+  // Masquer le skeleton loader
+  const skeletonLoader = document.getElementById('skeleton-loader');
+  if (skeletonLoader) {
+    skeletonLoader.style.display = 'none';
+  }
+  
   section.innerHTML = `
     <div class="card" style="text-align: center; padding: 3rem; margin-top: 2rem;">
       <h2 style="color: var(--rose-poudre); margin-bottom: 1rem;">Produit non trouvé</h2>

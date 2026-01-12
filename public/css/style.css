@@ -432,6 +432,19 @@ nav a.active::after {
   object-fit: cover;
   border-radius: 15px;
   margin-bottom: 1rem;
+  /* Chargement progressif : flou initial puis net */
+  transition: filter 0.5s ease-out, transform 0.5s ease-out;
+  background: linear-gradient(135deg, var(--pastel-bleu) 0%, var(--pastel-peche) 100%);
+}
+
+.product-image.loading {
+  filter: blur(20px);
+  transform: scale(1.1);
+}
+
+.product-image.loaded {
+  filter: blur(0);
+  transform: scale(1);
 }
 
 .product-info h3 {

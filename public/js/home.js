@@ -54,7 +54,7 @@ function createProductCard(product) {
   }
 
   card.innerHTML = `
-    <img src="${imageSrc}" alt="${product.name}" class="product-image" loading="lazy" decoding="async" onerror="this.src='/images/placeholder.jpg'">
+    <img src="${imageSrc}" alt="${product.name}" class="product-image loading" loading="lazy" decoding="async" onload="this.classList.remove('loading'); this.classList.add('loaded')" onerror="this.src='/images/placeholder.jpg'; this.classList.remove('loading'); this.classList.add('loaded')">
     <div class="product-info">
       <h3>${product.name}</h3>
       <p class="product-stones">${product.stones}</p>

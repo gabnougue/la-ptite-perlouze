@@ -50,9 +50,10 @@ function getSeasonalTheme() {
   return 'printemps';
 }
 
-// Charger et appliquer le thème au chargement de la page
-// Note: Le thème initial est appliqué par un script inline dans le <head> pour éviter le flash
-(async function loadTheme() {
+/**
+ * Charge et applique le thème depuis le serveur
+ */
+async function loadTheme() {
   try {
     const response = await fetch('/api/settings/theme');
     const data = await response.json();
@@ -78,7 +79,38 @@ function getSeasonalTheme() {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('perlouze-theme', theme);
   }
-})();
+}
+
+/**
+ * Vérifie régulièrement si le thème a changé côté admin et synchronise
+ */
+function startThemeSync() {
+  // Vérifier toutes les 10 secondes si le thème a changé
+  setInterval(async () => {
+    try {
+      const response = await fetch('/api/settings/theme');
+      const data = await response.json();
+      
+      const serverThemeSetting = data.theme || 'auto';
+      const localThemeSetting = localStorage.getItem('perlouze-theme-setting');
+      
+      // Si le paramètre de thème a changé côté serveur
+      if (serverThemeSetting !== localThemeSetting) {
+        console.log(`🔄 Synchronisation du thème : ${localThemeSetting} → ${serverThemeSetting}`);
+        await loadTheme();
+      }
+    } catch (error) {
+      // Erreur silencieuse pour ne pas polluer la console
+      console.debug('Erreur synchronisation thème:', error);
+    }
+  }, 10000); // Vérifier toutes les 10 secondes
+}
+
+// Charger le thème au démarrage
+loadTheme();
+
+// Démarrer la synchronisation automatique
+startThemeSync();
 
 // ═══════════════════════════════════════════════════
 // Gestion du menu actif

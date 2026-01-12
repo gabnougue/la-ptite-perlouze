@@ -14,9 +14,9 @@ package-lock.json
 database.db
 database.sqlite
 
-# Uploads utilisateurs (images produits uploadées)
-public/images/uploads/*
-!public/images/uploads/.gitkeep
+# Uploads utilisateurs - maintenant inclus pour Vercel
+# public/images/uploads/*
+# !public/images/uploads/.gitkeep
 
 # Logs
 *.log

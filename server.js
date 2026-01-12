@@ -6,6 +6,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy pour Vercel/production (nécessaire pour les cookies secure)
+app.set('trust proxy', 1);
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

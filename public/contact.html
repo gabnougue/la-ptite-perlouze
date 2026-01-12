@@ -6,6 +6,10 @@
   <meta name="description" content="Contactez La p'tite perlouze - Yvonne Lecocq">
   <title>Contact - La p'tite perlouze 🌼</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script>
+    // Application immédiate du thème pour éviter le flash
+    (function(){var t=localStorage.getItem('perlouze-theme');if(!t){var s=localStorage.getItem('perlouze-theme-setting'),m=(new Date).getMonth()+1,d=(new Date).getDate();t=s&&s!=='auto'?s:(m===10&&d>=15)||(m===11&&d===1)?'halloween':m===12||(m===1&&d<=6)?'noel':(m===1&&d>=7)||m===2||(m===3&&d<=19)?'hiver':(m===3&&d>=20)||m===4||m===5||(m===6&&d<=20)?'printemps':(m===6&&d>=21)||m===7||m===8||(m===9&&d<=22)?'ete':(m===9&&d>=23)||(m===10&&d<15)||(m===11&&d>=2)?'automne':'printemps';}document.documentElement.setAttribute('data-theme',t);})();
+  </script>
 </head>
 <body>
   <!-- Header -->

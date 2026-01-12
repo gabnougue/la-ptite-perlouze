@@ -51,27 +51,32 @@ function getSeasonalTheme() {
 }
 
 // Charger et appliquer le thème au chargement de la page
+// Note: Le thème initial est appliqué par un script inline dans le <head> pour éviter le flash
 (async function loadTheme() {
   try {
     const response = await fetch('/api/settings/theme');
     const data = await response.json();
 
     // Si le thème est défini sur "auto" ou n'existe pas, utiliser le thème saisonnier
-    let theme = data.theme;
-    if (!theme || theme === 'auto') {
-      theme = getSeasonalTheme();
+    let themeSetting = data.theme || 'auto';
+    let theme = themeSetting === 'auto' ? getSeasonalTheme() : themeSetting;
+
+    // Sauvegarder dans localStorage pour le chargement instantané
+    localStorage.setItem('perlouze-theme-setting', themeSetting);
+    localStorage.setItem('perlouze-theme', theme);
+
+    // Appliquer le thème (peut être déjà appliqué par le script inline)
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    if (currentTheme !== theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      console.log(`🎨 Thème mis à jour : ${theme}`);
     }
-
-    // Appliquer le thème à l'élément html
-    document.documentElement.setAttribute('data-theme', theme);
-
-    console.log(`🎨 Thème appliqué : ${theme}`);
   } catch (error) {
     console.error('Erreur lors du chargement du thème:', error);
     // En cas d'erreur, utiliser le thème saisonnier automatique
     const theme = getSeasonalTheme();
     document.documentElement.setAttribute('data-theme', theme);
-    console.log(`🎨 Thème saisonnier automatique : ${theme}`);
+    localStorage.setItem('perlouze-theme', theme);
   }
 })();
 

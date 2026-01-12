@@ -3,23 +3,17 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
+const sharp = require('sharp');
+const fs = require('fs').promises;
 const db = require('../models/database');
 const { sendCustomerOrderEmail } = require('../services/email');
 
-// Configuration de multer pour l'upload d'images
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/images/uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-    cb(null, uniqueName);
-  }
-});
+// Configuration de multer avec stockage en mémoire pour traitement avec sharp
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max en entrée
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -32,6 +26,22 @@ const upload = multer({
     }
   }
 });
+
+// Fonction pour compresser et sauvegarder une image
+async function processAndSaveImage(fileBuffer, originalName) {
+  const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.webp';
+  const outputPath = path.join('public/images/uploads/', uniqueName);
+
+  await sharp(fileBuffer)
+    .resize(800, 800, {
+      fit: 'inside',
+      withoutEnlargement: true
+    })
+    .webp({ quality: 80 })
+    .toFile(outputPath);
+
+  return uniqueName;
+}
 
 // Middleware pour vérifier l'authentification
 const requireAuth = (req, res, next) => {
@@ -153,8 +163,15 @@ router.post('/products', requireAuth, upload.fields([{ name: 'images', maxCount:
     // Avec .fields(), req.files est un objet avec des clés pour chaque champ
     const imageFiles = req.files && req.files['images'] ? req.files['images'] : [];
 
+    // Traiter et compresser les images
+    const processedImages = [];
+    for (const file of imageFiles) {
+      const filename = await processAndSaveImage(file.buffer, file.originalname);
+      processedImages.push(filename);
+    }
+
     // Garder la compatibilité avec l'ancienne colonne image (première image)
-    const firstImage = imageFiles.length > 0 ? imageFiles[0].filename : null;
+    const firstImage = processedImages.length > 0 ? processedImages[0] : null;
 
     // Insérer le produit
     const result = await db.run(
@@ -166,11 +183,11 @@ router.post('/products', requireAuth, upload.fields([{ name: 'images', maxCount:
     const productId = result.id;
 
     // Insérer les images dans la table product_images
-    if (imageFiles.length > 0) {
-      for (let i = 0; i < imageFiles.length; i++) {
+    if (processedImages.length > 0) {
+      for (let i = 0; i < processedImages.length; i++) {
         await db.run(
           'INSERT INTO product_images (product_id, image_path, display_order, is_primary) VALUES (?, ?, ?, ?)',
-          [productId, imageFiles[i].filename, i, i === 0 ? 1 : 0]
+          [productId, processedImages[i], i, i === 0 ? 1 : 0]
         );
       }
     }
@@ -217,13 +234,20 @@ router.put('/products/:id', requireAuth, upload.fields([{ name: 'images', maxCou
     // Avec .fields(), req.files est un objet avec des clés pour chaque champ
     const imageFiles = req.files && req.files['images'] ? req.files['images'] : [];
 
+    // Traiter et compresser les nouvelles images
+    const processedImages = [];
+    for (const file of imageFiles) {
+      const filename = await processAndSaveImage(file.buffer, file.originalname);
+      processedImages.push(filename);
+    }
+
     let sql = `UPDATE products SET name = ?, category = ?, description = ?, price = ?, stock = ?, boutdebois_link = ?`;
     const params = [name, category, description, parseFloat(price), parseInt(stock), boutdebois_link || null];
 
     // Si de nouvelles images sont uploadées, mettre à jour l'image principale
-    if (imageFiles.length > 0) {
+    if (processedImages.length > 0) {
       sql += ', image = ?';
-      params.push(imageFiles[0].filename);
+      params.push(processedImages[0]);
     }
 
     sql += ' WHERE id = ?';
@@ -232,7 +256,7 @@ router.put('/products/:id', requireAuth, upload.fields([{ name: 'images', maxCou
     await db.run(sql, params);
 
     // Gérer les images : ajouter les nouvelles à la suite des existantes
-    if (imageFiles.length > 0) {
+    if (processedImages.length > 0) {
       // Trouver le display_order maximum actuel
       const maxOrderResult = await db.get(
         'SELECT MAX(display_order) as maxOrder FROM product_images WHERE product_id = ?',
@@ -241,10 +265,10 @@ router.put('/products/:id', requireAuth, upload.fields([{ name: 'images', maxCou
       const startOrder = (maxOrderResult.maxOrder !== null ? maxOrderResult.maxOrder : -1) + 1;
 
       // Ajouter les nouvelles images à la suite
-      for (let i = 0; i < imageFiles.length; i++) {
+      for (let i = 0; i < processedImages.length; i++) {
         await db.run(
           'INSERT INTO product_images (product_id, image_path, display_order, is_primary) VALUES (?, ?, ?, ?)',
-          [id, imageFiles[i].filename, startOrder + i, 0]
+          [id, processedImages[i], startOrder + i, 0]
         );
       }
 

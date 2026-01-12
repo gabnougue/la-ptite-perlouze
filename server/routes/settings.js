@@ -226,16 +226,21 @@ router.delete('/colors/:id', requireAdmin, async (req, res) => {
 // THÈME
 // ═══════════════════════════════════════════════════
 
-// Variable pour stocker le thème (en production, utiliser la base de données)
-let currentTheme = 'auto';
-
 // Récupérer le thème actuel
-router.get('/theme', (req, res) => {
-  res.json({ theme: currentTheme });
+router.get('/theme', async (req, res) => {
+  try {
+    const row = await db.get('SELECT value FROM settings WHERE key = ?', ['theme']);
+    const theme = row ? row.value : 'auto';
+    res.json({ theme });
+  } catch (err) {
+    console.error('Erreur:', err);
+    // En cas d'erreur, retourner auto par défaut
+    res.json({ theme: 'auto' });
+  }
 });
 
 // Modifier le thème
-router.post('/theme', requireAdmin, (req, res) => {
+router.post('/theme', requireAdmin, async (req, res) => {
   try {
     const { theme } = req.body;
 
@@ -256,8 +261,14 @@ router.post('/theme', requireAdmin, (req, res) => {
       return res.status(400).json({ error: 'Thème invalide' });
     }
 
-    currentTheme = theme;
-    res.json({ success: true, theme: currentTheme });
+    // Sauvegarder le thème en base de données
+    await db.run(`
+      INSERT INTO settings (key, value, updated_at)
+      VALUES ('theme', ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = CURRENT_TIMESTAMP
+    `, [theme, theme]);
+
+    res.json({ success: true, theme });
   } catch (err) {
     console.error('Erreur:', err);
     res.status(500).json({ error: 'Erreur lors du changement de thème' });

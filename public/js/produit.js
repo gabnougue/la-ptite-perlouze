@@ -62,7 +62,7 @@ function displayProduct(product) {
     // Carrousel pour plusieurs images
     const imagesHTML = product.images.map((img, index) => {
       const imageSrc = `/images/uploads/${img.image_path}`;
-      return `<img src="${imageSrc}" alt="${product.name}" class="carousel-image ${index === 0 ? 'active' : ''}" onerror="this.src='/images/placeholder.jpg'">`;
+      return `<img src="${imageSrc}" alt="${product.name}" class="carousel-image ${index === 0 ? 'active' : ''}" loading="lazy" decoding="async" onerror="this.src='/images/placeholder.jpg'">`;
     }).join('');
 
     const dotsHTML = product.images.map((_, index) => {
@@ -112,7 +112,7 @@ function displayProduct(product) {
     const imageSrc = product.image
       ? `/images/uploads/${product.image}`
       : '/images/placeholder.jpg';
-    imageHTML = `<img src="${imageSrc}" alt="${product.name}" class="product-detail-image" onerror="this.src='/images/placeholder.jpg'">`;
+    imageHTML = `<img src="${imageSrc}" alt="${product.name}" class="product-detail-image" loading="lazy" decoding="async" onerror="this.src='/images/placeholder.jpg'">`;
   }
 
   const stockInfo = product.stock <= 0

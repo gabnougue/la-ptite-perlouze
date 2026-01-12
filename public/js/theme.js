@@ -72,12 +72,15 @@ async function loadTheme() {
       document.documentElement.setAttribute('data-theme', theme);
       console.log(`🎨 Thème mis à jour : ${theme}`);
     }
+    
+    return theme;
   } catch (error) {
     console.error('Erreur lors du chargement du thème:', error);
     // En cas d'erreur, utiliser le thème saisonnier automatique
     const theme = getSeasonalTheme();
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('perlouze-theme', theme);
+    return theme;
   }
 }
 
@@ -85,7 +88,7 @@ async function loadTheme() {
  * Vérifie régulièrement si le thème a changé côté admin et synchronise
  */
 function startThemeSync() {
-  // Vérifier toutes les 10 secondes si le thème a changé
+  // Vérifier toutes les 3 secondes si le thème a changé (réduit de 10s à 3s)
   setInterval(async () => {
     try {
       const response = await fetch('/api/settings/theme');
@@ -103,7 +106,7 @@ function startThemeSync() {
       // Erreur silencieuse pour ne pas polluer la console
       console.debug('Erreur synchronisation thème:', error);
     }
-  }, 10000); // Vérifier toutes les 10 secondes
+  }, 3000); // Vérifier toutes les 3 secondes (au lieu de 10)
 }
 
 // Charger le thème au démarrage

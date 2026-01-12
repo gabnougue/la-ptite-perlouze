@@ -193,7 +193,7 @@ function createCartItem(item, index) {
     : '/images/placeholder.jpg';
 
   itemDiv.innerHTML = `
-    <img src="${imageSrc}" alt="${item.name}" class="cart-item-image" onerror="this.src='/images/placeholder.jpg'">
+    <img src="${imageSrc}" alt="${item.name}" class="cart-item-image" loading="lazy" decoding="async" onerror="this.src='/images/placeholder.jpg'">
     <div class="cart-item-info">
       <h3>${item.name}</h3>
       <p style="color: var(--texte-secondaire); margin-bottom: 0.5rem;">${item.price.toFixed(2)} € / pièce</p>

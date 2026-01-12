@@ -54,7 +54,7 @@ function createProductCard(product) {
   }
 
   card.innerHTML = `
-    <img src="${imageSrc}" alt="${product.name}" class="product-image" onerror="this.src='/images/placeholder.jpg'">
+    <img src="${imageSrc}" alt="${product.name}" class="product-image" loading="lazy" decoding="async" onerror="this.src='/images/placeholder.jpg'">
     <div class="product-info">
       <h3>${product.name}</h3>
       <p class="product-stones">${product.stones}</p>

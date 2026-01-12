@@ -1,245 +1,159 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { createClient } = require('@libsql/client');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
-const dbPath = path.join(__dirname, '../../database.db');
-const db = new sqlite3.Database(dbPath);
+// Configuration - utilise Turso si disponible, sinon SQLite local
+let client;
+
+if (process.env.TURSO_DATABASE_URL) {
+  client = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+  console.log('🌐 Initialisation de la base Turso...');
+} else {
+  const path = require('path');
+  const dbPath = path.join(__dirname, '../../database.db');
+  client = createClient({
+    url: `file:${dbPath}`,
+  });
+  console.log('💾 Initialisation de la base SQLite locale...');
+}
 
 async function initDatabase() {
-  return new Promise((resolve, reject) => {
-    db.serialize(async () => {
+  try {
+    // Création des tables
+    await client.batch([
       // Table des produits
-      db.run(`
-        CREATE TABLE IF NOT EXISTS products (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          category TEXT NOT NULL,
-          stones TEXT NOT NULL,
-          colors TEXT,
-          description TEXT NOT NULL,
-          price REAL NOT NULL,
-          stock INTEGER DEFAULT 0,
-          image TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      `CREATE TABLE IF NOT EXISTS products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL,
+        stones TEXT NOT NULL,
+        colors TEXT,
+        description TEXT NOT NULL,
+        price REAL NOT NULL,
+        stock INTEGER DEFAULT 0,
+        image TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
 
       // Table des commandes
-      db.run(`
-        CREATE TABLE IF NOT EXISTS orders (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          customer_name TEXT NOT NULL,
-          customer_email TEXT NOT NULL,
-          customer_phone TEXT,
-          customer_address TEXT,
-          total REAL NOT NULL,
-          status TEXT DEFAULT 'pending',
-          stripe_payment_id TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      `CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_name TEXT NOT NULL,
+        customer_email TEXT NOT NULL,
+        customer_phone TEXT,
+        customer_address TEXT,
+        subtotal REAL,
+        shipping_cost REAL DEFAULT 0,
+        total REAL NOT NULL,
+        status TEXT DEFAULT 'pending',
+        stripe_payment_id TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
 
       // Table des items de commande
-      db.run(`
-        CREATE TABLE IF NOT EXISTS order_items (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          order_id INTEGER NOT NULL,
-          product_id INTEGER NOT NULL,
-          product_name TEXT NOT NULL,
-          quantity INTEGER NOT NULL,
-          price REAL NOT NULL,
-          FOREIGN KEY (order_id) REFERENCES orders(id),
-          FOREIGN KEY (product_id) REFERENCES products(id)
-        )
-      `);
+      `CREATE TABLE IF NOT EXISTS order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        product_name TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        price REAL NOT NULL,
+        FOREIGN KEY (order_id) REFERENCES orders(id),
+        FOREIGN KEY (product_id) REFERENCES products(id)
+      )`,
 
       // Table des administrateurs
-      db.run(`
-        CREATE TABLE IF NOT EXISTS admins (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          username TEXT UNIQUE NOT NULL,
-          password TEXT NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      `CREATE TABLE IF NOT EXISTS admins (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
 
       // Table des messages de contact
-      db.run(`
-        CREATE TABLE IF NOT EXISTS contacts (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          email TEXT NOT NULL,
-          message TEXT NOT NULL,
-          status TEXT DEFAULT 'nouveau',
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      `CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        message TEXT NOT NULL,
+        status TEXT DEFAULT 'nouveau',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
 
-      console.log('✨ Tables créées avec succès');
+      // Table des paramètres
+      `CREATE TABLE IF NOT EXISTS settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT UNIQUE NOT NULL,
+        value TEXT,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`
+    ]);
 
-      // Créer l'administrateur par défaut
-      const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-      const adminPassword = process.env.ADMIN_PASSWORD || '***MOT_DE_PASSE_RETIRE***';
-      const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    console.log('✨ Tables créées avec succès');
 
-      db.run(
-        'INSERT OR IGNORE INTO admins (username, password) VALUES (?, ?)',
-        [adminUsername, hashedPassword],
-        (err) => {
-          if (err) {
-            console.error('Erreur lors de la création de l\'admin:', err);
-          } else {
-            console.log('👤 Administrateur créé');
-          }
-        }
-      );
+    // Créer l'administrateur par défaut
+    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+    const adminPassword = process.env.ADMIN_PASSWORD || '***MOT_DE_PASSE_RETIRE***';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
+    // Vérifier si l'admin existe déjà
+    const existingAdmin = await client.execute({
+      sql: 'SELECT id FROM admins WHERE username = ?',
+      args: [adminUsername]
+    });
+
+    if (existingAdmin.rows.length === 0) {
+      await client.execute({
+        sql: 'INSERT INTO admins (username, password) VALUES (?, ?)',
+        args: [adminUsername, hashedPassword]
+      });
+      console.log('👤 Administrateur créé');
+    } else {
+      console.log('👤 Administrateur existant');
+    }
+
+    // Vérifier s'il y a déjà des produits
+    const existingProducts = await client.execute('SELECT COUNT(*) as count FROM products');
+
+    if (existingProducts.rows[0].count === 0) {
       // Insérer des produits d'exemple
       const sampleProducts = [
-        {
-          name: 'Bracelet Sérénité',
-          category: 'Bracelets',
-          stones: 'Améthyste, Quartz rose',
-          colors: 'Violet, Rose',
-          description: 'Un bracelet délicat en améthyste et quartz rose pour apaiser l\'esprit et ouvrir le cœur à la douceur.',
-          price: 25.00,
-          stock: 5,
-          image: 'bracelet-serenite.jpg'
-        },
-        {
-          name: 'Collier Aurore',
-          category: 'Colliers',
-          stones: 'Agate bleue, Cristal de roche',
-          colors: 'Bleu, Blanc',
-          description: 'Comme les premières lueurs du jour, ce collier en agate bleue apporte clarté et harmonie à votre quotidien.',
-          price: 35.00,
-          stock: 3,
-          image: 'collier-aurore.jpg'
-        },
-        {
-          name: 'Boucles d\'oreilles Papillon',
-          category: 'Boucles d\'oreilles',
-          stones: 'Quartz rose, Perles d\'eau douce',
-          colors: 'Rose, Blanc',
-          description: 'Légères comme des papillons, ces boucles en quartz rose célèbrent la transformation et la beauté de l\'instant.',
-          price: 18.00,
-          stock: 8,
-          image: 'boucles-papillon.jpg'
-        },
-        {
-          name: 'Bracelet Équilibre',
-          category: 'Bracelets',
-          stones: 'Agate verte, Aventurine',
-          colors: 'Vert',
-          description: 'L\'alliance de l\'agate verte et de l\'aventurine pour retrouver équilibre intérieur et connexion à la nature.',
-          price: 28.00,
-          stock: 4,
-          image: 'bracelet-equilibre.jpg'
-        },
-        {
-          name: 'Collier Lune d\'Or',
-          category: 'Colliers',
-          stones: 'Citrine, Perles dorées',
-          colors: 'Jaune, Doré',
-          description: 'Inspiré par la lumière lunaire, ce collier en citrine rayonne de chaleur et illumine les cœurs d\'optimisme.',
-          price: 42.00,
-          stock: 2,
-          image: 'collier-lune.jpg'
-        },
-        {
-          name: 'Bracelet de cheville Liberté',
-          category: 'Bracelets de cheville',
-          stones: 'Turquoise, Howlite',
-          colors: 'Bleu, Blanc',
-          description: 'Un bracelet de cheville bohème pour célébrer la liberté et l\'été avec légèreté.',
-          price: 22.00,
-          stock: 6,
-          image: 'cheville-liberte.jpg'
-        },
-        {
-          name: 'Cordon lunettes Bohème',
-          category: 'Cordon lunettes',
-          stones: 'Agate verte, Jaspe rouge',
-          colors: 'Vert, Rouge, Marron',
-          description: 'Une chaîne pratique et élégante en pierres naturelles, pour garder vos lunettes toujours à portée de main avec style.',
-          price: 22.00,
-          stock: 6,
-          image: 'chaine-boheme.jpg'
-        },
-        {
-          name: 'Mala Méditation',
-          category: 'Mala',
-          stones: 'Améthyste, Quartz clair',
-          colors: 'Violet, Transparent',
-          description: 'Un mala traditionnel de 108 perles pour accompagner vos méditations et intentions.',
-          price: 55.00,
-          stock: 3,
-          image: 'mala-meditation.jpg'
-        },
-        {
-          name: 'Porte-clés Protection',
-          category: 'Porte clés',
-          stones: 'Œil de tigre, Obsidienne',
-          colors: 'Marron, Noir, Doré',
-          description: 'Un porte-clés protecteur avec œil de tigre pour vous accompagner au quotidien.',
-          price: 12.00,
-          stock: 10,
-          image: 'portecles-protection.jpg'
-        },
-        {
-          name: 'Bijou de portable Harmonie',
-          category: 'Bijoux de portables',
-          stones: 'Quartz rose, Améthyste',
-          colors: 'Rose, Violet',
-          description: 'Un bijou de téléphone délicat pour apporter douceur et harmonie à votre quotidien numérique.',
-          price: 15.00,
-          stock: 8,
-          image: 'portable-harmonie.jpg'
-        }
+        ['Bracelet Sérénité', 'Bracelets', 'Améthyste, Quartz rose', 'Violet, Rose', 'Un bracelet délicat en améthyste et quartz rose pour apaiser l\'esprit et ouvrir le cœur à la douceur.', 25.00, 5, 'bracelet-serenite.jpg'],
+        ['Collier Aurore', 'Colliers', 'Agate bleue, Cristal de roche', 'Bleu, Blanc', 'Comme les premières lueurs du jour, ce collier en agate bleue apporte clarté et harmonie à votre quotidien.', 35.00, 3, 'collier-aurore.jpg'],
+        ['Boucles d\'oreilles Papillon', 'Boucles d\'oreilles', 'Quartz rose, Perles d\'eau douce', 'Rose, Blanc', 'Légères comme des papillons, ces boucles en quartz rose célèbrent la transformation et la beauté de l\'instant.', 18.00, 8, 'boucles-papillon.jpg'],
+        ['Bracelet Équilibre', 'Bracelets', 'Agate verte, Aventurine', 'Vert', 'L\'alliance de l\'agate verte et de l\'aventurine pour retrouver équilibre intérieur et connexion à la nature.', 28.00, 4, 'bracelet-equilibre.jpg'],
+        ['Collier Lune d\'Or', 'Colliers', 'Citrine, Perles dorées', 'Jaune, Doré', 'Inspiré par la lumière lunaire, ce collier en citrine rayonne de chaleur et illumine les cœurs d\'optimisme.', 42.00, 2, 'collier-lune.jpg']
       ];
 
-      const stmt = db.prepare(`
-        INSERT INTO products (name, category, stones, colors, description, price, stock, image)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-
-      sampleProducts.forEach(product => {
-        stmt.run(
-          product.name,
-          product.category,
-          product.stones,
-          product.colors,
-          product.description,
-          product.price,
-          product.stock,
-          product.image
-        );
-      });
-
-      stmt.finalize(() => {
-        console.log('🌸 Produits d\'exemple ajoutés');
-        console.log('\n✅ Base de données initialisée avec succès !');
-        console.log(`👤 Login admin: ${adminUsername}`);
-        console.log(`🔑 Mot de passe: ${adminPassword}`);
-        console.log('\n⚠️  N\'oubliez pas de changer le mot de passe admin !');
-
-        db.close((err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
+      for (const product of sampleProducts) {
+        await client.execute({
+          sql: 'INSERT INTO products (name, category, stones, colors, description, price, stock, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          args: product
         });
-      });
-    });
-  });
+      }
+      console.log('🌸 Produits d\'exemple ajoutés');
+    } else {
+      console.log('🌸 Produits existants conservés');
+    }
+
+    console.log('\n✅ Base de données initialisée avec succès !');
+    console.log(`👤 Login admin: ${adminUsername}`);
+    console.log(`🔑 Mot de passe: ${adminPassword}`);
+    console.log('\n⚠️  N\'oubliez pas de changer le mot de passe admin !');
+
+  } catch (err) {
+    console.error('❌ Erreur lors de l\'initialisation:', err);
+    throw err;
+  }
 }
 
 // Exécuter l'initialisation
 initDatabase()
   .then(() => process.exit(0))
   .catch(err => {
-    console.error('❌ Erreur lors de l\'initialisation:', err);
+    console.error(err);
     process.exit(1);
   });

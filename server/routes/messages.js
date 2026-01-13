@@ -356,25 +356,39 @@ router.put('/threads/:id/status', requireAuth, async (req, res) => {
 router.delete('/threads/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`Suppression thread ${id}...`);
 
     // Récupérer les messages du thread pour supprimer leurs pièces jointes
     const messages = await db.all('SELECT id FROM thread_messages WHERE thread_id = ?', [id]);
+    console.log(`${messages.length} messages trouvés`);
 
     // Supprimer les pièces jointes de chaque message
     for (const msg of messages) {
       await db.run('DELETE FROM message_attachments WHERE message_id = ?', [msg.id]);
     }
+    console.log('Pièces jointes supprimées');
 
     // Supprimer les messages du thread
     await db.run('DELETE FROM thread_messages WHERE thread_id = ?', [id]);
+    console.log('Messages supprimés');
+
+    // Récupérer le contact_id avant de supprimer le thread
+    const thread = await db.get('SELECT contact_id FROM message_threads WHERE id = ?', [id]);
 
     // Supprimer le thread
     await db.run('DELETE FROM message_threads WHERE id = ?', [id]);
+    console.log('Thread supprimé');
+
+    // Supprimer aussi le contact associé (pour éviter les orphelins)
+    if (thread && thread.contact_id) {
+      await db.run('DELETE FROM contacts WHERE id = ?', [thread.contact_id]);
+      console.log('Contact associé supprimé');
+    }
 
     res.json({ success: true, message: 'Thread supprimé' });
   } catch (error) {
-    console.error('Erreur suppression thread:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('Erreur suppression thread:', error.message, error.stack);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
   }
 });
 

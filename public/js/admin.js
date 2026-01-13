@@ -1230,6 +1230,7 @@ async function deleteThread(threadId) {
       showMessage('Conversation supprimée avec succès', 'success');
       loadThreads();
     } else {
+      console.error('Erreur serveur:', result.details || result.error);
       showMessage('Erreur lors de la suppression', 'error');
     }
   } catch (error) {

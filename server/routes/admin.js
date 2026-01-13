@@ -7,6 +7,7 @@ const sharp = require('sharp');
 const fs = require('fs').promises;
 const db = require('../models/database');
 const { sendCustomerOrderEmail } = require('../services/email');
+const { put } = require('@vercel/blob');
 
 // Configuration de multer avec stockage en mémoire pour traitement avec sharp
 const storage = multer.memoryStorage();
@@ -27,20 +28,27 @@ const upload = multer({
   }
 });
 
-// Fonction pour compresser et sauvegarder une image
+// Fonction pour compresser et sauvegarder une image (via Vercel Blob)
 async function processAndSaveImage(fileBuffer, originalName) {
   const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.webp';
-  const outputPath = path.join('public/images/uploads/', uniqueName);
 
-  await sharp(fileBuffer)
+  // Compresser l'image avec sharp
+  const compressedBuffer = await sharp(fileBuffer)
     .resize(800, 800, {
       fit: 'inside',
       withoutEnlargement: true
     })
     .webp({ quality: 80 })
-    .toFile(outputPath);
+    .toBuffer();
 
-  return uniqueName;
+  // Upload vers Vercel Blob
+  const blob = await put(`uploads/${uniqueName}`, compressedBuffer, {
+    access: 'public',
+    contentType: 'image/webp'
+  });
+
+  // Retourner l'URL complète du blob
+  return blob.url;
 }
 
 // Middleware pour vérifier l'authentification

@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const sharp = require('sharp');
+const { put, del } = require('@vercel/blob');
 
 // Middleware pour vérifier l'authentification admin
 const requireAuth = (req, res, next) => {
@@ -33,20 +34,27 @@ const upload = multer({
   }
 });
 
-// Fonction pour compresser et sauvegarder une image boutique
+// Fonction pour compresser et sauvegarder une image boutique (via Vercel Blob)
 async function processAndSaveBoutiqueImage(fileBuffer) {
   const uniqueName = 'boutique-' + Date.now() + '-' + Math.round(Math.random() * 1E9) + '.webp';
-  const outputPath = path.join('public/images/boutique/', uniqueName);
 
-  await sharp(fileBuffer)
+  // Compresser l'image avec sharp
+  const compressedBuffer = await sharp(fileBuffer)
     .resize(1200, 800, {
       fit: 'inside',
       withoutEnlargement: true
     })
     .webp({ quality: 85 })
-    .toFile(outputPath);
+    .toBuffer();
 
-  return uniqueName;
+  // Upload vers Vercel Blob
+  const blob = await put(`boutique/${uniqueName}`, compressedBuffer, {
+    access: 'public',
+    contentType: 'image/webp'
+  });
+
+  // Retourner l'URL complète du blob
+  return blob.url;
 }
 
 // Récupérer toutes les images de la boutique (et les importer automatiquement si nécessaire)
@@ -107,9 +115,8 @@ router.post('/images', requireAuth, upload.single('image'), async (req, res) => 
       return res.status(400).json({ error: 'Aucune image fournie' });
     }
 
-    // Compresser et sauvegarder l'image
-    const filename = await processAndSaveBoutiqueImage(req.file.buffer);
-    const imagePath = '/images/boutique/' + filename;
+    // Compresser et sauvegarder l'image (retourne l'URL blob complète)
+    const imageUrl = await processAndSaveBoutiqueImage(req.file.buffer);
 
     // Obtenir le dernier display_order
     const lastImage = await db.get(
@@ -119,12 +126,12 @@ router.post('/images', requireAuth, upload.single('image'), async (req, res) => 
 
     const result = await db.run(
       'INSERT INTO boutique_images (image_path, display_order) VALUES (?, ?)',
-      [imagePath, newOrder]
+      [imageUrl, newOrder]
     );
 
     res.json({
       id: result.id,
-      image_path: imagePath,
+      image_path: imageUrl,
       display_order: newOrder
     });
   } catch (error) {
@@ -148,13 +155,22 @@ router.delete('/images/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Image non trouvée' });
     }
 
-    // Supprimer le fichier physique
-    const filePath = path.join(__dirname, '../../public', image.image_path);
-    try {
-      await fs.unlink(filePath);
-    } catch (err) {
-      console.error('Erreur suppression fichier:', err);
-      // Continue même si le fichier n'existe pas
+    // Supprimer le fichier (Vercel Blob ou local)
+    if (image.image_path.startsWith('https://')) {
+      // C'est une URL Vercel Blob
+      try {
+        await del(image.image_path);
+      } catch (err) {
+        console.error('Erreur suppression blob:', err);
+      }
+    } else {
+      // C'est un fichier local (anciennes images)
+      const filePath = path.join(__dirname, '../../public', image.image_path);
+      try {
+        await fs.unlink(filePath);
+      } catch (err) {
+        console.error('Erreur suppression fichier:', err);
+      }
     }
 
     // Supprimer de la base de données

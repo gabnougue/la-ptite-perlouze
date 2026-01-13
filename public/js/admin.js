@@ -548,6 +548,13 @@ async function handleProductSubmit(event) {
 
     const result = await response.json();
 
+    if (!response.ok) {
+      console.error('Erreur serveur:', result.details || result.error);
+      showMessage('Erreur: ' + (result.details || result.error || 'Erreur serveur'), 'error');
+      modalContent.classList.remove('loading');
+      return;
+    }
+
     if (result.success) {
       // Traiter d'abord les suppressions d'images
       if (currentEditProductId && imagesToDelete.length > 0) {

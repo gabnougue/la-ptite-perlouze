@@ -4,6 +4,7 @@ const db = require('../models/database');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const sharp = require('sharp');
 
 // Middleware pour vérifier l'authentification admin
 const requireAuth = (req, res, next) => {
@@ -13,20 +14,12 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Configuration multer pour l'upload d'images
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/images/boutique/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'boutique-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configuration multer avec stockage en mémoire pour Vercel
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max en entrée
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -39,6 +32,22 @@ const upload = multer({
     }
   }
 });
+
+// Fonction pour compresser et sauvegarder une image boutique
+async function processAndSaveBoutiqueImage(fileBuffer) {
+  const uniqueName = 'boutique-' + Date.now() + '-' + Math.round(Math.random() * 1E9) + '.webp';
+  const outputPath = path.join('public/images/boutique/', uniqueName);
+
+  await sharp(fileBuffer)
+    .resize(1200, 800, {
+      fit: 'inside',
+      withoutEnlargement: true
+    })
+    .webp({ quality: 85 })
+    .toFile(outputPath);
+
+  return uniqueName;
+}
 
 // Récupérer toutes les images de la boutique (et les importer automatiquement si nécessaire)
 router.get('/images', async (req, res) => {
@@ -98,13 +107,15 @@ router.post('/images', requireAuth, upload.single('image'), async (req, res) => 
       return res.status(400).json({ error: 'Aucune image fournie' });
     }
 
-    const imagePath = '/images/boutique/' + req.file.filename;
+    // Compresser et sauvegarder l'image
+    const filename = await processAndSaveBoutiqueImage(req.file.buffer);
+    const imagePath = '/images/boutique/' + filename;
 
     // Obtenir le dernier display_order
     const lastImage = await db.get(
       'SELECT MAX(display_order) as maxOrder FROM boutique_images'
     );
-    const newOrder = (lastImage.maxOrder || 0) + 1;
+    const newOrder = (lastImage?.maxOrder || 0) + 1;
 
     const result = await db.run(
       'INSERT INTO boutique_images (image_path, display_order) VALUES (?, ?)',

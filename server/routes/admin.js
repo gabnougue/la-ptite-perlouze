@@ -316,8 +316,8 @@ router.put('/products/:id', requireAuth, upload.fields([{ name: 'images', maxCou
       message: 'Produit modifié avec succès'
     });
   } catch (error) {
-    console.error('Erreur lors de la modification du produit:', error);
-    res.status(500).json({ error: 'Erreur lors de la modification du produit' });
+    console.error('Erreur lors de la modification du produit:', error.message, error.stack);
+    res.status(500).json({ error: 'Erreur lors de la modification du produit', details: error.message });
   }
 });
 

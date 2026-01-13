@@ -189,7 +189,7 @@ function createCartItem(item, index) {
   itemDiv.className = 'cart-item fade-in';
 
   const imageSrc = item.image
-    ? `/images/uploads/${item.image}`
+    ? (item.image.startsWith('https://') ? item.image : `/images/uploads/${item.image}`)
     : '/images/placeholder.jpg';
 
   itemDiv.innerHTML = `

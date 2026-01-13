@@ -18,6 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@libsql/client": "^0.17.0",
+    "@vercel/blob": "^2.0.0",
     "bcrypt": "^5.1.1",
     "cookie-session": "^2.1.1",
     "dotenv": "^16.3.1",

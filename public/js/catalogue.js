@@ -144,9 +144,10 @@ function createProductCard(product) {
   // Utiliser la première image du carrousel si disponible, sinon l'image unique
   let imageSrc;
   if (product.images && product.images.length > 0) {
-    imageSrc = `/images/uploads/${product.images[0].image_path}`;
+    const imgPath = product.images[0].image_path;
+    imageSrc = imgPath.startsWith('https://') ? imgPath : `/images/uploads/${imgPath}`;
   } else if (product.image) {
-    imageSrc = `/images/uploads/${product.image}`;
+    imageSrc = product.image.startsWith('https://') ? product.image : `/images/uploads/${product.image}`;
   } else {
     imageSrc = '/images/placeholder.jpg';
   }

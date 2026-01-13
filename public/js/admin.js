@@ -171,15 +171,12 @@ async function loadProducts() {
       if (product.images && product.images.length > 0) {
         // Trouver l'image principale
         const primaryImage = product.images.find(img => img.is_primary);
-        if (primaryImage) {
-          imageSrc = `/images/uploads/${primaryImage.image_path}`;
-        } else {
-          // Si pas d'image principale définie, prendre la première
-          imageSrc = `/images/uploads/${product.images[0].image_path}`;
-        }
+        const imgPath = primaryImage ? primaryImage.image_path : product.images[0].image_path;
+        // Gérer les URLs blob (https://) et les chemins locaux
+        imageSrc = imgPath.startsWith('https://') ? imgPath : `/images/uploads/${imgPath}`;
       } else if (product.image) {
         // Fallback sur l'ancienne colonne image
-        imageSrc = `/images/uploads/${product.image}`;
+        imageSrc = product.image.startsWith('https://') ? product.image : `/images/uploads/${product.image}`;
       }
 
       row.innerHTML = `
@@ -2019,7 +2016,7 @@ function displayAllImages() {
     if (item.type === 'existing') {
       // Image existante
       const image = item.data;
-      img.src = `/images/uploads/${image.image_path}`;
+      img.src = image.image_path.startsWith('https://') ? image.image_path : `/images/uploads/${image.image_path}`;
       img.alt = `Image ${globalIndex + 1}`;
       
       // Bordure sur le conteneur

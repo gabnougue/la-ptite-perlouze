@@ -67,7 +67,7 @@ function displayProduct(product) {
   if (product.images && product.images.length > 1) {
     // Carrousel pour plusieurs images
     const imagesHTML = product.images.map((img, index) => {
-      const imageSrc = `/images/uploads/${img.image_path}`;
+      const imageSrc = img.image_path.startsWith('https://') ? img.image_path : `/images/uploads/${img.image_path}`;
       return `<img src="${imageSrc}" alt="${product.name}" class="carousel-image ${index === 0 ? 'active' : ''}" loading="lazy" decoding="async" onerror="this.src='/images/placeholder.jpg'">`;
     }).join('');
 
@@ -116,7 +116,7 @@ function displayProduct(product) {
   } else {
     // Image unique
     const imageSrc = product.image
-      ? `/images/uploads/${product.image}`
+      ? (product.image.startsWith('https://') ? product.image : `/images/uploads/${product.image}`)
       : '/images/placeholder.jpg';
     imageHTML = `<img src="${imageSrc}" alt="${product.name}" class="product-detail-image" loading="lazy" decoding="async" onerror="this.src='/images/placeholder.jpg'">`;
   }

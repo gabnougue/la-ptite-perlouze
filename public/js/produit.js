@@ -156,11 +156,6 @@ function displayProduct(product) {
         </div>
 
         <div class="card">
-          <h3 style="color: var(--lavande); font-size: 1.5rem; margin-bottom: 1rem;">Catégorie</h3>
-          <p style="font-size: 1.1rem; color: var(--texte-secondaire);">${product.category}</p>
-        </div>
-
-        <div class="card">
           <p style="font-size: 2rem; font-weight: bold; color: var(--rose-poudre); margin-bottom: 1rem;">
             ${product.price.toFixed(2)} €
           </p>

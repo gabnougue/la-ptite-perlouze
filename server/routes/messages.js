@@ -357,7 +357,18 @@ router.delete('/threads/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Les messages et pièces jointes seront supprimés automatiquement (CASCADE)
+    // Récupérer les messages du thread pour supprimer leurs pièces jointes
+    const messages = await db.all('SELECT id FROM thread_messages WHERE thread_id = ?', [id]);
+
+    // Supprimer les pièces jointes de chaque message
+    for (const msg of messages) {
+      await db.run('DELETE FROM message_attachments WHERE message_id = ?', [msg.id]);
+    }
+
+    // Supprimer les messages du thread
+    await db.run('DELETE FROM thread_messages WHERE thread_id = ?', [id]);
+
+    // Supprimer le thread
     await db.run('DELETE FROM message_threads WHERE id = ?', [id]);
 
     res.json({ success: true, message: 'Thread supprimé' });

@@ -212,10 +212,17 @@ async function loadProducts() {
 async function openProductModal(productId = null) {
   currentEditProductId = productId;
   const modal = document.getElementById('product-modal');
+  const modalContent = document.getElementById('product-modal-content');
   const form = document.getElementById('product-form');
   const title = document.getElementById('modal-title');
 
   form.reset();
+
+  // Si on modifie un produit, afficher le loader immédiatement
+  if (productId) {
+    modalContent.classList.add('loading');
+    modal.classList.add('active');
+  }
 
   // Charger les options des selects
   await loadProductFormOptions();
@@ -223,6 +230,8 @@ async function openProductModal(productId = null) {
   if (productId) {
     title.textContent = 'Modifier le produit';
     await loadProductData(productId);
+    // Retirer le loader une fois les données chargées
+    modalContent.classList.remove('loading');
   } else {
     title.textContent = 'Ajouter un produit';
     // Réinitialiser les images pour l'ajout
@@ -231,9 +240,8 @@ async function openProductModal(productId = null) {
     imagesToDelete = [];
     window.allImagesOrder = [];
     displayExistingImages([]);
+    modal.classList.add('active');
   }
-
-  modal.classList.add('active');
 }
 
 // Charger les options du formulaire produit
@@ -293,7 +301,9 @@ async function loadProductFormOptions() {
 // Fermer le modal produit
 function closeProductModal() {
   const modal = document.getElementById('product-modal');
+  const modalContent = document.getElementById('product-modal-content');
   modal.classList.remove('active');
+  modalContent.classList.remove('loading');
   currentEditProductId = null;
   currentProductImages = [];
   newImagesToUpload = [];
@@ -467,6 +477,12 @@ async function deleteProduct(productId) {
 async function handleProductSubmit(event) {
   event.preventDefault();
 
+  // Afficher le loader pendant l'enregistrement
+  const modalContent = document.getElementById('product-modal-content');
+  const loaderText = modalContent.querySelector('.modal-loader-text');
+  loaderText.textContent = 'Enregistrement en cours...';
+  modalContent.classList.add('loading');
+
   const formData = new FormData();
 
   // IMPORTANT: Ajouter d'abord les champs texte
@@ -493,6 +509,7 @@ async function handleProductSubmit(event) {
     const totalImages = currentProductImages.length + newImagesToUpload.length;
     if (totalImages > 10) {
       showMessage(`Vous ne pouvez avoir que 10 images maximum (actuellement ${currentProductImages.length} existantes + ${newImagesToUpload.length} nouvelles)`, 'error');
+      modalContent.classList.remove('loading');
       return;
     }
     for (let i = 0; i < newImagesToUpload.length; i++) {
@@ -629,6 +646,8 @@ async function handleProductSubmit(event) {
   } catch (error) {
     console.error('Erreur:', error);
     showMessage('Erreur lors de l\'enregistrement', 'error');
+    // Retirer le loader en cas d'erreur
+    modalContent.classList.remove('loading');
   }
 }
 

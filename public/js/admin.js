@@ -2266,37 +2266,75 @@ function displayBoutiqueImages() {
   `).join('');
 }
 
-// Ajouter une image de la boutique
-async function uploadBoutiqueImage() {
+// Ajouter plusieurs images à la boutique
+async function uploadBoutiqueImages() {
   const input = document.getElementById('boutique-image-input');
-  const file = input.files[0];
+  const files = Array.from(input.files);
 
-  if (!file) {
-    showMessage('Veuillez sélectionner une image', 'error');
+  if (files.length === 0) {
     return;
   }
 
-  const formData = new FormData();
-  formData.append('image', file);
+  // Afficher le loader
+  const loader = document.createElement('div');
+  loader.className = 'modal active';
+  loader.id = 'upload-loader';
+  loader.style.zIndex = '10001';
+  loader.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+      <div style="font-size: 2rem; animation: spin 1s linear infinite;">📤</div>
+      <p style="margin-top: 1rem; font-size: 1.1rem;">Envoi en cours... <span id="upload-progress">0/${files.length}</span></p>
+    </div>
+  `;
+  document.body.appendChild(loader);
 
-  try {
-    const response = await fetch('/api/boutique/images', {
-      method: 'POST',
-      body: formData
-    });
+  let successCount = 0;
+  let errorCount = 0;
 
-    if (!response.ok) {
-      throw new Error('Erreur lors de l\'upload');
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const formData = new FormData();
+    formData.append('image', file);
+
+    // Mettre à jour la progression
+    const progressEl = document.getElementById('upload-progress');
+    if (progressEl) {
+      progressEl.textContent = `${i + 1}/${files.length}`;
     }
 
-    const newImage = await response.json();
-    boutiqueImages.push(newImage);
-    displayBoutiqueImages();
-    input.value = '';
-    showMessage('Image ajoutée avec succès !', 'success');
-  } catch (error) {
-    console.error('Erreur upload image:', error);
-    showMessage('Erreur lors de l\'ajout de l\'image', 'error');
+    try {
+      const response = await fetch('/api/boutique/images', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'upload');
+      }
+
+      const newImage = await response.json();
+      boutiqueImages.push(newImage);
+      successCount++;
+    } catch (error) {
+      console.error('Erreur upload image:', error);
+      errorCount++;
+    }
+  }
+
+  // Retirer le loader
+  loader.remove();
+
+  // Mettre à jour l'affichage
+  displayBoutiqueImages();
+  input.value = '';
+
+  // Message de résultat
+  if (errorCount === 0) {
+    showMessage(`${successCount} image${successCount > 1 ? 's ajoutées' : ' ajoutée'} avec succès !`, 'success');
+  } else if (successCount === 0) {
+    showMessage('Erreur lors de l\'ajout des images', 'error');
+  } else {
+    showMessage(`${successCount} image${successCount > 1 ? 's ajoutées' : ' ajoutée'}, ${errorCount} erreur${errorCount > 1 ? 's' : ''}`, 'info');
   }
 }
 

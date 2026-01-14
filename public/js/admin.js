@@ -2283,7 +2283,7 @@ async function uploadBoutiqueImages() {
   loader.innerHTML = `
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
       <div style="font-size: 2rem; animation: spin 1s linear infinite;">📤</div>
-      <p style="margin-top: 1rem; font-size: 1.1rem;">Envoi en cours... <span id="upload-progress">0/${files.length}</span></p>
+      <p style="margin-top: 1rem; font-size: 1.1rem;">Ajout en cours... <span id="upload-progress">0/${files.length}</span></p>
     </div>
   `;
   document.body.appendChild(loader);
@@ -2347,22 +2347,27 @@ async function deleteBoutiqueImage(id) {
 
   if (!confirmed) return;
 
-  try {
-    const response = await fetch(`/api/boutique/images/${id}`, {
-      method: 'DELETE'
-    });
+  // Sauvegarder l'état actuel en cas d'erreur
+  const previousState = [...boutiqueImages];
 
+  // Supprimer immédiatement de l'affichage (optimistic UI)
+  boutiqueImages = boutiqueImages.filter(img => img.id !== id);
+  displayBoutiqueImages();
+
+  // Envoyer la requête en arrière-plan
+  fetch(`/api/boutique/images/${id}`, {
+    method: 'DELETE'
+  }).then(response => {
     if (!response.ok) {
       throw new Error('Erreur lors de la suppression');
     }
-
-    boutiqueImages = boutiqueImages.filter(img => img.id !== id);
-    displayBoutiqueImages();
-    showMessage('Image supprimée avec succès !', 'success');
-  } catch (error) {
+  }).catch(error => {
     console.error('Erreur suppression image:', error);
     showMessage('Erreur lors de la suppression', 'error');
-  }
+    // Restaurer l'état précédent
+    boutiqueImages = previousState;
+    displayBoutiqueImages();
+  });
 }
 
 // Déplacer une image de la boutique (optimistic UI)

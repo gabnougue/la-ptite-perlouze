@@ -96,7 +96,7 @@ async function logout() {
 }
 
 // Afficher une section
-function showSection(section) {
+function showSection(section, event) {
   // Masquer toutes les sections
   document.querySelectorAll('.section-content').forEach(s => {
     s.classList.remove('active');
@@ -110,8 +110,14 @@ function showSection(section) {
   // Afficher la section demandée
   document.getElementById(`${section}-section`).classList.add('active');
 
-  // Ajouter la classe active au lien
-  event.target.classList.add('active');
+  // Ajouter la classe active au lien cliqué
+  if (event && event.target) {
+    event.target.classList.add('active');
+  } else {
+    // Si pas d'event (appel direct), trouver le lien correspondant
+    const link = document.querySelector(`.nav-link[href="#${section}"]`);
+    if (link) link.classList.add('active');
+  }
 
   // Charger les données de la section
   if (section === 'stats') {

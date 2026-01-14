@@ -414,22 +414,22 @@
   <!-- Navigation Admin -->
   <nav class="admin-nav">
     <ul>
-      <li><a href="#stats" class="nav-link active" onclick="showSection('stats')">Statistiques</a></li>
-      <li><a href="#products" class="nav-link" onclick="showSection('products')">Produits</a></li>
+      <li><a href="#stats" class="nav-link active" onclick="showSection('stats', event)">Statistiques</a></li>
+      <li><a href="#products" class="nav-link" onclick="showSection('products', event)">Produits</a></li>
       <li style="position: relative;">
-        <a href="#orders" class="nav-link" onclick="showSection('orders')">
+        <a href="#orders" class="nav-link" onclick="showSection('orders', event)">
           Commandes
           <span id="orders-badge" class="notification-badge" style="display: none;">0</span>
         </a>
       </li>
       <li style="position: relative;">
-        <a href="#contacts" class="nav-link" onclick="showSection('contacts')">
+        <a href="#contacts" class="nav-link" onclick="showSection('contacts', event)">
           Messages
           <span id="messages-badge" class="notification-badge" style="display: none;">0</span>
         </a>
       </li>
-      <li><a href="#boutique" class="nav-link" onclick="showSection('boutique')">Boutique</a></li>
-      <li><a href="#settings" class="nav-link" onclick="showSection('settings')">Paramètres</a></li>
+      <li><a href="#boutique" class="nav-link" onclick="showSection('boutique', event)">Boutique</a></li>
+      <li><a href="#settings" class="nav-link" onclick="showSection('settings', event)">Paramètres</a></li>
     </ul>
   </nav>
 

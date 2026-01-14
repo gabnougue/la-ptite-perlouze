@@ -92,7 +92,7 @@
         const response = await fetch('/api/admin/check-auth');
         const data = await response.json();
         if (data.authenticated) {
-          window.location.href = `${ADMIN_PATH}/dashboard`;
+          window.location.href = `${ADMIN_PATH}/dashboard#stats`;
         }
       } catch (error) {
         console.error('Erreur lors de la vérification:', error);
@@ -128,7 +128,7 @@
           messageDiv.style.display = 'block';
 
           setTimeout(() => {
-            window.location.href = `${ADMIN_PATH}/dashboard`;
+            window.location.href = `${ADMIN_PATH}/dashboard#stats`;
           }, 1000);
         } else {
           messageDiv.className = 'message message-error';

@@ -849,5 +849,20 @@
 
   <script src="/js/theme.js"></script>
   <script src="/js/admin.js"></script>
+  <script>
+    // Forcer un seul onglet actif au chargement
+    window.addEventListener('DOMContentLoaded', () => {
+      // Retirer active de tous les liens
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      
+      // Ajouter active uniquement sur stats
+      const statsLink = document.querySelector('.nav-link[href="#stats"]');
+      if (statsLink) {
+        statsLink.classList.add('active');
+      }
+    });
+  </script>
 </body>
 </html>

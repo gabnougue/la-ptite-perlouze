@@ -87,9 +87,9 @@ function displayProduct(product) {
                          width: 48px; height: 48px; cursor: pointer;
                          box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
                          display: flex; align-items: center; justify-content: center;
-                         backdrop-filter: blur(4px); opacity: 0.5;"
+                         backdrop-filter: blur(4px); opacity: 0.7;"
                   onmouseover="this.style.background='${lavandeFull}'; this.style.transform='translateY(-50%) translateX(-4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'; this.style.opacity='1'"
-                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.opacity='0.5'">
+                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.opacity='0.7'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -100,9 +100,9 @@ function displayProduct(product) {
                          width: 48px; height: 48px; cursor: pointer;
                          box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
                          display: flex; align-items: center; justify-content: center;
-                         backdrop-filter: blur(4px); opacity: 0.5;"
+                         backdrop-filter: blur(4px); opacity: 0.7;"
                   onmouseover="this.style.background='${lavandeFull}'; this.style.transform='translateY(-50%) translateX(4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'; this.style.opacity='1'"
-                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.opacity='0.5'">
+                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.opacity='0.7'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -176,7 +176,7 @@ function displayProduct(product) {
             Ajouter au panier
           </button>
         ` : `
-          <button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed; font-size: 1.2rem; padding: 1rem 2rem;">
+          <button class="btn btn-primary" disabled style="opacity: 0.7; cursor: not-allowed; font-size: 1.2rem; padding: 1rem 2rem;">
             Produit indisponible
           </button>
         `}

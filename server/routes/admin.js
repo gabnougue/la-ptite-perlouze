@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
 const sharp = require('sharp');
@@ -26,6 +27,16 @@ const upload = multer({
       cb(new Error('Seules les images sont autorisées'));
     }
   }
+});
+
+// Rate limiting strict pour le login admin
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 tentatives max
+  message: { error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
+  skipSuccessfulRequests: false,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Fonction pour compresser et sauvegarder une image (via Vercel Blob)
@@ -59,8 +70,8 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Login admin
-router.post('/login', async (req, res) => {
+// Login admin avec rate limiting
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
 

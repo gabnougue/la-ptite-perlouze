@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /backoffice-perlouze/
+Disallow: /api/admin/
+
+# Autoriser le reste du site
+Allow: /
+
+# Plan du site (à créer si besoin)
+# Sitemap: https://laptiteperlouze.fr/sitemap.xml

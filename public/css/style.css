@@ -907,9 +907,9 @@ footer a:hover {
 }
 
 .message-error {
-  background: rgba(var(--bg-gradient-1), 0.95);
-  border-color: var(--rose-poudre);
-  color: #c62828;
+  background: #d32f2f;
+  border-color: #b71c1c;
+  color: white;
   box-shadow: var(--ombre-douce);
 }
 

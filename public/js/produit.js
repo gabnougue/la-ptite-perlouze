@@ -85,11 +85,11 @@ function displayProduct(product) {
                   style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
                          background: ${lavandeRgba}; border: none; border-radius: 12px;
                          width: 48px; height: 48px; cursor: pointer;
-                         box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease;
+                         box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
                          display: flex; align-items: center; justify-content: center;
-                         backdrop-filter: blur(4px);"
-                  onmouseover="this.style.background='${lavandeFull}'; this.style.transform='translateY(-50%) translateX(-4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'"
-                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'">
+                         backdrop-filter: blur(4px); opacity: 0.5;"
+                  onmouseover="this.style.background='${lavandeFull}'; this.style.transform='translateY(-50%) translateX(-4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'; this.style.opacity='1'"
+                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.opacity='0.5'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -98,11 +98,11 @@ function displayProduct(product) {
                   style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
                          background: ${lavandeRgba}; border: none; border-radius: 12px;
                          width: 48px; height: 48px; cursor: pointer;
-                         box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease;
+                         box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
                          display: flex; align-items: center; justify-content: center;
-                         backdrop-filter: blur(4px);"
-                  onmouseover="this.style.background='${lavandeFull}'; this.style.transform='translateY(-50%) translateX(4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'"
-                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'">
+                         backdrop-filter: blur(4px); opacity: 0.5;"
+                  onmouseover="this.style.background='${lavandeFull}'; this.style.transform='translateY(-50%) translateX(4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'; this.style.opacity='1'"
+                  onmouseout="this.style.background='${lavandeRgba}'; this.style.transform='translateY(-50%) translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.opacity='0.5'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>

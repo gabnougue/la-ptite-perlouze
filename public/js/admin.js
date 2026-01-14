@@ -992,6 +992,19 @@ function updateMessagesBadge() {
 
 // Voir une conversation complète
 async function viewThread(threadId) {
+  // Afficher le loader
+  const loader = document.createElement('div');
+  loader.className = 'modal active';
+  loader.id = 'thread-loader';
+  loader.style.zIndex = '10001';
+  loader.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+      <div style="font-size: 2rem; animation: spin 1s linear infinite;">💬</div>
+      <p style="margin-top: 1rem; font-size: 1.1rem;">Chargement...</p>
+    </div>
+  `;
+  document.body.appendChild(loader);
+
   try {
     // Marquer comme lu
     await fetch(`/api/messages/threads/${threadId}/mark-read`, {
@@ -1004,6 +1017,9 @@ async function viewThread(threadId) {
     const response = await fetch(`/api/messages/threads/${threadId}/messages`);
     const messages = await response.json();
     const thread = allThreads.find(t => t.id === threadId);
+
+    // Retirer le loader
+    loader.remove();
 
     if (!thread) return;
 
@@ -1065,6 +1081,10 @@ async function viewThread(threadId) {
 
     document.body.appendChild(modal);
   } catch (error) {
+    // Retirer le loader en cas d'erreur
+    const loaderToRemove = document.getElementById('thread-loader');
+    if (loaderToRemove) loaderToRemove.remove();
+
     console.error('Erreur:', error);
     showMessage('Erreur lors du chargement de la conversation', 'error');
   }
@@ -2307,8 +2327,8 @@ async function deleteBoutiqueImage(id) {
   }
 }
 
-// Déplacer une image de la boutique
-async function moveBoutiqueImage(id, direction) {
+// Déplacer une image de la boutique (optimistic UI)
+function moveBoutiqueImage(id, direction) {
   const index = boutiqueImages.findIndex(img => img.id === id);
 
   if (index === -1) return;
@@ -2317,43 +2337,48 @@ async function moveBoutiqueImage(id, direction) {
 
   if (newIndex < 0 || newIndex >= boutiqueImages.length) return;
 
-  // Échanger les positions
+  // Sauvegarder l'état actuel en cas d'erreur
+  const previousState = [...boutiqueImages];
+
+  // Échanger les positions immédiatement
   [boutiqueImages[index], boutiqueImages[newIndex]] = [boutiqueImages[newIndex], boutiqueImages[index]];
 
-  // Mettre à jour les display_order
+  // Mettre à jour les display_order localement
+  boutiqueImages.forEach((img, idx) => {
+    img.display_order = idx + 1;
+  });
+
+  // Mettre à jour l'affichage immédiatement
+  displayBoutiqueImages();
+
+  // Préparer les données pour l'API
   const updatedImages = boutiqueImages.map((img, idx) => ({
     id: img.id,
     display_order: idx + 1
   }));
 
-  try {
-    const response = await fetch('/api/boutique/images/reorder', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ images: updatedImages })
-    });
-
+  // Envoyer la requête en arrière-plan
+  fetch('/api/boutique/images/reorder', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ images: updatedImages })
+  }).then(response => {
     if (!response.ok) {
       throw new Error('Erreur lors de la réorganisation');
     }
-
-    // Mettre à jour l'affichage local
-    boutiqueImages.forEach((img, idx) => {
-      img.display_order = idx + 1;
-    });
-
-    displayBoutiqueImages();
-  } catch (error) {
+  }).catch(error => {
     console.error('Erreur réorganisation:', error);
     showMessage('Erreur lors de la réorganisation', 'error');
-    loadBoutiqueImages(); // Recharger pour rétablir l'ordre
-  }
+    // Restaurer l'état précédent
+    boutiqueImages = previousState;
+    displayBoutiqueImages();
+  });
 }
 
-// Changer directement la position d'une image de boutique
-async function changeBoutiqueImagePosition(id, newPosition) {
+// Changer directement la position d'une image de boutique (optimistic UI)
+function changeBoutiqueImagePosition(id, newPosition) {
   const newPos = parseInt(newPosition);
 
   // Validation
@@ -2369,39 +2394,43 @@ async function changeBoutiqueImagePosition(id, newPosition) {
   // Si c'est déjà la bonne position, ne rien faire
   if (currentIndex + 1 === newPos) return;
 
-  // Déplacer l'élément à la nouvelle position
+  // Sauvegarder l'état actuel en cas d'erreur
+  const previousState = [...boutiqueImages];
+
+  // Déplacer l'élément à la nouvelle position immédiatement
   const [movedImage] = boutiqueImages.splice(currentIndex, 1);
   boutiqueImages.splice(newPos - 1, 0, movedImage);
 
-  // Mettre à jour les display_order
+  // Mettre à jour les display_order localement
+  boutiqueImages.forEach((img, idx) => {
+    img.display_order = idx + 1;
+  });
+
+  // Mettre à jour l'affichage immédiatement
+  displayBoutiqueImages();
+
+  // Préparer les données pour l'API
   const updatedImages = boutiqueImages.map((img, idx) => ({
     id: img.id,
     display_order: idx + 1
   }));
 
-  try {
-    const response = await fetch('/api/boutique/images/reorder', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ images: updatedImages })
-    });
-
+  // Envoyer la requête en arrière-plan
+  fetch('/api/boutique/images/reorder', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ images: updatedImages })
+  }).then(response => {
     if (!response.ok) {
       throw new Error('Erreur lors de la réorganisation');
     }
-
-    // Mettre à jour l'affichage local
-    boutiqueImages.forEach((img, idx) => {
-      img.display_order = idx + 1;
-    });
-
-    displayBoutiqueImages();
-    showMessage('Position mise à jour', 'success');
-  } catch (error) {
+  }).catch(error => {
     console.error('Erreur réorganisation:', error);
     showMessage('Erreur lors de la réorganisation', 'error');
-    loadBoutiqueImages(); // Recharger pour rétablir l'ordre
-  }
+    // Restaurer l'état précédent
+    boutiqueImages = previousState;
+    displayBoutiqueImages();
+  });
 }

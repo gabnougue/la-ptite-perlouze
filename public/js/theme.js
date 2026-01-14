@@ -140,4 +140,40 @@ document.addEventListener('DOMContentLoaded', function() {
       link.classList.add('active');
     }
   });
+
+  // ═══════════════════════════════════════════════════
+  // Gestion du menu mobile collapsible
+  // ═══════════════════════════════════════════════════
+  const menuToggle = document.getElementById('menu-toggle');
+  const mainNav = document.getElementById('main-nav');
+
+  if (menuToggle && mainNav) {
+    menuToggle.addEventListener('click', function() {
+      mainNav.classList.toggle('open');
+      menuToggle.classList.toggle('open');
+
+      // Mettre à jour l'attribut aria-label pour l'accessibilité
+      const isOpen = mainNav.classList.contains('open');
+      menuToggle.setAttribute('aria-label', isOpen ? 'Fermer le menu' : 'Ouvrir le menu');
+    });
+
+    // Fermer le menu quand on clique sur un lien (sur mobile)
+    mainNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          mainNav.classList.remove('open');
+          menuToggle.classList.remove('open');
+          menuToggle.setAttribute('aria-label', 'Ouvrir le menu');
+        }
+      });
+    });
+
+    // Fermer le menu si on redimensionne la fenêtre au-delà du breakpoint mobile
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 768) {
+        mainNav.classList.remove('open');
+        menuToggle.classList.remove('open');
+      }
+    });
+  }
 });

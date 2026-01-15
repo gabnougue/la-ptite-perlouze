@@ -99,8 +99,8 @@
               <h3 style="color: var(--rose-poudre); font-size: 1.1rem; margin-bottom: 0.5rem;">
                 📧 Email
               </h3>
-              <p style="color: var(--texte-secondaire);">
-                yvonne@laptiteperlouze.fr
+              <p id="contact-email-display" style="color: var(--texte-secondaire);">
+                <a href="mailto:contact@laptiteperlouze.fr" id="contact-email-link" style="color: var(--lavande); text-decoration: none;">contact@laptiteperlouze.fr</a>
               </p>
             </div>
 
@@ -181,27 +181,37 @@
   <script src="/js/theme.js"></script>
   <script src="/js/contact.js"></script>
   <script>
-    // Charger l'URL du ptit bout de bois depuis les paramètres
-    async function loadBoutdeboisUrl() {
+    // Charger les paramètres (URL boutdebois et email de contact)
+    async function loadSettings() {
       try {
         const response = await fetch('/api/settings');
         const settings = await response.json();
+
+        // Mettre à jour l'URL du p'tit bout de bois
         if (settings.boutdebois_url) {
           const link = document.getElementById('boutdebois-footer-link');
           if (link) {
             link.href = settings.boutdebois_url;
           }
-          // Également mettre à jour le lien dans le contenu de la page
           const linkContact = document.getElementById('boutdebois-link-contact');
           if (linkContact) {
             linkContact.href = settings.boutdebois_url;
           }
         }
+
+        // Mettre à jour l'email de contact
+        if (settings.contact_email) {
+          const emailLink = document.getElementById('contact-email-link');
+          if (emailLink) {
+            emailLink.href = 'mailto:' + settings.contact_email;
+            emailLink.textContent = settings.contact_email;
+          }
+        }
       } catch (error) {
-        console.error('Erreur chargement URL boutdebois:', error);
+        console.error('Erreur chargement paramètres:', error);
       }
     }
-    loadBoutdeboisUrl();
+    loadSettings();
   </script>
 </body>
 </html>

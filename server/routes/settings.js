@@ -19,8 +19,10 @@ router.get('/', async (req, res) => {
   try {
     const rows = await db.all('SELECT * FROM settings', []);
 
-    // Convertir en objet clé-valeur
-    const settings = {};
+    // Convertir en objet clé-valeur avec valeurs par défaut
+    const settings = {
+      boutdebois_url: 'https://www.leptitboutdebois.fr'
+    };
     rows.forEach(row => {
       settings[row.key] = row.value;
     });

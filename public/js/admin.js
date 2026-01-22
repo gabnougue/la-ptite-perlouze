@@ -2275,6 +2275,48 @@ function displayBoutiqueImages() {
   `).join('');
 }
 
+// Compresser une image avant upload (max 1920px, qualité 0.8)
+async function compressImage(file, maxWidth = 1920, quality = 0.8) {
+  return new Promise((resolve) => {
+    // Si ce n'est pas une image, retourner tel quel
+    if (!file.type.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
+
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    img.onload = () => {
+      let { width, height } = img;
+
+      // Redimensionner si nécessaire
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob((blob) => {
+        if (blob && blob.size < file.size) {
+          // Utiliser la version compressée
+          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+        } else {
+          // Garder l'original si la compression n'aide pas
+          resolve(file);
+        }
+      }, 'image/jpeg', quality);
+    };
+
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 // Ajouter plusieurs images à la boutique
 async function uploadBoutiqueImages() {
   const input = document.getElementById('boutique-image-input');
@@ -2292,16 +2334,19 @@ async function uploadBoutiqueImages() {
   loader.innerHTML = `
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
       <div style="font-size: 2rem; animation: spin 1s linear infinite;">📤</div>
-      <p style="margin-top: 1rem; font-size: 1.1rem;">Ajout en cours... <span id="upload-progress">0/${files.length}</span></p>
+      <p style="margin-top: 1rem; font-size: 1.1rem;">Compression et ajout... <span id="upload-progress">0/${files.length}</span></p>
     </div>
   `;
   document.body.appendChild(loader);
 
+  // Compresser toutes les images d'abord
+  const compressedFiles = await Promise.all(files.map(f => compressImage(f)));
+
   let successCount = 0;
   let errorCount = 0;
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
+  for (let i = 0; i < compressedFiles.length; i++) {
+    const file = compressedFiles[i];
     const formData = new FormData();
     formData.append('image', file);
 

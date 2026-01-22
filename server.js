@@ -23,16 +23,6 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
-// Rate limiting global
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  message: 'Trop de requêtes, réessayez dans 15 minutes',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(generalLimiter);
-
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -42,7 +32,18 @@ app.use('/admin', (req, res, next) => {
   res.status(403).send('Accès interdit');
 });
 
+// Servir les fichiers statiques AVANT le rate limiting
 app.use(express.static('public'));
+
+// Rate limiting global (uniquement pour les routes dynamiques)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  message: 'Trop de requêtes, réessayez dans 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(generalLimiter);
 
 // Configuration des sessions sécurisées
 app.use(cookieSession({

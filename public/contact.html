@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +9,10 @@
   <link rel="stylesheet" href="/css/style.css">
   <script>
     // Application immédiate du thème pour éviter le flash
-    (function(){var t=localStorage.getItem('perlouze-theme');if(!t){var s=localStorage.getItem('perlouze-theme-setting'),m=(new Date).getMonth()+1,d=(new Date).getDate();t=s&&s!=='auto'?s:(m===10&&d>=15)||(m===11&&d===1)?'halloween':m===12||(m===1&&d<=6)?'noel':(m===1&&d>=7)||m===2||(m===3&&d<=19)?'hiver':(m===3&&d>=20)||m===4||m===5||(m===6&&d<=20)?'printemps':(m===6&&d>=21)||m===7||m===8||(m===9&&d<=22)?'ete':(m===9&&d>=23)||(m===10&&d<15)||(m===11&&d>=2)?'automne':'printemps';}document.documentElement.setAttribute('data-theme',t);})();
+    (function () { var t = localStorage.getItem('perlouze-theme'); if (!t) { var s = localStorage.getItem('perlouze-theme-setting'), m = (new Date).getMonth() + 1, d = (new Date).getDate(); t = s && s !== 'auto' ? s : (m === 10 && d >= 15) || (m === 11 && d === 1) ? 'halloween' : m === 12 || (m === 1 && d <= 6) ? 'noel' : (m === 1 && d >= 7) || m === 2 || (m === 3 && d <= 19) ? 'hiver' : (m === 3 && d >= 20) || m === 4 || m === 5 || (m === 6 && d <= 20) ? 'printemps' : (m === 6 && d >= 21) || m === 7 || m === 8 || (m === 9 && d <= 22) ? 'ete' : (m === 9 && d >= 23) || (m === 10 && d < 15) || (m === 11 && d >= 2) ? 'automne' : 'printemps'; } document.documentElement.setAttribute('data-theme', t); })();
   </script>
 </head>
+
 <body>
   <!-- Header -->
   <header>
@@ -27,7 +29,10 @@
           <li><a href="/catalogue">Catalogue</a></li>
           <li><a href="/contact">Contact</a></li>
           <li>
-            <a href="/boutique" style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);" onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
+            <a href="/boutique"
+              style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);"
+              onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'"
+              onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
               🏡 La Boutique
             </a>
           </li>
@@ -60,7 +65,8 @@
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 2rem;">
         <!-- Formulaire de contact -->
         <div class="card">
-          <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem;">
+          <h2
+            style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem;">
             Envoyez-nous un message
           </h2>
 
@@ -91,7 +97,8 @@
         <!-- Informations de contact -->
         <div>
           <div class="card" style="margin-bottom: 2rem;">
-            <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem;">
+            <h2
+              style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem;">
               Nos coordonnées
             </h2>
 
@@ -100,7 +107,8 @@
                 📧 Email
               </h3>
               <p id="contact-email-display" style="color: var(--texte-secondaire);">
-                <a href="mailto:contact@laptiteperlouze.fr" id="contact-email-link" style="color: var(--lavande); text-decoration: none;">contact@laptiteperlouze.fr</a>
+                <a href="mailto:contact@laptiteperlouze.fr" id="contact-email-link"
+                  style="color: var(--lavande); text-decoration: none;">contact@laptiteperlouze.fr</a>
               </p>
             </div>
 
@@ -115,15 +123,18 @@
             </div>
           </div>
 
-          <div class="card" style="background: linear-gradient(135deg, rgba(139, 69, 19, 0.05), rgba(160, 82, 45, 0.05)); border-left: 4px solid var(--wood-medium, #8B5A3C);">
-            <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1rem; text-align: center;">
+          <div class="card"
+            style="background: linear-gradient(135deg, rgba(139, 69, 19, 0.05), rgba(160, 82, 45, 0.05)); border-left: 4px solid var(--wood-medium, #8B5A3C);">
+            <h2
+              style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1rem; text-align: center;">
               🪵 Le p'tit bout de bois
             </h2>
             <p style="color: var(--texte-secondaire); line-height: 1.8; margin-bottom: 1.5rem; text-align: center;">
               Découvrez aussi les créations artisanales en bois de notre partenaire Jean-Michel Nougué-Lecocq
             </p>
             <div style="text-align: center;">
-              <a href="https://www.leptitboutdebois.fr" id="boutdebois-link-contact" class="btn btn-primary" style="display: inline-block;">
+              <a href="https://www.leptitboutdebois.fr" id="boutdebois-link-contact" class="btn btn-primary"
+                style="display: inline-block;">
                 Visiter Le p'tit bout de bois →
               </a>
             </div>
@@ -139,19 +150,22 @@
           <div>
             <h3 style="color: var(--rose-poudre); margin-bottom: 0.5rem;">💎 Les pierres sont-elles naturelles ?</h3>
             <p style="color: var(--texte-secondaire); line-height: 1.6;">
-              Oui, toutes nos pierres sont 100% naturelles et sélectionnées avec soin pour leur authenticité et leur beauté.
+              Oui, toutes nos pierres sont 100% naturelles et sélectionnées avec soin pour leur authenticité et leur
+              beauté.
             </p>
           </div>
 
           <div>
             <h3 style="color: var(--rose-poudre); margin-bottom: 0.5rem;">📦 Quels sont les délais de livraison ?</h3>
             <p style="color: var(--texte-secondaire); line-height: 1.6;">
-              Vos bijoux sont expédiés sous 2-3 jours ouvrés. La livraison prend ensuite 3-5 jours en France métropolitaine.
+              Vos bijoux sont expédiés sous 2-3 jours ouvrés. La livraison prend ensuite 3-5 jours en France
+              métropolitaine.
             </p>
           </div>
 
           <div>
-            <h3 style="color: var(--rose-poudre); margin-bottom: 0.5rem;">✨ Puis-je commander un bijou personnalisé ?</h3>
+            <h3 style="color: var(--rose-poudre); margin-bottom: 0.5rem;">✨ Puis-je commander un bijou personnalisé ?
+            </h3>
             <p style="color: var(--texte-secondaire); line-height: 1.6;">
               Absolument ! Contactez-nous pour discuter de votre projet de création sur-mesure.
             </p>
@@ -172,7 +186,15 @@
   <footer>
     <p>🌸 La p'tite perlouze 🌸</p>
     <p>Créations artisanales par Yvonne Lecocq</p>
-    <p><a href="/contact">Nous contacter</a> | <a href="https://www.leptitboutdebois.fr" id="boutdebois-footer-link">Le p'tit bout de bois</a></p>
+    <p>
+      <a href="/contact">Nous contacter</a> |
+      <a href="/mentions-legales">Mentions légales</a> |
+      <a href="/confidentialite">Confidentialité</a> |
+      <a href="/cgv">CGV</a>
+    </p>
+    <p style="margin-top: 0.5rem;">
+      <a href="https://www.leptitboutdebois.fr" id="boutdebois-footer-link">Le p'tit bout de bois</a>
+    </p>
     <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
       © 2026 La p'tite perlouze - Tous droits réservés
     </p>
@@ -214,4 +236,5 @@
     loadSettings();
   </script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +9,10 @@
   <link rel="stylesheet" href="/css/style.css">
   <script>
     // Application immédiate du thème pour éviter le flash
-    (function(){var t=localStorage.getItem('perlouze-theme');if(!t){var s=localStorage.getItem('perlouze-theme-setting'),m=(new Date).getMonth()+1,d=(new Date).getDate();t=s&&s!=='auto'?s:(m===10&&d>=15)||(m===11&&d===1)?'halloween':m===12||(m===1&&d<=6)?'noel':(m===1&&d>=7)||m===2||(m===3&&d<=19)?'hiver':(m===3&&d>=20)||m===4||m===5||(m===6&&d<=20)?'printemps':(m===6&&d>=21)||m===7||m===8||(m===9&&d<=22)?'ete':(m===9&&d>=23)||(m===10&&d<15)||(m===11&&d>=2)?'automne':'printemps';}document.documentElement.setAttribute('data-theme',t);})();
+    (function () { var t = localStorage.getItem('perlouze-theme'); if (!t) { var s = localStorage.getItem('perlouze-theme-setting'), m = (new Date).getMonth() + 1, d = (new Date).getDate(); t = s && s !== 'auto' ? s : (m === 10 && d >= 15) || (m === 11 && d === 1) ? 'halloween' : m === 12 || (m === 1 && d <= 6) ? 'noel' : (m === 1 && d >= 7) || m === 2 || (m === 3 && d <= 19) ? 'hiver' : (m === 3 && d >= 20) || m === 4 || m === 5 || (m === 6 && d <= 20) ? 'printemps' : (m === 6 && d >= 21) || m === 7 || m === 8 || (m === 9 && d <= 22) ? 'ete' : (m === 9 && d >= 23) || (m === 10 && d < 15) || (m === 11 && d >= 2) ? 'automne' : 'printemps'; } document.documentElement.setAttribute('data-theme', t); })();
   </script>
 </head>
+
 <body>
   <!-- Header -->
   <header>
@@ -27,7 +29,10 @@
           <li><a href="/catalogue">Catalogue</a></li>
           <li><a href="/contact">Contact</a></li>
           <li>
-            <a href="/boutique" style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);" onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
+            <a href="/boutique"
+              style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);"
+              onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'"
+              onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
               🏡 La Boutique
             </a>
           </li>
@@ -49,7 +54,8 @@
 
       <!-- Filtres -->
       <div class="card" style="margin-bottom: 2rem; padding: 2rem;">
-        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">
+        <h3
+          style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">
           Filtrer les bijoux ✨
         </h3>
 
@@ -145,7 +151,15 @@
   <footer>
     <p>🌸 La p'tite perlouze 🌸</p>
     <p>Créations artisanales par Yvonne Lecocq</p>
-    <p><a href="/contact">Nous contacter</a> | <a href="https://www.leptitboutdebois.fr" id="boutdebois-footer-link">Le p'tit bout de bois</a></p>
+    <p>
+      <a href="/contact">Nous contacter</a> |
+      <a href="/mentions-legales">Mentions légales</a> |
+      <a href="/confidentialite">Confidentialité</a> |
+      <a href="/cgv">CGV</a>
+    </p>
+    <p style="margin-top: 0.5rem;">
+      <a href="https://www.leptitboutdebois.fr" id="boutdebois-footer-link">Le p'tit bout de bois</a>
+    </p>
     <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
       © 2026 La p'tite perlouze - Tous droits réservés
     </p>
@@ -172,4 +186,5 @@
     loadBoutdeboisUrl();
   </script>
 </body>
+
 </html>

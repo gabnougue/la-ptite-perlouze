@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
   <link rel="stylesheet" href="/css/style.css">
   <script>
     // Application immédiate du thème pour éviter le flash
-    (function(){var t=localStorage.getItem('perlouze-theme');if(!t){var s=localStorage.getItem('perlouze-theme-setting'),m=(new Date).getMonth()+1,d=(new Date).getDate();t=s&&s!=='auto'?s:(m===10&&d>=15)||(m===11&&d===1)?'halloween':m===12||(m===1&&d<=6)?'noel':(m===1&&d>=7)||m===2||(m===3&&d<=19)?'hiver':(m===3&&d>=20)||m===4||m===5||(m===6&&d<=20)?'printemps':(m===6&&d>=21)||m===7||m===8||(m===9&&d<=22)?'ete':(m===9&&d>=23)||(m===10&&d<15)||(m===11&&d>=2)?'automne':'printemps';}document.documentElement.setAttribute('data-theme',t);})();
+    (function () { var t = localStorage.getItem('perlouze-theme'); if (!t) { var s = localStorage.getItem('perlouze-theme-setting'), m = (new Date).getMonth() + 1, d = (new Date).getDate(); t = s && s !== 'auto' ? s : (m === 10 && d >= 15) || (m === 11 && d === 1) ? 'halloween' : m === 12 || (m === 1 && d <= 6) ? 'noel' : (m === 1 && d >= 7) || m === 2 || (m === 3 && d <= 19) ? 'hiver' : (m === 3 && d >= 20) || m === 4 || m === 5 || (m === 6 && d <= 20) ? 'printemps' : (m === 6 && d >= 21) || m === 7 || m === 8 || (m === 9 && d <= 22) ? 'ete' : (m === 9 && d >= 23) || (m === 10 && d < 15) || (m === 11 && d >= 2) ? 'automne' : 'printemps'; } document.documentElement.setAttribute('data-theme', t); })();
   </script>
   <script src="https://js.stripe.com/v3/"></script>
   <style>
@@ -119,6 +120,7 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Header -->
   <header>
@@ -135,7 +137,10 @@
           <li><a href="/catalogue">Catalogue</a></li>
           <li><a href="/contact">Contact</a></li>
           <li>
-            <a href="/boutique" style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);" onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
+            <a href="/boutique"
+              style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);"
+              onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'"
+              onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
               🏡 La Boutique
             </a>
           </li>
@@ -154,7 +159,8 @@
   <div class="container">
     <h1 class="section-title">Mon panier</h1>
 
-    <div id="empty-cart" class="card" style="display: none; text-align: center; padding: 3rem; max-width: 600px; margin: 2rem auto;">
+    <div id="empty-cart" class="card"
+      style="display: none; text-align: center; padding: 3rem; max-width: 600px; margin: 2rem auto;">
       <p style="font-size: 1.5rem; color: var(--texte-secondaire); margin-bottom: 1rem;">
         Votre panier est vide <span class="decoration-heart">♡</span>
       </p>
@@ -177,7 +183,8 @@
       <!-- Résumé de la commande -->
       <div id="cart-summary-container" style="display: none;">
         <div class="card cart-summary">
-          <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem;">
+          <h2
+            style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1.5rem;">
             Récapitulatif
           </h2>
 
@@ -190,11 +197,13 @@
               <span>Livraison</span>
               <span id="shipping">Gratuite</span>
             </div>
-            <div id="shipping-message" style="font-size: 0.85rem; color: var(--lavande); text-align: right; margin-top: 0.25rem; font-weight: 500;">
+            <div id="shipping-message"
+              style="font-size: 0.85rem; color: var(--lavande); text-align: right; margin-top: 0.25rem; font-weight: 500;">
               <!-- Message dynamique pour la livraison -->
             </div>
             <hr style="border: none; border-top: 2px solid var(--rose-poudre); margin: 1rem 0;">
-            <div style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; color: var(--rose-poudre);">
+            <div
+              style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; color: var(--rose-poudre);">
               <span>Total</span>
               <span id="total">0.00 €</span>
             </div>
@@ -249,7 +258,8 @@
             Payer <span id="total-payment">0.00 €</span>
           </button>
 
-          <button type="button" class="btn btn-outline" onclick="cancelCheckout()" style="width: 100%; margin-top: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="cancelCheckout()"
+            style="width: 100%; margin-top: 1rem;">
             Annuler
           </button>
         </form>
@@ -283,15 +293,25 @@
   <footer>
     <p>🌸 La p'tite perlouze 🌸</p>
     <p>Créations artisanales par Yvonne Lecocq</p>
-    <p><a href="/contact">Nous contacter</a> | <a href="https://www.leptitboutdebois.fr" id="boutdebois-footer-link">Le p'tit bout de bois</a></p>
+    <p>
+      <a href="/contact">Nous contacter</a> |
+      <a href="/mentions-legales">Mentions légales</a> |
+      <a href="/confidentialite">Confidentialité</a> |
+      <a href="/cgv">CGV</a>
+    </p>
+    <p style="margin-top: 0.5rem;">
+      <a href="https://www.leptitboutdebois.fr" id="boutdebois-footer-link">Le p'tit bout de bois</a>
+    </p>
     <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
       © 2026 La p'tite perlouze - Tous droits réservés
     </p>
   </footer>
 
   <!-- Modal de confirmation de suppression -->
-  <div id="remove-modal" onclick="closeRemoveModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(90, 74, 90, 0.6); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center;">
-    <div class="card" onclick="event.stopPropagation()" style="max-width: 400px; margin: 2rem; text-align: center; animation: fadeIn 0.3s ease;">
+  <div id="remove-modal" onclick="closeRemoveModal()"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(90, 74, 90, 0.6); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center;">
+    <div class="card" onclick="event.stopPropagation()"
+      style="max-width: 400px; margin: 2rem; text-align: center; animation: fadeIn 0.3s ease;">
       <div style="font-size: 3rem; margin-bottom: 1rem;">🗑️</div>
       <h2 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 2rem; margin-bottom: 1rem;">
         Retirer l'article ?
@@ -331,4 +351,5 @@
     loadBoutdeboisUrl();
   </script>
 </body>
+
 </html>

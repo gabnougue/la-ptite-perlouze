@@ -195,11 +195,11 @@ async function loadProducts() {
         <td data-label="Prix">${product.price.toFixed(2)} €</td>
         <td data-label="Stock">
           ${product.stock <= 0
-            ? '<span class="badge badge-warning">Rupture</span>'
-            : product.stock <= 3
+          ? '<span class="badge badge-warning">Rupture</span>'
+          : product.stock <= 3
             ? `<span class="badge badge-warning">${product.stock}</span>`
             : `<span class="badge badge-success">${product.stock}</span>`
-          }
+        }
         </td>
         <td data-label="Actions">
           <button onclick="editProduct(${product.id})" class="btn btn-primary btn-small">Modifier</button>
@@ -949,9 +949,9 @@ async function loadThreads() {
         <td data-label="Statut">
           <div>
             ${thread.status === 'open'
-              ? '<span class="badge badge-success">Ouvert</span>'
-              : '<span class="badge badge-info">Fermé</span>'
-            }
+          ? '<span class="badge badge-success">Ouvert</span>'
+          : '<span class="badge badge-info">Fermé</span>'
+        }
           </div>
           ${unreadCount > 0 ? `<div style="margin-top: 0.5rem;"><span class="badge badge-warning">${unreadCount} nouveau(x)</span></div>` : ''}
         </td>
@@ -970,9 +970,9 @@ async function loadThreads() {
             👁️
           </button>
           ${thread.status === 'open'
-            ? `<button onclick="closeThread(${thread.id})" class="btn btn-secondary btn-small" style="font-size: 1.2rem;" title="Fermer">✓</button>`
-            : `<button onclick="reopenThread(${thread.id})" class="btn btn-secondary btn-small" style="font-size: 1.1rem;" title="Rouvrir">↻</button>`
-          }
+          ? `<button onclick="closeThread(${thread.id})" class="btn btn-secondary btn-small" style="font-size: 1.2rem;" title="Fermer">✓</button>`
+          : `<button onclick="reopenThread(${thread.id})" class="btn btn-secondary btn-small" style="font-size: 1.1rem;" title="Rouvrir">↻</button>`
+        }
           <button onclick="deleteThread(${thread.id})" class="btn btn-secondary btn-small" title="Supprimer">🗑️</button>
         </td>
       `;
@@ -1051,8 +1051,8 @@ async function viewThread(threadId) {
 
         <div style="flex: 1; overflow-y: auto; background: var(--fond-secondaire); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; max-height: 50vh;">
           ${messages.map(msg => {
-            const isCustomer = msg.sender_type === 'customer';
-            return `
+      const isCustomer = msg.sender_type === 'customer';
+      return `
               <div style="margin-bottom: 1.5rem; display: flex; justify-content: ${isCustomer ? 'flex-start' : 'flex-end'};">
                 <div style="max-width: 70%; background: ${isCustomer ? 'white' : 'var(--lavande)'}; color: ${isCustomer ? 'var(--texte-principal)' : 'white'}; padding: 1rem; border-radius: 15px; box-shadow: var(--ombre-douce);">
                   <div style="margin-bottom: 0.5rem;">
@@ -1077,7 +1077,7 @@ async function viewThread(threadId) {
                 </div>
               </div>
             `;
-          }).join('')}
+    }).join('')}
         </div>
 
         <div>
@@ -1737,7 +1737,7 @@ async function selectTheme(theme) {
     <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--lavande); border-radius: 50%; animation: spin 1s linear infinite;"></div>
     <p style="margin: 0; color: var(--texte-principal); font-weight: 600;">Changement de thème...</p>
   `;
-  
+
   // Ajouter l'animation de rotation si elle n'existe pas
   if (!document.getElementById('loader-style')) {
     const style = document.createElement('style');
@@ -1745,9 +1745,9 @@ async function selectTheme(theme) {
     style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
     document.head.appendChild(style);
   }
-  
+
   document.body.appendChild(loader);
-  
+
   try {
     const response = await fetch('/api/settings/theme', {
       method: 'POST',
@@ -1770,12 +1770,12 @@ async function selectTheme(theme) {
         localStorage.setItem('perlouze-theme-setting', theme);
         localStorage.setItem('perlouze-theme', theme);
       }
-      
+
       updateThemeSelection(theme);
-      
+
       // Retirer le loader
       document.body.removeChild(loader);
-      
+
       showMessage(`Thème ${themeNames[theme]} appliqué avec succès`, 'success');
     } else {
       document.body.removeChild(loader);
@@ -1803,7 +1803,7 @@ function getSeasonalTheme() {
   if ((month === 3 && day >= 20) || month === 4 || month === 5 || (month === 6 && day <= 20)) return 'printemps';
   if ((month === 6 && day >= 21) || month === 7 || month === 8 || (month === 9 && day <= 22)) return 'ete';
   if ((month === 9 && day >= 23) || (month === 10 && day < 15) || (month === 11 && day >= 2)) return 'automne';
-  
+
   return 'printemps';
 }
 
@@ -2047,7 +2047,7 @@ function displayAllImages() {
       const image = item.data;
       img.src = image.image_path.startsWith('https://') ? image.image_path : `/images/uploads/${image.image_path}`;
       img.alt = `Image ${globalIndex + 1}`;
-      
+
       // Bordure sur le conteneur
       imageDiv.style.border = globalIndex === 0 ? '3px solid var(--pastel-vert)' : '2px solid var(--lavande)';
 
@@ -2062,7 +2062,7 @@ function displayAllImages() {
       // Nouvelle image
       const file = item.data;
       img.alt = `Nouvelle image ${globalIndex + 1}`;
-      
+
       // Bordure sur le conteneur
       imageDiv.style.border = globalIndex === 0 ? '3px solid var(--pastel-vert)' : '3px solid var(--pastel-vert)';
       img.style.opacity = '0.95';
@@ -2077,7 +2077,7 @@ function displayAllImages() {
 
       // Lire le fichier et afficher l'image
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
@@ -2531,3 +2531,91 @@ function changeBoutiqueImagePosition(id, newPosition) {
     displayBoutiqueImages();
   });
 }
+
+// ====================================
+// AIDE POUR LES LIENS INTER-SITES
+// ====================================
+
+// Afficher l'aide pour les liens vers l'autre site
+function showLinkHelp(site) {
+  const isBoutDeBois = site === 'boutdebois';
+  const siteName = isBoutDeBois ? "Le p'tit bout de bois" : "La p'tite perlouze";
+  const baseUrl = isBoutDeBois ? 'https://www.leptitboutdebois.fr' : 'https://www.laptiteperlouze.fr';
+
+  const modal = document.createElement('div');
+  modal.className = 'modal active';
+  modal.style.zIndex = '10002';
+  modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">
+                    🔗 Liens vers ${siteName}
+                </h3>
+                <button onclick="this.closest('.modal').remove()" 
+                        style="background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--texte-secondaire);">×</button>
+            </div>
+            
+            <div style="background: var(--fond-secondaire); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h4 style="color: var(--texte-principal); margin: 0 0 1rem 0; font-size: 1.1rem;">
+                    📌 Types de liens possibles
+                </h4>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="font-weight: 600; color: var(--lavande); margin: 0 0 0.5rem 0;">
+                        1. Lien vers un produit spécifique :
+                    </p>
+                    <code style="display: block; background: white; padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; word-break: break-all; border: 2px solid var(--rose-poudre);">
+                        ${baseUrl}/produit/3
+                    </code>
+                    <small style="display: block; margin-top: 0.5rem; color: var(--texte-secondaire);">
+                        Remplacez "3" par l'ID du produit concerné
+                    </small>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="font-weight: 600; color: var(--lavande); margin: 0 0 0.5rem 0;">
+                        2. Lien vers une catégorie :
+                    </p>
+                    <code style="display: block; background: white; padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; word-break: break-all; border: 2px solid var(--rose-poudre);">
+                        ${baseUrl}/catalogue?category=Bracelets
+                    </code>
+                    <small style="display: block; margin-top: 0.5rem; color: var(--texte-secondaire);">
+                        Remplacez "Bracelets" par le nom exact de la catégorie
+                    </small>
+                </div>
+                
+                <div>
+                    <p style="font-weight: 600; color: var(--lavande); margin: 0 0 0.5rem 0;">
+                        3. Lien vers le catalogue complet :
+                    </p>
+                    <code style="display: block; background: white; padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; word-break: break-all; border: 2px solid var(--rose-poudre);">
+                        ${baseUrl}/catalogue
+                    </code>
+                </div>
+            </div>
+            
+            <div style="background: #FEF3C7; border-radius: 12px; padding: 1rem; border-left: 4px solid #F59E0B;">
+                <p style="margin: 0; color: #92400E; font-size: 0.9rem;">
+                    💡 <strong>Astuce :</strong> Copiez le lien directement depuis la barre d'adresse de votre navigateur 
+                    lorsque vous êtes sur la page souhaitée de ${siteName}.
+                </p>
+            </div>
+            
+            <button onclick="this.closest('.modal').remove()" 
+                    class="btn btn-primary" 
+                    style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">
+                J'ai compris
+            </button>
+        </div>
+    `;
+
+  // Fermer si on clique en dehors
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+
+  document.body.appendChild(modal);
+}
+

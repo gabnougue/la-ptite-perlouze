@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,7 @@
   <link rel="stylesheet" href="/css/style.css">
   <script>
     // Application immédiate du thème pour éviter le flash
-    (function(){var t=localStorage.getItem('perlouze-theme');if(!t){var s=localStorage.getItem('perlouze-theme-setting'),m=(new Date).getMonth()+1,d=(new Date).getDate();t=s&&s!=='auto'?s:(m===10&&d>=15)||(m===11&&d===1)?'halloween':m===12||(m===1&&d<=6)?'noel':(m===1&&d>=7)||m===2||(m===3&&d<=19)?'hiver':(m===3&&d>=20)||m===4||m===5||(m===6&&d<=20)?'printemps':(m===6&&d>=21)||m===7||m===8||(m===9&&d<=22)?'ete':(m===9&&d>=23)||(m===10&&d<15)||(m===11&&d>=2)?'automne':'printemps';}document.documentElement.setAttribute('data-theme',t);})();
+    (function () { var t = localStorage.getItem('perlouze-theme'); if (!t) { var s = localStorage.getItem('perlouze-theme-setting'), m = (new Date).getMonth() + 1, d = (new Date).getDate(); t = s && s !== 'auto' ? s : (m === 10 && d >= 15) || (m === 11 && d === 1) ? 'halloween' : m === 12 || (m === 1 && d <= 6) ? 'noel' : (m === 1 && d >= 7) || m === 2 || (m === 3 && d <= 19) ? 'hiver' : (m === 3 && d >= 20) || m === 4 || m === 5 || (m === 6 && d <= 20) ? 'printemps' : (m === 6 && d >= 21) || m === 7 || m === 8 || (m === 9 && d <= 22) ? 'ete' : (m === 9 && d >= 23) || (m === 10 && d < 15) || (m === 11 && d >= 2) ? 'automne' : 'printemps'; } document.documentElement.setAttribute('data-theme', t); })();
   </script>
   <style>
     .admin-header {
@@ -91,7 +92,8 @@
       border-collapse: collapse;
     }
 
-    th, td {
+    th,
+    td {
       text-align: left;
       padding: 1rem;
       border-bottom: 1px solid #eee;
@@ -196,8 +198,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .modal-loader-text {
@@ -268,6 +275,7 @@
 
     /* Responsive Mobile */
     @media (max-width: 768px) {
+
       /* Header Admin */
       .admin-header {
         flex-direction: column;
@@ -280,7 +288,7 @@
         font-size: 1.5rem;
       }
 
-      .admin-header > div {
+      .admin-header>div {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
@@ -330,7 +338,12 @@
       }
 
       /* Tables - transformation en cards sur mobile */
-      table, thead, tbody, th, td, tr {
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
         display: block;
       }
 
@@ -400,6 +413,7 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Header Admin -->
   <div class="admin-header">
@@ -460,7 +474,8 @@
 
     <!-- Section Produits -->
     <section id="products-section" class="section-content">
-      <div class="section-header-mobile" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <div class="section-header-mobile"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <h2 class="section-title" style="margin: 0;">Gestion des produits</h2>
         <button onclick="openProductModal()" class="btn btn-primary">
           Ajouter un produit
@@ -490,8 +505,10 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 class="section-title" style="margin: 0;">Commandes</h2>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <input type="checkbox" id="hide-delivered" onchange="displayOrders()" style="width: 18px; height: 18px; cursor: pointer;">
-          <label for="hide-delivered" style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer les commandes livrées</label>
+          <input type="checkbox" id="hide-delivered" onchange="displayOrders()"
+            style="width: 18px; height: 18px; cursor: pointer;">
+          <label for="hide-delivered" style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer
+            les commandes livrées</label>
         </div>
       </div>
       <div class="card">
@@ -518,8 +535,11 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 class="section-title" style="margin: 0;">💬 Conversations clients</h2>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <input type="checkbox" id="hide-closed-threads" onchange="loadThreads()" style="width: 18px; height: 18px; cursor: pointer;">
-          <label for="hide-closed-threads" style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer les conversations closes</label>
+          <input type="checkbox" id="hide-closed-threads" onchange="loadThreads()"
+            style="width: 18px; height: 18px; cursor: pointer;">
+          <label for="hide-closed-threads"
+            style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer les conversations
+            closes</label>
         </div>
       </div>
       <div class="card">
@@ -554,25 +574,30 @@
 
         <!-- Upload nouvelle image -->
         <div style="margin-bottom: 2rem;">
-          <input type="file" id="boutique-image-input" accept="image/*" multiple
-                 style="display: none;" onchange="uploadBoutiqueImages()">
-          <button onclick="document.getElementById('boutique-image-input').click()" class="btn btn-primary" style="padding: 1rem 2rem;">
+          <input type="file" id="boutique-image-input" accept="image/*" multiple style="display: none;"
+            onchange="uploadBoutiqueImages()">
+          <button onclick="document.getElementById('boutique-image-input').click()" class="btn btn-primary"
+            style="padding: 1rem 2rem;">
             📷 Ajouter des photos
           </button>
         </div>
 
         <!-- Grille des images existantes -->
-        <div id="boutique-images-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+        <div id="boutique-images-grid"
+          style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
           <!-- Images chargées dynamiquement -->
         </div>
 
-        <div id="boutique-images-hint" style="margin-top: 1rem; padding: 1rem; background: rgba(var(--bg-gradient-2), 0.1); border-radius: 8px; display: none;">
+        <div id="boutique-images-hint"
+          style="margin-top: 1rem; padding: 1rem; background: rgba(var(--bg-gradient-2), 0.1); border-radius: 8px; display: none;">
           <small style="color: var(--texte-secondaire);">
-            💡 <strong>Astuce :</strong> Utilisez les boutons ◀ ▶ pour réorganiser les images. L'ordre d'affichage correspond à l'ordre dans cette grille.
+            💡 <strong>Astuce :</strong> Utilisez les boutons ◀ ▶ pour réorganiser les images. L'ordre d'affichage
+            correspond à l'ordre dans cette grille.
           </small>
         </div>
 
-        <div id="no-boutique-images" style="text-align: center; padding: 3rem; color: var(--texte-secondaire); display: none;">
+        <div id="no-boutique-images"
+          style="text-align: center; padding: 3rem; color: var(--texte-secondaire); display: none;">
           Aucune image pour le moment. Ajoutez votre première photo de la boutique ! 📸
         </div>
       </div>
@@ -589,18 +614,20 @@
         </h3>
         <form id="settings-form" style="max-width: 600px;">
           <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Email de contact</label>
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Email
+              de contact</label>
             <input type="email" id="setting-contact-email" placeholder="contact@laptiteperlouze.fr"
-                   style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte);">
+              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte);">
           </div>
           <div style="margin-bottom: 1.5rem;">
             <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">
               🪵 URL du P'tit bout de bois
             </label>
             <input type="url" id="setting-boutdebois-url" placeholder="https://www.leptitboutdebois.fr"
-                   style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
+              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
           </div>
-          <button type="button" onclick="saveGeneralSettings()" class="btn btn-primary">Enregistrer les paramètres</button>
+          <button type="button" onclick="saveGeneralSettings()" class="btn btn-primary">Enregistrer les
+            paramètres</button>
         </form>
       </div>
 
@@ -615,48 +642,59 @@
 
         <!-- Thème automatique -->
         <p style="color: var(--texte-principal); font-weight: 600; margin-bottom: 1rem;">Thème automatique :</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-          <div class="theme-option" data-theme="auto" onclick="selectTheme('auto')" style="cursor: pointer; padding: 1.5rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f5a5b8 0%, #4fa8c5 50%, #c67b5c 100%); box-shadow: 0 0 0 0 transparent;">
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+          <div class="theme-option" data-theme="auto" onclick="selectTheme('auto')"
+            style="cursor: pointer; padding: 1.5rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f5a5b8 0%, #4fa8c5 50%, #c67b5c 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎨</div>
             <div style="color: white; font-weight: 700; font-size: 1.1rem;">Automatique</div>
-            <div style="color: white; font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">Le thème change selon la saison</div>
+            <div style="color: white; font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">Le thème change selon la
+              saison</div>
           </div>
         </div>
 
         <!-- Thèmes saisonniers -->
         <p style="color: var(--texte-principal); font-weight: 600; margin-bottom: 1rem;">Thèmes saisonniers :</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-          <div class="theme-option" data-theme="noel" onclick="selectTheme('noel')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #c94f4f 0%, #2d5d3a 50%, #d4af37 100%); box-shadow: 0 0 0 0 transparent;">
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+          <div class="theme-option" data-theme="noel" onclick="selectTheme('noel')"
+            style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #c94f4f 0%, #2d5d3a 50%, #d4af37 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎄</div>
             <div style="color: white; font-weight: 600;">Noël</div>
           </div>
 
-          <div class="theme-option" data-theme="printemps" onclick="selectTheme('printemps')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f5a5b8 0%, #c8e6af 100%); box-shadow: 0 0 0 0 transparent;">
+          <div class="theme-option" data-theme="printemps" onclick="selectTheme('printemps')"
+            style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f5a5b8 0%, #c8e6af 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌸</div>
             <div style="color: white; font-weight: 600;">Printemps</div>
           </div>
 
-          <div class="theme-option" data-theme="ete" onclick="selectTheme('ete')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff9a76 0%, #4fa8c5 50%, #ffd966 100%); box-shadow: 0 0 0 0 transparent;">
+          <div class="theme-option" data-theme="ete" onclick="selectTheme('ete')"
+            style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff9a76 0%, #4fa8c5 50%, #ffd966 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">☀️</div>
             <div style="color: white; font-weight: 600;">Été</div>
           </div>
 
-          <div class="theme-option" data-theme="automne" onclick="selectTheme('automne')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #c67b5c 0%, #8b5a3c 50%, #d4a574 100%); box-shadow: 0 0 0 0 transparent;">
+          <div class="theme-option" data-theme="automne" onclick="selectTheme('automne')"
+            style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #c67b5c 0%, #8b5a3c 50%, #d4a574 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🍂</div>
             <div style="color: white; font-weight: 600;">Automne</div>
           </div>
 
-          <div class="theme-option" data-theme="halloween" onclick="selectTheme('halloween')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff8c42 0%, #8b5fbf 100%); box-shadow: 0 0 0 0 transparent;">
+          <div class="theme-option" data-theme="halloween" onclick="selectTheme('halloween')"
+            style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff8c42 0%, #8b5fbf 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎃</div>
             <div style="color: white; font-weight: 600;">Halloween</div>
           </div>
 
-          <div class="theme-option" data-theme="valentin" onclick="selectTheme('valentin')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff6b9d 0%, #c94f6e 100%); box-shadow: 0 0 0 0 transparent;">
+          <div class="theme-option" data-theme="valentin" onclick="selectTheme('valentin')"
+            style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #ff6b9d 0%, #c94f6e 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">💝</div>
             <div style="color: white; font-weight: 600;">St-Valentin</div>
           </div>
 
-          <div class="theme-option" data-theme="hiver" onclick="selectTheme('hiver')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #b8d4e8 0%, #7ba7c5 100%); box-shadow: 0 0 0 0 transparent;">
+          <div class="theme-option" data-theme="hiver" onclick="selectTheme('hiver')"
+            style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #b8d4e8 0%, #7ba7c5 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">❄️</div>
             <div style="color: white; font-weight: 600;">Hiver</div>
           </div>
@@ -664,14 +702,17 @@
 
         <!-- Thème classique -->
         <p style="color: var(--texte-principal); font-weight: 600; margin-bottom: 1rem;">Thème classique :</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-          <div class="theme-option" data-theme="rose" onclick="selectTheme('rose')" style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f4c2c2 0%, #d4a5d4 100%); box-shadow: 0 0 0 0 transparent;">
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="theme-option" data-theme="rose" onclick="selectTheme('rose')"
+            style="cursor: pointer; padding: 1.2rem; border-radius: 15px; text-align: center; border: none; transition: all 0.3s ease; background: linear-gradient(135deg, #f4c2c2 0%, #d4a5d4 100%); box-shadow: 0 0 0 0 transparent;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌺</div>
             <div style="color: white; font-weight: 600;">Rose</div>
           </div>
         </div>
 
-        <p id="theme-status" style="text-align: center; color: var(--texte-secondaire); font-size: 0.9rem; font-style: italic;">
+        <p id="theme-status"
+          style="text-align: center; color: var(--texte-secondaire); font-size: 0.9rem; font-style: italic;">
           Thème actuel : <strong id="current-theme-name">Automatique</strong>
         </p>
       </div>
@@ -685,17 +726,21 @@
           <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
             <input type="text" id="new-category" placeholder="Nom de la catégorie" style="flex: 2; min-width: 200px;">
             <input type="text" id="new-category-emoji" placeholder="Emoji" maxlength="4" style="flex: 0 0 100px;">
-            <input type="text" id="new-category-description" placeholder="Description courte" style="flex: 2; min-width: 200px;">
+            <input type="text" id="new-category-description" placeholder="Description courte"
+              style="flex: 2; min-width: 200px;">
           </div>
           <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <button onclick="addCategory()" id="category-submit-btn" class="btn btn-primary" style="width: fit-content;">Ajouter la catégorie</button>
-            <button onclick="cancelEditCategory()" id="category-cancel-btn" class="btn btn-outline" style="width: fit-content; display: none;">Annuler</button>
+            <button onclick="addCategory()" id="category-submit-btn" class="btn btn-primary"
+              style="width: fit-content;">Ajouter la catégorie</button>
+            <button onclick="cancelEditCategory()" id="category-cancel-btn" class="btn btn-outline"
+              style="width: fit-content; display: none;">Annuler</button>
           </div>
         </div>
         <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
           <strong>Catégories existantes :</strong>
         </p>
-        <div id="categories-list" style="display: grid; gap: 0.75rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+        <div id="categories-list"
+          style="display: grid; gap: 0.75rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
           <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
         </div>
       </div>
@@ -712,7 +757,8 @@
         <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
           <strong>Pierres existantes :</strong>
         </p>
-        <div id="stones-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+        <div id="stones-list"
+          style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
           <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
         </div>
       </div>
@@ -729,7 +775,8 @@
         <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
           <strong>Couleurs existantes :</strong>
         </p>
-        <div id="colors-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+        <div id="colors-list"
+          style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
           <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
         </div>
       </div>
@@ -768,7 +815,8 @@
           <select id="product-stones" multiple required style="min-height: 120px;">
             <!-- Chargé dynamiquement -->
           </select>
-          <small style="color: var(--texte-secondaire); font-size: 0.9rem;">Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs pierres</small>
+          <small style="color: var(--texte-secondaire); font-size: 0.9rem;">Maintenez Ctrl (Cmd sur Mac) pour
+            sélectionner plusieurs pierres</small>
         </div>
 
         <div class="form-group">
@@ -776,7 +824,8 @@
           <select id="product-colors" multiple style="min-height: 120px;">
             <!-- Chargé dynamiquement -->
           </select>
-          <small style="color: var(--texte-secondaire); font-size: 0.9rem;">Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs couleurs</small>
+          <small style="color: var(--texte-secondaire); font-size: 0.9rem;">Maintenez Ctrl (Cmd sur Mac) pour
+            sélectionner plusieurs couleurs</small>
         </div>
 
         <div class="form-group">
@@ -800,18 +849,24 @@
           <small style="color: var(--texte-secondaire); font-size: 0.9rem; display: block; margin-top: 0.5rem;">
             Vous pouvez sélectionner plusieurs images (maintenez Ctrl ou Cmd)
           </small>
-          <div id="images-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <div id="images-preview"
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; margin-top: 1rem;">
             <!-- Aperçu des images -->
           </div>
         </div>
 
         <div class="form-group">
-          <label for="product-boutdebois-link">
+          <label for="product-boutdebois-link" style="display: flex; align-items: center; gap: 0.5rem;">
             🪵 Lien vers Le p'tit bout de bois (optionnel)
+            <span onclick="showLinkHelp('boutdebois')"
+              style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: var(--lavande); color: white; border-radius: 50%; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease;"
+              onmouseover="this.style.background='var(--rose-poudre)'"
+              onmouseout="this.style.background='var(--lavande)'" title="Voir les exemples de liens">?</span>
           </label>
           <input type="url" id="product-boutdebois-link" placeholder="https://www.leptitboutdebois.fr/produit/15">
           <small style="color: var(--texte-secondaire); font-size: 0.9rem; display: block; margin-top: 0.5rem;">
-            💡 <strong>Astuce :</strong> Si ce bijou a une création en bois assortie sur Le p'tit bout de bois, ajoutez le lien ici pour créer une passerelle entre les deux boutiques
+            💡 <strong>Astuce :</strong> Si ce bijou a une création en bois assortie sur Le p'tit bout de bois, ajoutez
+            le lien ici pour créer une passerelle entre les deux boutiques
           </small>
         </div>
 
@@ -830,7 +885,8 @@
   <!-- Modal de confirmation -->
   <div id="confirm-modal" class="modal" style="z-index: 10001;">
     <div class="modal-content" style="max-width: 400px; text-align: center;">
-      <h3 id="confirm-title" style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1rem;">
+      <h3 id="confirm-title"
+        style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem; margin-bottom: 1rem;">
         Confirmation
       </h3>
       <p id="confirm-message" style="margin-bottom: 2rem; color: var(--texte-principal);">
@@ -856,7 +912,7 @@
       document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
       });
-      
+
       // Ajouter active uniquement sur stats
       const statsLink = document.querySelector('.nav-link[href="#stats"]');
       if (statsLink) {
@@ -865,4 +921,5 @@
     });
   </script>
 </body>
+
 </html>

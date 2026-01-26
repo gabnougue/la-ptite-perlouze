@@ -58,7 +58,7 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USER=votre_email@gmail.com
 EMAIL_PASSWORD=votre_mot_de_passe_application
-CONTACT_EMAIL=yvonne@laptiteperlouze.fr
+CONTACT_EMAIL=contact@laptiteperlouze.fr
 
 # Administrateur par défaut
 ADMIN_USERNAME=admin

@@ -142,6 +142,14 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
     const admin = await db.get('SELECT username FROM admins WHERE id = ?', [req.session.adminId]);
     const adminName = admin?.username || 'La p\'tite perlouze';
 
+    // Récupérer le dernier message du client pour le contexte
+    const lastCustomerMessage = await db.get(`
+      SELECT message FROM thread_messages
+      WHERE thread_id = ? AND sender_type = 'customer'
+      ORDER BY created_at DESC LIMIT 1
+    `, [id]);
+    const customerLastMsg = lastCustomerMessage?.message || '';
+
     // Insérer le message dans la BDD
     const messageResult = await db.run(`
       INSERT INTO thread_messages (thread_id, sender_type, sender_name, sender_email, message, has_attachments)
@@ -191,6 +199,8 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
                 .header { background: linear-gradient(135deg, #f4c2c2 0%, #d4a5d4 100%); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
                 .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 10px 10px; }
                 .message-box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #d4a5d4; }
+                .context-box { background: #f0f0f0; padding: 15px; margin: 15px 0; border-radius: 8px; font-size: 0.9em; color: #666; border-left: 3px solid #ccc; }
+                .context-label { font-weight: 600; color: #888; margin-bottom: 8px; font-size: 0.85em; }
                 .footer { text-align: center; margin-top: 20px; color: #666; font-size: 0.9em; }
               </style>
             </head>
@@ -200,8 +210,13 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
                   <h1>💬 Réponse de La p'tite perlouze</h1>
                 </div>
                 <div class="content">
+                  ${customerLastMsg ? `
+                  <div class="context-box">
+                    <p class="context-label">📩 En réponse à votre message :</p>
+                    <p style="margin: 0; font-style: italic;">"${customerLastMsg.length > 200 ? customerLastMsg.substring(0, 200) + '...' : customerLastMsg}"</p>
+                  </div>
+                  ` : ''}
                   <div class="message-box">
-                    <p>Bonjour ${thread.customer_name},</p>
                     <p>${message.replace(/\n/g, '<br>')}</p>
                     ${attachments.length > 0 ? `<p style="margin-top: 20px;"><strong>📎 Pièces jointes :</strong> ${attachments.map(f => f.originalname).join(', ')}</p>` : ''}
                   </div>

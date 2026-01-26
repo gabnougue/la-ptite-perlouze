@@ -258,6 +258,40 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
 // WEBHOOK RESEND POUR EMAILS ENTRANTS
 // ═══════════════════════════════════════════════════
 
+// Fonction pour nettoyer le contenu des emails (retirer les citations)
+function cleanEmailContent(content) {
+  if (!content) return '';
+
+  let cleaned = content;
+
+  // Supprimer les citations Gmail/Outlook en français
+  // "Le lun. 26 janv. 2026 à 17:35, <email> a écrit :"
+  cleaned = cleaned.split(/Le\s+\w+\.?\s+\d+\s+\w+\.?\s+\d+\s+[àa]\s+\d+[h:]\d+.*?a écrit\s*:/i)[0];
+
+  // Supprimer les citations en anglais
+  // "On Mon, Jan 26, 2026 at 5:35 PM, <email> wrote:"
+  cleaned = cleaned.split(/On\s+\w+,?\s+\w+\.?\s+\d+,?\s+\d+\s+at\s+\d+:\d+.*?wrote\s*:/i)[0];
+
+  // Supprimer tout après "-----Original Message-----"
+  cleaned = cleaned.split(/[-]+\s*Original Message\s*[-]+/i)[0];
+
+  // Supprimer tout après "---------- Forwarded message ----------"
+  cleaned = cleaned.split(/[-]+\s*Forwarded message\s*[-]+/i)[0];
+
+  // Supprimer les lignes qui commencent par ">" (citations)
+  cleaned = cleaned.split('\n')
+    .filter(line => !line.trim().startsWith('>'))
+    .join('\n');
+
+  // Supprimer les lignes vides multiples
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+
+  // Supprimer les espaces en début/fin
+  cleaned = cleaned.trim();
+
+  return cleaned || content; // Retourner l'original si tout a été supprimé
+}
+
 // Webhook pour recevoir les emails entrants de Resend
 router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res) => {
   try {
@@ -320,6 +354,10 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
     if (!messageContent) {
       messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Contenu non disponible]';
     }
+
+    // Nettoyer le contenu pour ne garder que le nouveau message (retirer les citations)
+    messageContent = cleanEmailContent(messageContent);
+    console.log('📨 Contenu nettoyé:', messageContent);
 
     // Extraire l'ID du thread depuis le sujet
     const threadIdMatch = subject?.match(/\[#THREAD-(\d+)\]/);

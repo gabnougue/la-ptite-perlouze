@@ -263,9 +263,40 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
   try {
     // Resend envoie les données dans req.body.data
     const emailData = req.body.data || req.body;
-    const { from, to, subject, html, text } = emailData;
+    const emailId = emailData.email_id;
 
-    console.log('📧 Email entrant reçu:', { from, subject, body: req.body });
+    // Récupérer les métadonnées de base
+    const from = emailData.from;
+    const to = emailData.to;
+    const subject = emailData.subject;
+
+    console.log('📧 Email entrant reçu:', { from, subject, emailId });
+
+    // Récupérer le contenu du mail via l'API Resend
+    let messageContent = '';
+    if (emailId && process.env.RESEND_API_KEY) {
+      try {
+        const emailResponse = await fetch(`https://api.resend.com/emails/${emailId}`, {
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+          }
+        });
+        if (emailResponse.ok) {
+          const emailDetails = await emailResponse.json();
+          messageContent = emailDetails.text || emailDetails.html || '';
+          console.log('📨 Contenu récupéré via API:', messageContent.substring(0, 100) + '...');
+        } else {
+          console.log('⚠️ Impossible de récupérer le contenu:', emailResponse.status);
+        }
+      } catch (fetchError) {
+        console.error('❌ Erreur fetch email content:', fetchError);
+      }
+    }
+
+    // Si pas de contenu récupéré, essayer les champs directs (fallback)
+    if (!messageContent) {
+      messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Contenu non disponible]';
+    }
 
     // Extraire l'ID du thread depuis le sujet
     const threadIdMatch = subject?.match(/\[#THREAD-(\d+)\]/);
@@ -290,7 +321,7 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
       await db.run(`
         INSERT INTO thread_messages (thread_id, sender_type, sender_name, sender_email, message)
         VALUES (?, 'customer', ?, ?, ?)
-      `, [threadId, customerName, customerEmail, text || html || '']);
+      `, [threadId, customerName, customerEmail, messageContent]);
 
       return res.json({ success: true, message: 'Nouveau thread créé' });
     }
@@ -313,7 +344,7 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
     await db.run(`
       INSERT INTO thread_messages (thread_id, sender_type, sender_name, sender_email, message)
       VALUES (?, 'customer', ?, ?, ?)
-    `, [threadId, customerName, customerEmail, text || html || '']);
+    `, [threadId, customerName, customerEmail, messageContent]);
 
     // Mettre à jour le thread
     await db.run(`

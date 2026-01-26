@@ -920,10 +920,26 @@ function toggleHideClosedThreads() {
   loadThreads();
 }
 
-// Restaurer l'état de la checkbox au chargement
+// Restaurer l'état de la checkbox conversations au chargement
 function restoreHideClosedThreadsState() {
   const saved = localStorage.getItem('hideClosedThreads');
   const checkbox = document.getElementById('hide-closed-threads');
+  if (checkbox && saved !== null) {
+    checkbox.checked = saved === 'true';
+  }
+}
+
+// Toggle et persistence du filtre commandes livrées
+function toggleHideDeliveredOrders() {
+  const checkbox = document.getElementById('hide-delivered');
+  localStorage.setItem('hideDeliveredOrders', checkbox.checked);
+  displayOrders();
+}
+
+// Restaurer l'état de la checkbox commandes au chargement
+function restoreHideDeliveredOrdersState() {
+  const saved = localStorage.getItem('hideDeliveredOrders');
+  const checkbox = document.getElementById('hide-delivered');
   if (checkbox && saved !== null) {
     checkbox.checked = saved === 'true';
   }
@@ -1850,8 +1866,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (authenticated) {
     loadStats();
     loadProducts();
+    restoreHideDeliveredOrdersState(); // Restaurer l'état du filtre commandes
     loadOrders();
-    restoreHideClosedThreadsState(); // Restaurer l'état du filtre avant de charger les threads
+    restoreHideClosedThreadsState(); // Restaurer l'état du filtre conversations
     loadThreads();
     loadCurrentTheme(); // Charger le thème actuel
 

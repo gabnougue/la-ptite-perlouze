@@ -925,7 +925,9 @@ async function loadThreads() {
 
     // Filtrer les threads si la checkbox est cochée
     const hideClosed = document.getElementById('hide-closed-threads')?.checked;
+    console.log('🔍 hideClosed:', hideClosed, '| Total threads:', allThreads.length, '| Statuts:', allThreads.map(t => t.status));
     const filteredThreads = hideClosed ? allThreads.filter(t => t.status !== 'closed') : allThreads;
+    console.log('🔍 Threads filtrés:', filteredThreads.length);
 
     if (filteredThreads.length === 0) {
       tbody.innerHTML = `

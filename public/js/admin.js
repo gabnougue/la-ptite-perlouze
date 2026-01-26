@@ -923,11 +923,9 @@ async function loadThreads() {
     const tbody = document.querySelector('#threads-table tbody');
     tbody.innerHTML = '';
 
-    // Filtrer les threads si la checkbox est cochée
+    // Filtrer les threads si la checkbox est cochée (masquer tout ce qui n'est pas 'open')
     const hideClosed = document.getElementById('hide-closed-threads')?.checked;
-    console.log('🔍 hideClosed:', hideClosed, '| Total threads:', allThreads.length, '| Statuts:', allThreads.map(t => t.status));
-    const filteredThreads = hideClosed ? allThreads.filter(t => t.status !== 'closed') : allThreads;
-    console.log('🔍 Threads filtrés:', filteredThreads.length);
+    const filteredThreads = hideClosed ? allThreads.filter(t => t.status === 'open') : allThreads;
 
     if (filteredThreads.length === 0) {
       tbody.innerHTML = `

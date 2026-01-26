@@ -106,6 +106,19 @@ app.get('/boutique', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'boutique.html'));
 });
 
+// Pages légales
+app.get('/mentions-legales', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'mentions-legales.html'));
+});
+
+app.get('/confidentialite', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'confidentialite.html'));
+});
+
+app.get('/cgv', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cgv.html'));
+});
+
 // URL secrète d'administration - NE PAS PARTAGER
 const ADMIN_PATH = process.env.ADMIN_PATH || '/gestion-private-2024';
 

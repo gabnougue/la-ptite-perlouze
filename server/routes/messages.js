@@ -261,9 +261,11 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
 // Webhook pour recevoir les emails entrants de Resend
 router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res) => {
   try {
-    const { from, to, subject, html, text } = req.body;
+    // Resend envoie les données dans req.body.data
+    const emailData = req.body.data || req.body;
+    const { from, to, subject, html, text } = emailData;
 
-    console.log('📧 Email entrant reçu:', { from, subject });
+    console.log('📧 Email entrant reçu:', { from, subject, body: req.body });
 
     // Extraire l'ID du thread depuis le sujet
     const threadIdMatch = subject?.match(/\[#THREAD-(\d+)\]/);

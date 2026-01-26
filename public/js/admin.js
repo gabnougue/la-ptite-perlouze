@@ -913,6 +913,22 @@ function updateOrdersBadge() {
 // Variable globale pour stocker les threads
 let allThreads = [];
 
+// Toggle et persistence du filtre conversations closes
+function toggleHideClosedThreads() {
+  const checkbox = document.getElementById('hide-closed-threads');
+  localStorage.setItem('hideClosedThreads', checkbox.checked);
+  loadThreads();
+}
+
+// Restaurer l'état de la checkbox au chargement
+function restoreHideClosedThreadsState() {
+  const saved = localStorage.getItem('hideClosedThreads');
+  const checkbox = document.getElementById('hide-closed-threads');
+  if (checkbox && saved !== null) {
+    checkbox.checked = saved === 'true';
+  }
+}
+
 // Charger les threads de conversation
 async function loadThreads() {
   try {
@@ -1835,6 +1851,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadStats();
     loadProducts();
     loadOrders();
+    restoreHideClosedThreadsState(); // Restaurer l'état du filtre avant de charger les threads
     loadThreads();
     loadCurrentTheme(); // Charger le thème actuel
 

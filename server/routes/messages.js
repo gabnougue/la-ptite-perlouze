@@ -188,7 +188,10 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
           from: process.env.RESEND_FROM_EMAIL,
           to: thread.customer_email,
           subject: `Re: ${thread.subject} [#THREAD-${thread.id}]`,
-          replyTo: process.env.CONTACT_EMAIL || 'contact@laptiteperlouze.fr',
+          replyTo: [
+            process.env.CONTACT_EMAIL || 'yvonne@laptiteperlouze.fr',
+            'contact@laptiteperlouze.fr'
+          ],
           html: `
             <!DOCTYPE html>
             <html>

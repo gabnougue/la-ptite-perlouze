@@ -13,6 +13,38 @@
     (function () { var t = localStorage.getItem('perlouze-theme'); if (!t) { var s = localStorage.getItem('perlouze-theme-setting'), m = (new Date).getMonth() + 1, d = (new Date).getDate(); t = s && s !== 'auto' ? s : (m === 10 && d >= 15) || (m === 11 && d === 1) ? 'halloween' : m === 12 || (m === 1 && d <= 6) ? 'noel' : (m === 1 && d >= 7) || m === 2 || (m === 3 && d <= 19) ? 'hiver' : (m === 3 && d >= 20) || m === 4 || m === 5 || (m === 6 && d <= 20) ? 'printemps' : (m === 6 && d >= 21) || m === 7 || m === 8 || (m === 9 && d <= 22) ? 'ete' : (m === 9 && d >= 23) || (m === 10 && d < 15) || (m === 11 && d >= 2) ? 'automne' : 'printemps'; } document.documentElement.setAttribute('data-theme', t); })();
   </script>
   <style>
+    /* Checkbox personnalisée aux couleurs du thème */
+    input[type="checkbox"].theme-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--lavande);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    input[type="checkbox"].theme-checkbox:checked {
+      background: var(--lavande);
+    }
+
+    input[type="checkbox"].theme-checkbox:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    input[type="checkbox"].theme-checkbox:hover {
+      border-color: var(--rose-doux);
+    }
+
     .admin-header {
       background: var(--gradient-pastel);
       color: white;
@@ -505,8 +537,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 class="section-title" style="margin: 0;">Commandes</h2>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <input type="checkbox" id="hide-delivered" onchange="displayOrders()"
-            style="width: 18px; height: 18px; cursor: pointer;">
+          <input type="checkbox" id="hide-delivered" class="theme-checkbox" onchange="displayOrders()">
           <label for="hide-delivered" style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer
             les commandes livrées</label>
         </div>
@@ -535,8 +566,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 class="section-title" style="margin: 0;">💬 Conversations clients</h2>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <input type="checkbox" id="hide-closed-threads" onchange="toggleHideClosedThreads()"
-            style="width: 18px; height: 18px; cursor: pointer;">
+          <input type="checkbox" id="hide-closed-threads" class="theme-checkbox" onchange="toggleHideClosedThreads()">
           <label for="hide-closed-threads"
             style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer les conversations
             closes</label>

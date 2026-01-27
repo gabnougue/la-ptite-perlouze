@@ -373,6 +373,16 @@ async function handlePayment(event) {
       elements,
       confirmParams: {
         return_url: window.location.origin + '/panier',
+        payment_method_data: {
+          billing_details: {
+            name: customerName,
+            email: customerEmail,
+            phone: customerPhone,
+            address: {
+              line1: customerAddress
+            }
+          }
+        }
       },
       redirect: 'if_required'
     });

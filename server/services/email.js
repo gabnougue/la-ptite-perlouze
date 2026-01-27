@@ -268,7 +268,7 @@ async function sendCustomerOrderEmail(order, items, status) {
 
               <div class="message-box">
                 <p style="margin: 0;"><strong>Adresse de livraison :</strong></p>
-                <p style="margin-top: 5px;">${order.address ? order.address.replace(/\n/g, '<br>') : 'Non renseignée'}</p>
+                <p style="margin-top: 5px;">${order.customer_address ? order.customer_address.replace(/\n/g, '<br>') : 'Non renseignée'}</p>
               </div>
             </div>
             <div class="footer">

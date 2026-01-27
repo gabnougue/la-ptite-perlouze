@@ -207,6 +207,18 @@ async function sendCustomerOrderEmail(order, items, status) {
         `;
         break;
 
+      case 'delivered':
+        emoji = '🎉';
+        title = 'Commande livrée';
+        subject = `Commande #${order.id} livrée - Merci ! 💜`;
+        message = `
+          <p>Votre commande a été marquée comme livrée !</p>
+          <p>Nous espérons que tout est arrivé en parfait état et que vos bijoux vous plaisent. 💜</p>
+          <p>Un grand merci pour votre confiance. Si vous avez un moment, n'hésitez pas à nous laisser un petit avis, ça nous fait toujours très plaisir !</p>
+          <p>À très bientôt pour de nouvelles créations ✨</p>
+        `;
+        break;
+
       default:
         return;
     }

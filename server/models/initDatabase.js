@@ -200,10 +200,11 @@ async function initDatabase() {
   }
 }
 
-// Exécuter l'initialisation
+// Exécuter l'initialisation (sans process.exit pour Vercel)
 initDatabase()
-  .then(() => process.exit(0))
+  .then(() => console.log('✅ Base de données initialisée'))
   .catch(err => {
-    console.error(err);
-    process.exit(1);
+    console.error('❌ Erreur init DB:', err);
   });
+
+module.exports = initDatabase;

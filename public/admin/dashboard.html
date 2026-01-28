@@ -445,10 +445,11 @@
         -webkit-box-orient: vertical;
       }
 
-      /* Actions - label au-dessus, boutons en ligne dessous */
+      /* Actions - label au-dessus, boutons espacés dessous */
       td[data-label="Actions"] {
-        display: block !important;
-        text-align: center;
+        display: flex !important;
+        flex-direction: column;
+        align-items: stretch;
         padding: 0.8rem !important;
       }
 
@@ -461,9 +462,15 @@
         font-weight: bold;
       }
 
+      td[data-label="Actions"] .action-buttons {
+        display: flex !important;
+        justify-content: space-evenly;
+        width: 100%;
+      }
+
       td[data-label="Actions"] .btn-icon {
         display: inline-flex !important;
-        margin: 0 0.3rem !important;
+        margin: 0 !important;
       }
 
       td:before {

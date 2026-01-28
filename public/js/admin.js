@@ -1017,14 +1017,16 @@ async function loadThreads() {
         </td>
         <td data-label="Date">${date}</td>
         <td data-label="Actions">
-          <button onclick="viewThread(${thread.id})" class="btn-icon btn-view" title="Voir la conversation">
-            👁️
-          </button>
-          ${thread.status === 'open'
-          ? `<button onclick="closeThread(${thread.id})" class="btn-icon btn-close-thread" title="Fermer"><span style="color: var(--lavande); font-weight: bold;">✓</span></button>`
-          : `<button onclick="reopenThread(${thread.id})" class="btn-icon btn-reopen" title="Rouvrir">🔄</button>`
-        }
-          <button onclick="deleteThread(${thread.id})" class="btn-icon btn-delete" title="Supprimer">🗑️</button>
+          <div class="action-buttons">
+            <button onclick="viewThread(${thread.id})" class="btn-icon btn-view" title="Voir la conversation">
+              👁️
+            </button>
+            ${thread.status === 'open'
+            ? `<button onclick="closeThread(${thread.id})" class="btn-icon btn-close-thread" title="Fermer"><span style="color: var(--lavande); font-weight: bold;">✓</span></button>`
+            : `<button onclick="reopenThread(${thread.id})" class="btn-icon btn-reopen" title="Rouvrir">🔄</button>`
+          }
+            <button onclick="deleteThread(${thread.id})" class="btn-icon btn-delete" title="Supprimer">🗑️</button>
+          </div>
         </td>
       `;
 

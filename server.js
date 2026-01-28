@@ -5,6 +5,9 @@ const helmet = require('helmet');
 const path = require('path');
 require('dotenv').config();
 
+// Initialiser la base de données au démarrage
+require('./server/models/initDatabase');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 

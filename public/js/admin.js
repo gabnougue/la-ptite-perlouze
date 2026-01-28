@@ -1017,14 +1017,14 @@ async function loadThreads() {
         </td>
         <td data-label="Date">${date}</td>
         <td data-label="Actions">
-          <button onclick="viewThread(${thread.id})" class="btn btn-secondary btn-small" title="Voir la conversation">
+          <button onclick="viewThread(${thread.id})" class="btn-icon btn-view" title="Voir la conversation">
             👁️
           </button>
           ${thread.status === 'open'
-          ? `<button onclick="closeThread(${thread.id})" class="btn btn-secondary btn-small" style="font-size: 1.2rem;" title="Fermer">✓</button>`
-          : `<button onclick="reopenThread(${thread.id})" class="btn btn-secondary btn-small" style="font-size: 1.1rem;" title="Rouvrir">↻</button>`
+          ? `<button onclick="closeThread(${thread.id})" class="btn-icon btn-close-thread" title="Fermer">✓</button>`
+          : `<button onclick="reopenThread(${thread.id})" class="btn-icon btn-reopen" title="Rouvrir">↻</button>`
         }
-          <button onclick="deleteThread(${thread.id})" class="btn btn-secondary btn-small" title="Supprimer">🗑️</button>
+          <button onclick="deleteThread(${thread.id})" class="btn-icon btn-delete" title="Supprimer">🗑️</button>
         </td>
       `;
 

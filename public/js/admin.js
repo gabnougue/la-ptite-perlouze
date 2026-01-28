@@ -1985,6 +1985,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadThreads();
     loadCurrentTheme(); // Charger le thème actuel
 
+    // Gestion du hash URL pour ouvrir le bon onglet
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      // Mapper les noms possibles vers les noms d'onglets réels
+      const hashMapping = {
+        'messages': 'contacts',
+        'commandes': 'orders',
+        'produits': 'products',
+        'statistiques': 'stats',
+        'parametres': 'settings'
+      };
+      const section = hashMapping[hash] || hash;
+      showSection(section);
+    }
+
     // Écouter la soumission du formulaire produit
     const productForm = document.getElementById('product-form');
     productForm.addEventListener('submit', handleProductSubmit);

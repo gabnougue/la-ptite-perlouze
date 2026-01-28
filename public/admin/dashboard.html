@@ -418,10 +418,21 @@
         word-break: break-word;
       }
 
-      /* Dernier message - limiter la longueur */
+      /* Dernier message - limiter la longueur et afficher sous le label */
       td[data-label="Dernier message"] {
         max-width: 100% !important;
         white-space: normal !important;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.8rem !important;
+        text-align: left !important;
+      }
+
+      td[data-label="Dernier message"]::before {
+        position: static !important;
+        width: auto !important;
+        margin-bottom: 0.5rem;
       }
 
       td[data-label="Dernier message"] span {
@@ -432,6 +443,25 @@
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
+      }
+
+      /* Actions - afficher sous le label et centrées */
+      td[data-label="Actions"] {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.8rem !important;
+      }
+
+      td[data-label="Actions"]::before {
+        position: static !important;
+        width: auto !important;
+        margin-bottom: 0.5rem;
+        text-align: center;
+      }
+
+      td[data-label="Actions"] .btn-icon {
+        margin: 0.2rem;
       }
 
       td:before {

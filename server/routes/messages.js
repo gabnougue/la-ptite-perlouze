@@ -385,10 +385,10 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
       const customerEmail = emailMatch[1] || from;
       const customerName = from.replace(/<.+?>/, '').trim() || customerEmail;
 
-      // Créer un nouveau thread
+      // Créer un nouveau thread (sans contact_id car c'est un email direct)
       const threadResult = await db.run(`
-        INSERT INTO message_threads (contact_id, subject, customer_name, customer_email, status, last_message_at)
-        VALUES (NULL, ?, ?, ?, 'open', CURRENT_TIMESTAMP)
+        INSERT INTO message_threads (subject, customer_name, customer_email, status, last_message_at)
+        VALUES (?, ?, ?, 'open', CURRENT_TIMESTAMP)
       `, [subject || 'Message sans sujet', customerName, customerEmail]);
 
       const threadId = threadResult.id;

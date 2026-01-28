@@ -1243,7 +1243,7 @@ function showLoader(message = 'Chargement...') {
   const loader = document.createElement('div');
   loader.id = 'overlay-loader';
   loader.innerHTML = `
-    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 999999; display: flex; align-items: center; justify-content: center;">
       <div style="background: white; padding: 2rem 3rem; border-radius: 16px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
         <div style="width: 50px; height: 50px; border: 4px solid #e0e0e0; border-top: 4px solid var(--lavande, #9b87f5); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
         <p id="loader-message" style="margin: 0; font-size: 1.1rem; color: #333; font-weight: 500;">${message}</p>

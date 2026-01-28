@@ -1184,6 +1184,56 @@ function replyToThread(threadId) {
   document.body.appendChild(modal);
 }
 
+// Fonction pour compresser une image côté client
+async function compressImageClient(file, maxWidth = 1200, quality = 0.8) {
+  return new Promise((resolve) => {
+    // Si ce n'est pas une image, retourner tel quel
+    if (!file.type.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Redimensionner si nécessaire
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convertir en blob WebP
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const compressedFile = new File(
+              [blob],
+              file.name.replace(/\.[^.]+$/, '.webp'),
+              { type: 'image/webp' }
+            );
+            console.log(`🖼️ Compressé: ${(file.size/1024).toFixed(0)}KB → ${(blob.size/1024).toFixed(0)}KB`);
+            resolve(compressedFile);
+          } else {
+            resolve(file);
+          }
+        }, 'image/webp', quality);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 // Envoyer une réponse
 async function sendReply(event, threadId) {
   event.preventDefault();
@@ -1200,14 +1250,17 @@ async function sendReply(event, threadId) {
   const formData = new FormData();
   formData.append('message', message);
 
-  // Ajouter les pièces jointes
+  // Compresser et ajouter les pièces jointes
   if (attachmentsInput.files.length > 0) {
+    showMessage('Compression des images en cours...', 'info');
     for (let i = 0; i < Math.min(attachmentsInput.files.length, 5); i++) {
-      formData.append('attachments', attachmentsInput.files[i]);
+      const compressedFile = await compressImageClient(attachmentsInput.files[i]);
+      formData.append('attachments', compressedFile);
     }
   }
 
   try {
+    showMessage('Envoi en cours...', 'info');
     const response = await fetch(`/api/messages/threads/${threadId}/reply`, {
       method: 'POST',
       body: formData

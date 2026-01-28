@@ -349,27 +349,39 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
             for (const att of attData) {
               try {
                 // Télécharger le contenu de la pièce jointe via l'API Resend
-                // Format: GET /emails/receiving/{email_id}/attachments/{attachment_id}
+                // L'API retourne un JSON avec download_url, il faut ensuite télécharger depuis cette URL
                 if (att.id) {
-                  console.log(`📎 Téléchargement pièce jointe via API: ${att.id}`);
-                  const attResponse = await fetch(`https://api.resend.com/emails/receiving/${emailId}/attachments/${att.id}`, {
+                  console.log(`📎 Récupération métadonnées pièce jointe: ${att.id}`);
+                  const attMetaResponse = await fetch(`https://api.resend.com/emails/receiving/${emailId}/attachments/${att.id}`, {
                     method: 'GET',
                     headers: {
                       'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
                     }
                   });
-                  if (attResponse.ok) {
-                    const attBuffer = await attResponse.arrayBuffer();
-                    const base64Content = Buffer.from(attBuffer).toString('base64');
-                    attachments.push({
-                      filename: att.filename || 'attachment',
-                      content: base64Content,
-                      mimetype: att.content_type || 'application/octet-stream',
-                      size: attBuffer.byteLength
-                    });
-                    console.log(`📎 Pièce jointe récupérée via API: ${att.filename} (${(attBuffer.byteLength / 1024).toFixed(1)}KB)`);
+                  if (attMetaResponse.ok) {
+                    const attMeta = await attMetaResponse.json();
+                    console.log('📎 Métadonnées pièce jointe:', JSON.stringify(attMeta).substring(0, 200));
+                    
+                    // Télécharger le contenu depuis download_url
+                    if (attMeta.download_url) {
+                      console.log(`📎 Téléchargement depuis: ${attMeta.download_url.substring(0, 100)}...`);
+                      const contentResponse = await fetch(attMeta.download_url);
+                      if (contentResponse.ok) {
+                        const attBuffer = await contentResponse.arrayBuffer();
+                        const base64Content = Buffer.from(attBuffer).toString('base64');
+                        attachments.push({
+                          filename: attMeta.filename || att.filename || 'attachment',
+                          content: base64Content,
+                          mimetype: attMeta.content_type || att.content_type || 'application/octet-stream',
+                          size: attBuffer.byteLength
+                        });
+                        console.log(`📎 Pièce jointe récupérée via API: ${attMeta.filename} (${(attBuffer.byteLength / 1024).toFixed(1)}KB)`);
+                      } else {
+                        console.log(`⚠️ Erreur téléchargement contenu: ${contentResponse.status}`);
+                      }
+                    }
                   } else {
-                    console.log(`⚠️ Erreur téléchargement pièce jointe: ${attResponse.status}`);
+                    console.log(`⚠️ Erreur téléchargement métadonnées: ${attMetaResponse.status}`);
                   }
                 } else if (att.download_url) {
                   const attResponse = await fetch(att.download_url);
@@ -454,27 +466,38 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
           });
           console.log(`📎 Pièce jointe webhook ajoutée: ${filename}`);
         } else if (att.id && emailId) {
-          // Si on a un ID de pièce jointe, télécharger via l'API Resend
+          // Si on a un ID de pièce jointe, récupérer les métadonnées puis télécharger
           try {
-            console.log(`📎 Téléchargement via API Resend: ${att.id}`);
-            const attResponse = await fetch(`https://api.resend.com/emails/receiving/${emailId}/attachments/${att.id}`, {
+            console.log(`📎 Récupération métadonnées via API Resend: ${att.id}`);
+            const attMetaResponse = await fetch(`https://api.resend.com/emails/receiving/${emailId}/attachments/${att.id}`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
               }
             });
-            if (attResponse.ok) {
-              const attBuffer = await attResponse.arrayBuffer();
-              const base64Content = Buffer.from(attBuffer).toString('base64');
-              attachments.push({
-                filename: filename,
-                content: base64Content,
-                mimetype: mimetype,
-                size: attBuffer.byteLength
-              });
-              console.log(`📎 Pièce jointe téléchargée via API: ${filename} (${(attBuffer.byteLength / 1024).toFixed(1)}KB)`);
+            if (attMetaResponse.ok) {
+              const attMeta = await attMetaResponse.json();
+              console.log('📎 Métadonnées:', JSON.stringify(attMeta).substring(0, 200));
+              
+              // Télécharger depuis download_url
+              if (attMeta.download_url) {
+                const contentResponse = await fetch(attMeta.download_url);
+                if (contentResponse.ok) {
+                  const attBuffer = await contentResponse.arrayBuffer();
+                  const base64Content = Buffer.from(attBuffer).toString('base64');
+                  attachments.push({
+                    filename: attMeta.filename || filename,
+                    content: base64Content,
+                    mimetype: attMeta.content_type || mimetype,
+                    size: attBuffer.byteLength
+                  });
+                  console.log(`📎 Pièce jointe téléchargée via API: ${attMeta.filename} (${(attBuffer.byteLength / 1024).toFixed(1)}KB)`);
+                } else {
+                  console.log(`⚠️ Erreur téléchargement contenu: ${contentResponse.status}`);
+                }
+              }
             } else {
-              console.log(`⚠️ Erreur API pièce jointe: ${attResponse.status}`);
+              console.log(`⚠️ Erreur API pièce jointe: ${attMetaResponse.status}`);
             }
           } catch (dlError) {
             console.error('❌ Erreur téléchargement API:', dlError.message);

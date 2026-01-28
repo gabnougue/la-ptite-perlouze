@@ -348,11 +348,19 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
       console.log('📧 Création thread pour:', { customerEmail, customerName, subject: subject || 'Message sans sujet' });
 
-      // Créer un nouveau thread (contact_id = 0 pour les emails entrants sans formulaire contact)
+      // Créer d'abord un contact (requis par la clé étrangère)
+      const contactResult = await db.run(
+        'INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)',
+        [customerName, customerEmail, messageContent]
+      );
+      const contactId = contactResult.id;
+      console.log('✅ Contact créé avec ID:', contactId);
+
+      // Créer un nouveau thread lié au contact
       const threadResult = await db.run(`
         INSERT INTO message_threads (contact_id, subject, customer_name, customer_email, status, last_message_at)
-        VALUES (0, ?, ?, ?, 'open', CURRENT_TIMESTAMP)
-      `, [subject || 'Message sans sujet', customerName, customerEmail]);
+        VALUES (?, ?, ?, ?, 'open', CURRENT_TIMESTAMP)
+      `, [contactId, subject || 'Message sans sujet', customerName, customerEmail]);
 
       const threadId = threadResult.id;
       console.log('✅ Thread créé avec ID:', threadId);

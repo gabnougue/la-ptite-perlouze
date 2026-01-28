@@ -22,16 +22,6 @@ if (process.env.TURSO_DATABASE_URL) {
 
 async function initDatabase() {
   try {
-    // Migration v1: Forcer la recréation des tables de messagerie avec le bon schéma
-    // (à supprimer après premier déploiement réussi)
-    console.log('🔧 Migration: suppression des tables de messagerie...');
-    await client.batch([
-      'DROP TABLE IF EXISTS message_attachments',
-      'DROP TABLE IF EXISTS thread_messages',
-      'DROP TABLE IF EXISTS message_threads'
-    ]);
-    console.log('✅ Tables de messagerie supprimées pour recréation');
-
     // Création des tables
     await client.batch([
       // Table des produits
@@ -99,46 +89,6 @@ async function initDatabase() {
         key TEXT UNIQUE NOT NULL,
         value TEXT,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`,
-
-      // Table des conversations (threads de messages)
-      `CREATE TABLE IF NOT EXISTS message_threads (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        contact_id INTEGER,
-        subject TEXT,
-        customer_name TEXT NOT NULL,
-        customer_email TEXT NOT NULL,
-        status TEXT DEFAULT 'open',
-        admin_last_viewed_at DATETIME,
-        last_message_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (contact_id) REFERENCES contacts(id)
-      )`,
-
-      // Table des messages dans les threads
-      `CREATE TABLE IF NOT EXISTS thread_messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        thread_id INTEGER NOT NULL,
-        sender_type TEXT NOT NULL,
-        sender_name TEXT,
-        sender_email TEXT,
-        message TEXT NOT NULL,
-        has_attachments INTEGER DEFAULT 0,
-        resend_email_id TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (thread_id) REFERENCES message_threads(id)
-      )`,
-
-      // Table des pièces jointes
-      `CREATE TABLE IF NOT EXISTS message_attachments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        message_id INTEGER NOT NULL,
-        filename TEXT NOT NULL,
-        file_path TEXT NOT NULL,
-        file_size INTEGER,
-        mime_type TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (message_id) REFERENCES thread_messages(id)
       )`
     ]);
 
@@ -200,11 +150,10 @@ async function initDatabase() {
   }
 }
 
-// Exécuter l'initialisation (sans process.exit pour Vercel)
+// Exécuter l'initialisation
 initDatabase()
-  .then(() => console.log('✅ Base de données initialisée'))
+  .then(() => process.exit(0))
   .catch(err => {
-    console.error('❌ Erreur init DB:', err);
+    console.error(err);
+    process.exit(1);
   });
-
-module.exports = initDatabase;

@@ -321,53 +321,26 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
     console.log('📧 Email entrant reçu:', { from, subject, emailId });
 
-    // Récupérer le contenu du mail via l'API Resend (Received Emails API)
-    let messageContent = '';
-    if (emailId && process.env.RESEND_API_KEY) {
+    // Récupérer le contenu du mail depuis les données du webhook
+    let messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '';
+
+    // Si pas de contenu dans le webhook, essayer de le récupérer via l'API
+    if (!messageContent && emailId && process.env.RESEND_API_KEY) {
       try {
-        // Utiliser l'endpoint spécifique pour les emails reçus (inbound)
-        const emailResponse = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, {
-          headers: {
-            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
-          }
-        });
-        if (emailResponse.ok) {
-          const emailDetails = await emailResponse.json();
-          console.log('📨 Détails email reçus:', JSON.stringify(emailDetails).substring(0, 500));
-
-          // Le contenu peut être dans text, html, ou il faut télécharger le raw
-          messageContent = emailDetails.text || emailDetails.html || '';
-
-          // Si pas de contenu direct, essayer de télécharger le fichier raw
-          if (!messageContent && emailDetails.raw && emailDetails.raw.download_url) {
-            try {
-              const rawResponse = await fetch(emailDetails.raw.download_url);
-              if (rawResponse.ok) {
-                const rawEmail = await rawResponse.text();
-                // Extraire le contenu texte du mail brut (format RFC 2822)
-                const bodyMatch = rawEmail.match(/\r?\n\r?\n([\s\S]*)/);
-                if (bodyMatch) {
-                  messageContent = bodyMatch[1].trim();
-                }
-              }
-            } catch (rawError) {
-              console.error('❌ Erreur téléchargement raw:', rawError);
-            }
-          }
-
-          console.log('📨 Contenu récupéré:', messageContent.substring(0, 100) + '...');
-        } else {
-          const errorText = await emailResponse.text();
-          console.log('⚠️ Impossible de récupérer le contenu:', emailResponse.status, errorText);
+        console.log('📨 Tentative récupération contenu via API pour email_id:', emailId);
+        const emailDetails = await resend.emails.get(emailId);
+        if (emailDetails?.data) {
+          messageContent = emailDetails.data.text || emailDetails.data.html || '';
         }
+        console.log('📨 Contenu API:', messageContent ? messageContent.substring(0, 100) + '...' : '(vide)');
       } catch (fetchError) {
-        console.error('❌ Erreur fetch email content:', fetchError);
+        console.error('❌ Erreur API (non bloquante):', fetchError.message || fetchError);
       }
     }
 
-    // Si pas de contenu récupéré, essayer les champs directs (fallback)
+    // Fallback si toujours pas de contenu
     if (!messageContent) {
-      messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Contenu non disponible]';
+      messageContent = '[Réponse reçue par email]';
     }
 
     // Nettoyer le contenu pour ne garder que le nouveau message (retirer les citations)
@@ -381,17 +354,26 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
       console.log('⚠️ Pas de thread ID dans le sujet, création d\'un nouveau thread');
 
       // Extraire l'email de l'expéditeur
-      const emailMatch = from.match(/<(.+?)>/) || [null, from];
-      const customerEmail = emailMatch[1] || from;
-      const customerName = from.replace(/<.+?>/, '').trim() || customerEmail;
+      let customerEmail, customerName;
+      if (typeof from === 'string') {
+        const emailMatch = from.match(/<(.+?)>/);
+        customerEmail = emailMatch ? emailMatch[1] : from;
+        customerName = from.replace(/<.+?>/, '').trim() || customerEmail;
+      } else {
+        customerEmail = from?.address || from?.email || 'unknown@email.com';
+        customerName = from?.name || customerEmail;
+      }
 
-      // Créer un nouveau thread (sans contact_id car c'est un email direct)
+      console.log('📧 Création thread pour:', { customerEmail, customerName, subject: subject || 'Message sans sujet' });
+
+      // Créer un nouveau thread
       const threadResult = await db.run(`
-        INSERT INTO message_threads (subject, customer_name, customer_email, status, last_message_at)
-        VALUES (?, ?, ?, 'open', CURRENT_TIMESTAMP)
+        INSERT INTO message_threads (contact_id, subject, customer_name, customer_email, status, last_message_at)
+        VALUES (NULL, ?, ?, ?, 'open', CURRENT_TIMESTAMP)
       `, [subject || 'Message sans sujet', customerName, customerEmail]);
 
       const threadId = threadResult.id;
+      console.log('✅ Thread créé avec ID:', threadId);
 
       // Ajouter le message
       await db.run(`
@@ -399,6 +381,7 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
         VALUES (?, 'customer', ?, ?, ?)
       `, [threadId, customerName, customerEmail, messageContent]);
 
+      console.log('✅ Message ajouté au nouveau thread');
       return res.json({ success: true, message: 'Nouveau thread créé' });
     }
 
@@ -433,8 +416,8 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
     res.json({ success: true, message: 'Message reçu et stocké' });
   } catch (error) {
-    console.error('❌ Erreur webhook:', error.message, error.stack);
-    res.status(500).json({ error: 'Erreur serveur', details: error.message });
+    console.error('❌ Erreur webhook:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 

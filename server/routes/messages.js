@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const db = require('../models/database');
 const { Resend } = require('resend');
+const { sendNewEmailNotification } = require('../services/email');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -589,6 +590,15 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
       }
 
       console.log('✅ Message ajouté au nouveau thread');
+      
+      // Notifier le vendeur par email
+      await sendNewEmailNotification({
+        from: customerEmail,
+        subject: subject || 'Message sans sujet',
+        message: messageContent,
+        threadId: newThreadId
+      });
+      
       return res.json({ success: true, message: 'Nouveau thread créé' });
     }
 
@@ -642,6 +652,14 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
     `, [threadId]);
 
     console.log('✅ Message ajouté au thread', threadId);
+
+    // Notifier le vendeur par email
+    await sendNewEmailNotification({
+      from: customerEmail,
+      subject: subject || thread.subject || 'Réponse client',
+      message: messageContent,
+      threadId: threadId
+    });
 
     res.json({ success: true, message: 'Message reçu et stocké' });
   } catch (error) {

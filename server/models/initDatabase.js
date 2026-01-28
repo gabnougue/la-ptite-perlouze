@@ -22,6 +22,25 @@ if (process.env.TURSO_DATABASE_URL) {
 
 async function initDatabase() {
   try {
+    // Migration: supprimer et recréer les tables de messagerie si elles ont une contrainte incorrecte
+    try {
+      // Vérifier si la table existe et a la mauvaise contrainte
+      const tableInfo = await client.execute("PRAGMA table_info(message_threads)");
+      const contactIdCol = tableInfo.rows.find(row => row.name === 'contact_id');
+      if (contactIdCol && contactIdCol.notnull === 1) {
+        console.log('🔧 Migration: correction du schéma message_threads...');
+        await client.batch([
+          'DROP TABLE IF EXISTS message_attachments',
+          'DROP TABLE IF EXISTS thread_messages',
+          'DROP TABLE IF EXISTS message_threads'
+        ]);
+        console.log('✅ Tables de messagerie supprimées pour recréation');
+      }
+    } catch (migrationError) {
+      // Ignorer les erreurs de migration (table n'existe peut-être pas encore)
+      console.log('ℹ️ Migration messagerie non nécessaire');
+    }
+
     // Création des tables
     await client.batch([
       // Table des produits

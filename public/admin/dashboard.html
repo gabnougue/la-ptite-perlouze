@@ -334,15 +334,21 @@
       }
 
       /* Navigation Admin - Visible sur mobile */
+      /* IMPORTANT: Surcharger les styles globaux de style.css qui masquent nav sur mobile */
       .admin-nav {
         padding: 0.5rem;
         display: block !important;
+        max-height: none !important;
+        opacity: 1 !important;
+        overflow: visible !important;
       }
 
       .admin-nav ul {
         flex-direction: column;
         gap: 0.5rem;
         display: flex !important;
+        margin: 0;
+        padding: 0;
       }
 
       .admin-nav a {

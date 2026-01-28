@@ -433,8 +433,8 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
     res.json({ success: true, message: 'Message reçu et stocké' });
   } catch (error) {
-    console.error('❌ Erreur webhook:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('❌ Erreur webhook:', error.message, error.stack);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
   }
 });
 

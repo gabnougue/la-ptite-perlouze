@@ -317,6 +317,7 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
     const subject = emailData.subject;
 
     console.log('📧 Email entrant reçu:', { from, subject, emailId });
+    console.log('📧 Données webhook complètes:', JSON.stringify(req.body).substring(0, 2000));
 
     // Récupérer le contenu du mail et les pièces jointes via l'API Resend
     let messageContent = '';
@@ -334,15 +335,18 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
 
         if (response.ok) {
           const emailDetails = await response.json();
-          console.log('📨 Réponse API receiving:', JSON.stringify(emailDetails).substring(0, 500));
+          console.log('📨 Réponse API receiving complète:', JSON.stringify(emailDetails).substring(0, 2000));
+          console.log('📨 Clés disponibles:', Object.keys(emailDetails));
 
           // Le contenu peut être dans text, html, ou dans un objet imbriqué
           messageContent = emailDetails.text || emailDetails.html || '';
 
-          // Récupérer les pièces jointes si présentes
-          if (emailDetails.attachments && emailDetails.attachments.length > 0) {
-            console.log(`📎 ${emailDetails.attachments.length} pièce(s) jointe(s) détectée(s)`);
-            for (const att of emailDetails.attachments) {
+          // Récupérer les pièces jointes si présentes (plusieurs formats possibles)
+          const attData = emailDetails.attachments || emailDetails.files || [];
+          if (attData.length > 0) {
+            console.log(`📎 ${attData.length} pièce(s) jointe(s) détectée(s)`);
+            console.log('📎 Format pièces jointes:', JSON.stringify(attData[0]));
+            for (const att of attData) {
               try {
                 // Télécharger le contenu de la pièce jointe
                 if (att.download_url) {
@@ -405,22 +409,54 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
       messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Réponse reçue par email]';
     }
     
-    // Fallback pour les pièces jointes depuis le webhook
-    if (attachments.length === 0 && emailData.attachments && emailData.attachments.length > 0) {
-      for (const att of emailData.attachments) {
-        if (att.content) {
+    // Fallback pour les pièces jointes depuis le webhook (plusieurs formats possibles)
+    if (attachments.length === 0) {
+      const webhookAttachments = emailData.attachments || emailData.files || req.body.attachments || [];
+      console.log(`📎 Vérification webhook pour pièces jointes: ${webhookAttachments.length} trouvée(s)`);
+      if (webhookAttachments.length > 0) {
+        console.log('📎 Format webhook attachments:', JSON.stringify(webhookAttachments[0]).substring(0, 500));
+      }
+      
+      for (const att of webhookAttachments) {
+        // Plusieurs formats possibles selon la source
+        const content = att.content || att.data || att.base64;
+        const filename = att.filename || att.name || att.fileName || 'attachment';
+        const mimetype = att.content_type || att.contentType || att.type || att.mimeType || 'application/octet-stream';
+        
+        if (content) {
           attachments.push({
-            filename: att.filename || 'attachment',
-            content: att.content,
-            mimetype: att.content_type || att.type || 'application/octet-stream',
-            size: att.size || 0
+            filename: filename,
+            content: content,
+            mimetype: mimetype,
+            size: att.size || content.length || 0
           });
+          console.log(`📎 Pièce jointe webhook ajoutée: ${filename}`);
+        } else if (att.url || att.download_url) {
+          // Si c'est une URL, télécharger le contenu
+          try {
+            const attUrl = att.url || att.download_url;
+            console.log(`📎 Téléchargement pièce jointe depuis URL: ${attUrl}`);
+            const attResponse = await fetch(attUrl);
+            if (attResponse.ok) {
+              const attBuffer = await attResponse.arrayBuffer();
+              const base64Content = Buffer.from(attBuffer).toString('base64');
+              attachments.push({
+                filename: filename,
+                content: base64Content,
+                mimetype: mimetype,
+                size: attBuffer.byteLength
+              });
+              console.log(`📎 Pièce jointe téléchargée: ${filename} (${(attBuffer.byteLength / 1024).toFixed(1)}KB)`);
+            }
+          } catch (dlError) {
+            console.error('❌ Erreur téléchargement:', dlError.message);
+          }
         }
       }
     }
     
     console.log('📨 Contenu final:', messageContent ? messageContent.substring(0, 100) : '(vide)');
-    console.log(`📎 Total pièces jointes: ${attachments.length}`);
+    console.log(`📎 Total pièces jointes récupérées: ${attachments.length}`);
 
     // Nettoyer le contenu pour ne garder que le nouveau message (retirer les citations)
     messageContent = cleanEmailContent(messageContent);

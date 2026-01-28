@@ -317,7 +317,29 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
     const to = emailData.to;
     const subject = emailData.subject;
 
-    console.log('📧 Email entrant reçu:', { from, subject, emailId });
+    console.log('📧 Email entrant reçu:', { from, to, subject, emailId });
+
+    // ========== FILTRE ANTI-BOUCLE ==========
+    // Ignorer les emails provenant du vendeur ou destinés au vendeur (notifications)
+    const vendorEmail = process.env.VENDOR_EMAIL || 'yvonne@laptiteperlouze.fr';
+    const fromEmail = typeof from === 'string' ? from : (from?.email || from?.[0]?.email || '');
+    const toEmails = Array.isArray(to) ? to.map(t => typeof t === 'string' ? t : t?.email).join(',') : (typeof to === 'string' ? to : to?.email || '');
+    
+    // Ignorer si l'email vient du vendeur ou du système
+    if (fromEmail.toLowerCase().includes(vendorEmail.toLowerCase()) ||
+        fromEmail.toLowerCase().includes('noreply') ||
+        fromEmail.toLowerCase().includes('no-reply') ||
+        fromEmail.toLowerCase().includes('@resend.dev')) {
+      console.log('🚫 Email ignoré (provient du vendeur ou du système):', fromEmail);
+      return res.status(200).json({ success: true, ignored: true, reason: 'vendor_or_system_email' });
+    }
+    
+    // Ignorer si l'email est destiné au vendeur (notification de réponse)
+    if (toEmails.toLowerCase().includes(vendorEmail.toLowerCase())) {
+      console.log('🚫 Email ignoré (destiné au vendeur):', toEmails);
+      return res.status(200).json({ success: true, ignored: true, reason: 'email_to_vendor' });
+    }
+    // ========================================
     console.log('📧 Données webhook complètes:', JSON.stringify(req.body).substring(0, 2000));
 
     // Récupérer le contenu du mail et les pièces jointes via l'API Resend

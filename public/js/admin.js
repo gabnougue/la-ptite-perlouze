@@ -1170,8 +1170,9 @@ function replyToThread(threadId) {
         </div>
 
         <div style="display: flex; gap: 1rem;">
-          <button type="submit" class="btn btn-primary" style="flex: 1;">
-            Envoyer la réponse
+          <button type="submit" id="reply-submit-btn" class="btn btn-primary" style="flex: 1;">
+            <span class="btn-text">Envoyer la réponse</span>
+            <span class="btn-loader" style="display: none;">⏳ Envoi en cours...</span>
           </button>
           <button type="button" onclick="this.closest('.modal').remove()" class="btn btn-outline" style="flex: 1;">
             Annuler
@@ -1240,6 +1241,9 @@ async function sendReply(event, threadId) {
 
   const messageInput = document.getElementById('reply-message');
   const attachmentsInput = document.getElementById('reply-attachments');
+  const submitBtn = document.getElementById('reply-submit-btn');
+  const btnText = submitBtn.querySelector('.btn-text');
+  const btnLoader = submitBtn.querySelector('.btn-loader');
   const message = messageInput.value.trim();
 
   if (!message) {
@@ -1247,12 +1251,17 @@ async function sendReply(event, threadId) {
     return;
   }
 
+  // Activer le loader
+  submitBtn.disabled = true;
+  btnText.style.display = 'none';
+  btnLoader.style.display = 'inline';
+
   const formData = new FormData();
   formData.append('message', message);
 
   // Compresser et ajouter les pièces jointes
   if (attachmentsInput.files.length > 0) {
-    showMessage('Compression des images en cours...', 'info');
+    btnLoader.textContent = '⏳ Compression...';
     for (let i = 0; i < Math.min(attachmentsInput.files.length, 5); i++) {
       const compressedFile = await compressImageClient(attachmentsInput.files[i]);
       formData.append('attachments', compressedFile);
@@ -1260,7 +1269,7 @@ async function sendReply(event, threadId) {
   }
 
   try {
-    showMessage('Envoi en cours...', 'info');
+    btnLoader.textContent = '⏳ Envoi en cours...';
     const response = await fetch(`/api/messages/threads/${threadId}/reply`, {
       method: 'POST',
       body: formData
@@ -1276,10 +1285,18 @@ async function sendReply(event, threadId) {
       loadThreads();
     } else {
       showMessage(result.error || 'Erreur lors de l\'envoi', 'error');
+      // Réactiver le bouton en cas d'erreur
+      submitBtn.disabled = false;
+      btnText.style.display = 'inline';
+      btnLoader.style.display = 'none';
     }
   } catch (error) {
     console.error('Erreur:', error);
     showMessage('Erreur lors de l\'envoi de la réponse', 'error');
+    // Réactiver le bouton en cas d'erreur
+    submitBtn.disabled = false;
+    btnText.style.display = 'inline';
+    btnLoader.style.display = 'none';
   }
 }
 

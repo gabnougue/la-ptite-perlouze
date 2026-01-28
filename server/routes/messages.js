@@ -3,7 +3,6 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
-const sharp = require('sharp');
 const db = require('../models/database');
 const { Resend } = require('resend');
 
@@ -37,36 +36,6 @@ const requireAuth = (req, res, next) => {
   }
   next();
 };
-
-// ═══════════════════════════════════════════════════
-// FONCTION DE COMPRESSION D'IMAGES
-// ═══════════════════════════════════════════════════
-
-// Compresser une image (retourne le buffer compressé)
-async function compressImage(buffer, mimetype) {
-  // Ne compresser que les images (pas les PDF)
-  const imageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-  if (!imageTypes.includes(mimetype)) {
-    return buffer; // Retourner tel quel pour les PDF
-  }
-
-  try {
-    // Compresser et redimensionner l'image
-    const compressedBuffer = await sharp(buffer)
-      .resize(1200, 1200, {
-        fit: 'inside',
-        withoutEnlargement: true
-      })
-      .webp({ quality: 80 })
-      .toBuffer();
-
-    console.log(`🖼️ Image compressée: ${(buffer.length / 1024).toFixed(1)}KB → ${(compressedBuffer.length / 1024).toFixed(1)}KB`);
-    return compressedBuffer;
-  } catch (error) {
-    console.error('Erreur compression image:', error);
-    return buffer; // En cas d'erreur, retourner l'original
-  }
-}
 
 // ═══════════════════════════════════════════════════
 // RÉCUPÉRATION DES THREADS ET MESSAGES
@@ -182,36 +151,22 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
 
     const messageId = messageResult.id;
 
-    // Enregistrer les pièces jointes avec compression automatique
+    // Enregistrer les pièces jointes (déjà compressées côté client)
     const processedAttachments = [];
     if (attachments.length > 0) {
       for (const file of attachments) {
-        // Compresser si c'est une image
-        const isImage = file.mimetype.startsWith('image/');
-        let processedBuffer = file.buffer;
-        let finalMimetype = file.mimetype;
-        let finalExtension = path.extname(file.originalname);
-        let finalFilename = file.originalname;
-
-        if (isImage) {
-          processedBuffer = await compressImage(file.buffer, file.mimetype);
-          finalMimetype = 'image/webp';
-          finalExtension = '.webp';
-          finalFilename = path.basename(file.originalname, path.extname(file.originalname)) + '.webp';
-        }
-
-        const uniqueName = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + finalExtension;
-        const base64Content = processedBuffer.toString('base64');
+        const uniqueName = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + path.extname(file.originalname);
+        const base64Content = file.buffer.toString('base64');
 
         await db.run(`
           INSERT INTO message_attachments (message_id, filename, file_path, file_size, mime_type, content)
           VALUES (?, ?, ?, ?, ?, ?)
-        `, [messageId, finalFilename, uniqueName, processedBuffer.length, finalMimetype, base64Content]);
+        `, [messageId, file.originalname, uniqueName, file.buffer.length, file.mimetype, base64Content]);
 
         processedAttachments.push({
-          originalname: finalFilename,
-          buffer: processedBuffer,
-          mimetype: finalMimetype
+          originalname: file.originalname,
+          buffer: file.buffer,
+          mimetype: file.mimetype
         });
       }
     }

@@ -322,26 +322,8 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
     console.log('📧 Email entrant reçu:', { from, subject, emailId });
 
     // Récupérer le contenu du mail depuis les données du webhook
-    let messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '';
-
-    // Si pas de contenu dans le webhook, essayer de le récupérer via l'API
-    if (!messageContent && emailId && process.env.RESEND_API_KEY) {
-      try {
-        console.log('📨 Tentative récupération contenu via API pour email_id:', emailId);
-        const emailDetails = await resend.emails.get(emailId);
-        if (emailDetails?.data) {
-          messageContent = emailDetails.data.text || emailDetails.data.html || '';
-        }
-        console.log('📨 Contenu API:', messageContent ? messageContent.substring(0, 100) + '...' : '(vide)');
-      } catch (fetchError) {
-        console.error('❌ Erreur API (non bloquante):', fetchError.message || fetchError);
-      }
-    }
-
-    // Fallback si toujours pas de contenu
-    if (!messageContent) {
-      messageContent = '[Réponse reçue par email]';
-    }
+    let messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Réponse reçue par email]';
+    console.log('📨 Contenu brut:', messageContent ? messageContent.substring(0, 100) : '(vide)');
 
     // Nettoyer le contenu pour ne garder que le nouveau message (retirer les citations)
     messageContent = cleanEmailContent(messageContent);
@@ -386,6 +368,7 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
     }
 
     const threadId = parseInt(threadIdMatch[1]);
+    console.log('📧 Thread ID trouvé:', threadId);
 
     // Vérifier que le thread existe
     const thread = await db.get('SELECT * FROM message_threads WHERE id = ?', [threadId]);
@@ -394,10 +377,18 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
       return res.status(404).json({ error: 'Thread non trouvé' });
     }
 
-    // Extraire l'email de l'expéditeur
-    const emailMatch = from.match(/<(.+?)>/) || [null, from];
-    const customerEmail = emailMatch[1] || from;
-    const customerName = from.replace(/<.+?>/, '').trim() || thread.customer_name;
+    // Extraire l'email de l'expéditeur (même logique que pour nouveau thread)
+    let customerEmail, customerName;
+    if (typeof from === 'string') {
+      const emailMatch = from.match(/<(.+?)>/);
+      customerEmail = emailMatch ? emailMatch[1] : from;
+      customerName = from.replace(/<.+?>/, '').trim() || thread.customer_name;
+    } else {
+      customerEmail = from?.address || from?.email || thread.customer_email;
+      customerName = from?.name || thread.customer_name;
+    }
+
+    console.log('📧 Ajout message au thread:', { threadId, customerEmail, customerName });
 
     // Ajouter le message à la conversation
     await db.run(`
@@ -416,8 +407,8 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
     res.json({ success: true, message: 'Message reçu et stocké' });
   } catch (error) {
-    console.error('❌ Erreur webhook:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('❌ Erreur webhook:', error.message, error.stack);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
   }
 });
 

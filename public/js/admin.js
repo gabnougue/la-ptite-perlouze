@@ -1170,9 +1170,8 @@ function replyToThread(threadId) {
         </div>
 
         <div style="display: flex; gap: 1rem;">
-          <button type="submit" id="reply-submit-btn" class="btn btn-primary" style="flex: 1;">
-            <span class="btn-text">Envoyer la réponse</span>
-            <span class="btn-loader" style="display: none;">⏳ Envoi en cours...</span>
+          <button type="submit" class="btn btn-primary" style="flex: 1;">
+            Envoyer la réponse
           </button>
           <button type="button" onclick="this.closest('.modal').remove()" class="btn btn-outline" style="flex: 1;">
             Annuler
@@ -1235,15 +1234,47 @@ async function compressImageClient(file, maxWidth = 1200, quality = 0.8) {
   });
 }
 
+// Afficher/masquer le loader overlay
+function showLoader(message = 'Chargement...') {
+  // Supprimer l'ancien loader s'il existe
+  const existingLoader = document.getElementById('overlay-loader');
+  if (existingLoader) existingLoader.remove();
+
+  const loader = document.createElement('div');
+  loader.id = 'overlay-loader';
+  loader.innerHTML = `
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+      <div style="background: white; padding: 2rem 3rem; border-radius: 16px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        <div style="width: 50px; height: 50px; border: 4px solid #e0e0e0; border-top: 4px solid var(--lavande, #9b87f5); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+        <p id="loader-message" style="margin: 0; font-size: 1.1rem; color: #333; font-weight: 500;">${message}</p>
+      </div>
+    </div>
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+  document.body.appendChild(loader);
+}
+
+function updateLoaderMessage(message) {
+  const msgEl = document.getElementById('loader-message');
+  if (msgEl) msgEl.textContent = message;
+}
+
+function hideLoader() {
+  const loader = document.getElementById('overlay-loader');
+  if (loader) loader.remove();
+}
+
 // Envoyer une réponse
 async function sendReply(event, threadId) {
   event.preventDefault();
 
   const messageInput = document.getElementById('reply-message');
   const attachmentsInput = document.getElementById('reply-attachments');
-  const submitBtn = document.getElementById('reply-submit-btn');
-  const btnText = submitBtn.querySelector('.btn-text');
-  const btnLoader = submitBtn.querySelector('.btn-loader');
   const message = messageInput.value.trim();
 
   if (!message) {
@@ -1251,17 +1282,15 @@ async function sendReply(event, threadId) {
     return;
   }
 
-  // Activer le loader
-  submitBtn.disabled = true;
-  btnText.style.display = 'none';
-  btnLoader.style.display = 'inline';
+  // Afficher le loader overlay
+  showLoader('Préparation de l\'envoi...');
 
   const formData = new FormData();
   formData.append('message', message);
 
   // Compresser et ajouter les pièces jointes
   if (attachmentsInput.files.length > 0) {
-    btnLoader.textContent = '⏳ Compression...';
+    updateLoaderMessage('Compression des images...');
     for (let i = 0; i < Math.min(attachmentsInput.files.length, 5); i++) {
       const compressedFile = await compressImageClient(attachmentsInput.files[i]);
       formData.append('attachments', compressedFile);
@@ -1269,13 +1298,15 @@ async function sendReply(event, threadId) {
   }
 
   try {
-    btnLoader.textContent = '⏳ Envoi en cours...';
+    updateLoaderMessage('Envoi en cours...');
     const response = await fetch(`/api/messages/threads/${threadId}/reply`, {
       method: 'POST',
       body: formData
     });
 
     const result = await response.json();
+
+    hideLoader();
 
     if (result.success) {
       showMessage('Réponse envoyée avec succès', 'success');
@@ -1285,18 +1316,11 @@ async function sendReply(event, threadId) {
       loadThreads();
     } else {
       showMessage(result.error || 'Erreur lors de l\'envoi', 'error');
-      // Réactiver le bouton en cas d'erreur
-      submitBtn.disabled = false;
-      btnText.style.display = 'inline';
-      btnLoader.style.display = 'none';
     }
   } catch (error) {
     console.error('Erreur:', error);
+    hideLoader();
     showMessage('Erreur lors de l\'envoi de la réponse', 'error');
-    // Réactiver le bouton en cas d'erreur
-    submitBtn.disabled = false;
-    btnText.style.display = 'inline';
-    btnLoader.style.display = 'none';
   }
 }
 

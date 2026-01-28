@@ -2389,9 +2389,8 @@ function displayBoutiqueImages() {
       </button>
 
       <img src="${img.image_path}" alt="Boutique"
-           class="img-loading"
-           onload="this.classList.remove('img-loading'); this.classList.add('img-loaded');"
-           style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 0.5rem;">
+           onload="this.style.filter='blur(0)'; this.style.opacity='1';"
+           style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 0.5rem; filter: blur(10px); opacity: 0.5; transition: filter 0.5s ease, opacity 0.5s ease;">
 
       <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
         <button onclick="moveBoutiqueImage(${img.id}, -1)"

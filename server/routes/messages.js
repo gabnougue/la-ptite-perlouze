@@ -9,9 +9,11 @@ const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Configuration multer pour les pièces jointes
+// Sur Vercel, utiliser /tmp car le système de fichiers est en lecture seule
+const uploadDir = process.env.VERCEL ? '/tmp' : 'public/attachments/';
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/attachments/');
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueName = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + path.extname(file.originalname);
@@ -175,10 +177,10 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
       WHERE id = ?
     `, [id]);
 
-    // Préparer les pièces jointes pour Resend
+    // Préparer les pièces jointes pour Resend (utiliser file.path directement)
     const resendAttachments = attachments.map(file => ({
       filename: file.originalname,
-      path: path.join(__dirname, '../../public/attachments/', file.filename)
+      path: file.path  // Chemin complet du fichier uploadé
     }));
 
     // Envoyer l'email via Resend

@@ -348,10 +348,10 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
       console.log('📧 Création thread pour:', { customerEmail, customerName, subject: subject || 'Message sans sujet' });
 
-      // Créer un nouveau thread
+      // Créer un nouveau thread (contact_id = 0 pour les emails entrants sans formulaire contact)
       const threadResult = await db.run(`
         INSERT INTO message_threads (contact_id, subject, customer_name, customer_email, status, last_message_at)
-        VALUES (NULL, ?, ?, ?, 'open', CURRENT_TIMESTAMP)
+        VALUES (0, ?, ?, ?, 'open', CURRENT_TIMESTAMP)
       `, [subject || 'Message sans sujet', customerName, customerEmail]);
 
       const threadId = threadResult.id;

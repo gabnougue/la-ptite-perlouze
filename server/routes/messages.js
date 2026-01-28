@@ -320,12 +320,12 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
     console.log('📧 Email entrant reçu:', { from, to, subject, emailId });
 
     // ========== FILTRE ANTI-BOUCLE ==========
-    // Ignorer les emails provenant du vendeur ou destinés au vendeur (notifications)
+    // Ignorer les emails provenant du vendeur ou du système
     const vendorEmail = process.env.VENDOR_EMAIL || 'yvonne@laptiteperlouze.fr';
     const fromEmail = typeof from === 'string' ? from : (from?.email || from?.[0]?.email || '');
     const toEmails = Array.isArray(to) ? to.map(t => typeof t === 'string' ? t : t?.email).join(',') : (typeof to === 'string' ? to : to?.email || '');
     
-    // Ignorer si l'email vient du vendeur ou du système
+    // Ignorer si l'email vient du vendeur ou du système (anti-boucle)
     if (fromEmail.toLowerCase().includes(vendorEmail.toLowerCase()) ||
         fromEmail.toLowerCase().includes('noreply') ||
         fromEmail.toLowerCase().includes('no-reply') ||
@@ -334,11 +334,8 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
       return res.status(200).json({ success: true, ignored: true, reason: 'vendor_or_system_email' });
     }
     
-    // Ignorer si l'email est destiné au vendeur (notification de réponse)
-    if (toEmails.toLowerCase().includes(vendorEmail.toLowerCase())) {
-      console.log('🚫 Email ignoré (destiné au vendeur):', toEmails);
-      return res.status(200).json({ success: true, ignored: true, reason: 'email_to_vendor' });
-    }
+    // Détecter si l'email est destiné à l'adresse vendeur (pour forwarding uniquement)
+    const isEmailToVendor = toEmails.toLowerCase().includes(vendorEmail.toLowerCase());
     // ========================================
     console.log('📧 Données webhook complètes:', JSON.stringify(req.body).substring(0, 2000));
 
@@ -554,19 +551,25 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
     console.log('📨 Contenu final:', messageContent ? messageContent.substring(0, 100) : '(vide)');
     console.log(`📎 Total pièces jointes récupérées: ${attachments.length}`);
 
-    // ========== FORWARDING AUTOMATIQUE ==========
-    // Transférer l'email vers l'adresse personnelle
-    try {
-      await forwardEmail({
-        emailId,
-        from: typeof from === 'string' ? from : (from?.email || from?.[0]?.email || 'unknown'),
-        subject,
-        text: messageContent,
-        html: htmlContent,
-        attachments
-      });
-    } catch (fwdError) {
-      console.error('⚠️ Erreur forwarding (non bloquant):', fwdError.message);
+    // ========== FORWARDING EMAILS VENDEUR ==========
+    // Si l'email est destiné à l'adresse vendeur (yvonne@), on le forward et on arrête
+    if (isEmailToVendor) {
+      console.log('📧 Email destiné au vendeur, forwarding uniquement...');
+      try {
+        await forwardEmail({
+          emailId,
+          from: typeof from === 'string' ? from : (from?.email || from?.[0]?.email || 'unknown'),
+          subject,
+          text: messageContent,
+          html: htmlContent,
+          attachments
+        });
+        console.log('✅ Email forwardé avec succès');
+      } catch (fwdError) {
+        console.error('⚠️ Erreur forwarding:', fwdError.message);
+      }
+      // Ne pas stocker en base, retourner directement
+      return res.status(200).json({ success: true, forwarded: true, reason: 'email_to_vendor_forwarded' });
     }
     // ============================================
 

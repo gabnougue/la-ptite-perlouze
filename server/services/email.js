@@ -18,7 +18,7 @@ async function sendOrderNotification(order, items) {
       `<li>${item.product_name} x ${item.quantity} - ${item.price}€</li>`
     ).join('');
 
-    const adminUrl = `${SITE_URL}${ADMIN_PATH}/dashboard.html#commandes`;
+    const adminUrl = `${SITE_URL}${ADMIN_PATH}/dashboard#commandes`;
 
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL,
@@ -108,7 +108,7 @@ async function sendContactNotification(contact) {
   }
 
   try {
-    const adminUrl = `${SITE_URL}${ADMIN_PATH}/dashboard.html#messages`;
+    const adminUrl = `${SITE_URL}${ADMIN_PATH}/dashboard#messages`;
     const messagePreview = contact.message.length > 200 
       ? contact.message.substring(0, 200) + '...' 
       : contact.message;
@@ -317,7 +317,7 @@ async function sendNewEmailNotification({ from, subject, message, threadId }) {
   }
 
   try {
-    const adminUrl = `${SITE_URL}${ADMIN_PATH}/dashboard.html#messages`;
+    const adminUrl = `${SITE_URL}${ADMIN_PATH}/dashboard#messages`;
     const messagePreview = message && message.length > 300 
       ? message.substring(0, 300) + '...' 
       : (message || '[Pas de contenu texte]');

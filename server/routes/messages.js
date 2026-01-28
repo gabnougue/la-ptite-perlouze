@@ -305,7 +305,7 @@ function cleanEmailContent(content) {
 }
 
 // Webhook pour recevoir les emails entrants de Resend
-router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res) => {
+router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res) => {
   try {
     // Resend envoie les données dans req.body.data
     const emailData = req.body.data || req.body;
@@ -318,8 +318,9 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
     console.log('📧 Email entrant reçu:', { from, subject, emailId });
 
-    // Récupérer le contenu du mail via l'API Resend (Received Emails API)
+    // Récupérer le contenu du mail et les pièces jointes via l'API Resend
     let messageContent = '';
+    let attachments = [];
 
     if (emailId && process.env.RESEND_API_KEY) {
       try {
@@ -337,6 +338,40 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
           // Le contenu peut être dans text, html, ou dans un objet imbriqué
           messageContent = emailDetails.text || emailDetails.html || '';
+
+          // Récupérer les pièces jointes si présentes
+          if (emailDetails.attachments && emailDetails.attachments.length > 0) {
+            console.log(`📎 ${emailDetails.attachments.length} pièce(s) jointe(s) détectée(s)`);
+            for (const att of emailDetails.attachments) {
+              try {
+                // Télécharger le contenu de la pièce jointe
+                if (att.download_url) {
+                  const attResponse = await fetch(att.download_url);
+                  if (attResponse.ok) {
+                    const attBuffer = await attResponse.arrayBuffer();
+                    const base64Content = Buffer.from(attBuffer).toString('base64');
+                    attachments.push({
+                      filename: att.filename || 'attachment',
+                      content: base64Content,
+                      mimetype: att.content_type || 'application/octet-stream',
+                      size: attBuffer.byteLength
+                    });
+                    console.log(`📎 Pièce jointe récupérée: ${att.filename} (${(attBuffer.byteLength / 1024).toFixed(1)}KB)`);
+                  }
+                } else if (att.content) {
+                  // Contenu déjà en base64
+                  attachments.push({
+                    filename: att.filename || 'attachment',
+                    content: att.content,
+                    mimetype: att.content_type || 'application/octet-stream',
+                    size: att.size || 0
+                  });
+                }
+              } catch (attError) {
+                console.error('❌ Erreur téléchargement pièce jointe:', attError.message);
+              }
+            }
+          }
 
           // Si pas de contenu direct, essayer de télécharger le fichier raw
           if (!messageContent && emailDetails.raw && emailDetails.raw.download_url) {
@@ -369,7 +404,23 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
     if (!messageContent) {
       messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Réponse reçue par email]';
     }
+    
+    // Fallback pour les pièces jointes depuis le webhook
+    if (attachments.length === 0 && emailData.attachments && emailData.attachments.length > 0) {
+      for (const att of emailData.attachments) {
+        if (att.content) {
+          attachments.push({
+            filename: att.filename || 'attachment',
+            content: att.content,
+            mimetype: att.content_type || att.type || 'application/octet-stream',
+            size: att.size || 0
+          });
+        }
+      }
+    }
+    
     console.log('📨 Contenu final:', messageContent ? messageContent.substring(0, 100) : '(vide)');
+    console.log(`📎 Total pièces jointes: ${attachments.length}`);
 
     // Nettoyer le contenu pour ne garder que le nouveau message (retirer les citations)
     messageContent = cleanEmailContent(messageContent);
@@ -408,14 +459,27 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
         VALUES (?, ?, ?, ?, 'open', CURRENT_TIMESTAMP)
       `, [contactId, subject || 'Message sans sujet', customerName, customerEmail]);
 
-      const threadId = threadResult.id;
-      console.log('✅ Thread créé avec ID:', threadId);
+      const newThreadId = threadResult.id;
+      console.log('✅ Thread créé avec ID:', newThreadId);
 
-      // Ajouter le message
-      await db.run(`
-        INSERT INTO thread_messages (thread_id, sender_type, sender_name, sender_email, message)
-        VALUES (?, 'customer', ?, ?, ?)
-      `, [threadId, customerName, customerEmail, messageContent]);
+      // Ajouter le message avec flag pièces jointes
+      const msgResult = await db.run(`
+        INSERT INTO thread_messages (thread_id, sender_type, sender_name, sender_email, message, has_attachments)
+        VALUES (?, 'customer', ?, ?, ?, ?)
+      `, [newThreadId, customerName, customerEmail, messageContent, attachments.length > 0 ? 1 : 0]);
+
+      // Enregistrer les pièces jointes
+      if (attachments.length > 0) {
+        const messageId = msgResult.id;
+        for (const att of attachments) {
+          const uniqueName = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + path.extname(att.filename);
+          await db.run(`
+            INSERT INTO message_attachments (message_id, filename, file_path, file_size, mime_type, content)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `, [messageId, att.filename, uniqueName, att.size, att.mimetype, att.content]);
+        }
+        console.log(`📎 ${attachments.length} pièce(s) jointe(s) enregistrée(s)`);
+      }
 
       console.log('✅ Message ajouté au nouveau thread');
       return res.json({ success: true, message: 'Nouveau thread créé' });
@@ -444,11 +508,24 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
     console.log('📧 Ajout message au thread:', { threadId, customerEmail, customerName });
 
-    // Ajouter le message à la conversation
-    await db.run(`
-      INSERT INTO thread_messages (thread_id, sender_type, sender_name, sender_email, message)
-      VALUES (?, 'customer', ?, ?, ?)
-    `, [threadId, customerName, customerEmail, messageContent]);
+    // Ajouter le message à la conversation avec flag pièces jointes
+    const msgResult = await db.run(`
+      INSERT INTO thread_messages (thread_id, sender_type, sender_name, sender_email, message, has_attachments)
+      VALUES (?, 'customer', ?, ?, ?, ?)
+    `, [threadId, customerName, customerEmail, messageContent, attachments.length > 0 ? 1 : 0]);
+
+    // Enregistrer les pièces jointes
+    if (attachments.length > 0) {
+      const messageId = msgResult.id;
+      for (const att of attachments) {
+        const uniqueName = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + path.extname(att.filename);
+        await db.run(`
+          INSERT INTO message_attachments (message_id, filename, file_path, file_size, mime_type, content)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `, [messageId, att.filename, uniqueName, att.size, att.mimetype, att.content]);
+      }
+      console.log(`📎 ${attachments.length} pièce(s) jointe(s) enregistrée(s)`);
+    }
 
     // Mettre à jour le thread
     await db.run(`

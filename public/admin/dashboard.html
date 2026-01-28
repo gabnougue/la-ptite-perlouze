@@ -430,6 +430,20 @@
         padding: 0.8rem 0.8rem 0.8rem 45%;
         text-align: right;
         word-break: break-word;
+        overflow: hidden;
+      }
+
+      /* Conteneur d'image dans les cellules */
+      td:has(img) {
+        padding: 0.8rem;
+        text-align: center;
+      }
+
+      td:has(img)::before {
+        position: static !important;
+        display: block;
+        margin-bottom: 0.5rem;
+        text-align: left;
       }
 
       /* Dernier message - limiter la longueur et afficher sous le label */

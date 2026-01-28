@@ -699,7 +699,8 @@ router.delete('/threads/:id', requireAuth, async (req, res) => {
 // ═══════════════════════════════════════════════════
 
 // Servir une pièce jointe depuis la base de données
-router.get('/attachments/:filename', requireAuth, async (req, res) => {
+// Route publique - les noms de fichiers sont générés aléatoirement (sécurité par obscurité)
+router.get('/attachments/:filename', async (req, res) => {
   try {
     const { filename } = req.params;
 

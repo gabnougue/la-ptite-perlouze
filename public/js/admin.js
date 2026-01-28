@@ -2,6 +2,25 @@
 // 🌸 La p'tite perlouze - Script admin 🌸
 // ═══════════════════════════════════════════════════
 
+// Injecter les styles pour le chargement progressif des images
+(function injectImageLoadStyles() {
+  if (document.getElementById('admin-image-load-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'admin-image-load-styles';
+  style.textContent = `
+    .img-loading {
+      filter: blur(10px);
+      opacity: 0.5;
+      transition: filter 0.5s ease, opacity 0.5s ease;
+    }
+    .img-loaded {
+      filter: blur(0);
+      opacity: 1;
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
 // URL secrète admin (doit correspondre au ADMIN_PATH du serveur)
 const ADMIN_PATH = '/backoffice-perlouze';
 
@@ -2370,6 +2389,8 @@ function displayBoutiqueImages() {
       </button>
 
       <img src="${img.image_path}" alt="Boutique"
+           class="img-loading"
+           onload="this.classList.remove('img-loading'); this.classList.add('img-loaded');"
            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 0.5rem;">
 
       <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">

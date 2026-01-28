@@ -358,11 +358,19 @@
       }
 
       /* Section header conversations */
-      .section-header-contacts {
+      .section-header-contacts,
+      .section-header-orders {
         display: flex;
         flex-direction: column;
         gap: 1rem;
         margin-bottom: 1.5rem;
+      }
+
+      .section-header-contacts .filter-checkbox,
+      .section-header-orders .filter-checkbox {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
       }
 
       .section-header-contacts .filter-checkbox {
@@ -574,15 +582,17 @@
       background: var(--rose-doux);
     }
 
-    /* Section header contacts desktop */
-    .section-header-contacts {
+    /* Section header contacts et orders desktop */
+    .section-header-contacts,
+    .section-header-orders {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
     }
 
-    .section-header-contacts .filter-checkbox {
+    .section-header-contacts .filter-checkbox,
+    .section-header-orders .filter-checkbox {
       display: flex;
       gap: 0.5rem;
       align-items: center;
@@ -678,9 +688,9 @@
 
     <!-- Section Commandes -->
     <section id="orders-section" class="section-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <div class="section-header-orders">
         <h2 class="section-title" style="margin: 0;">Commandes</h2>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div class="filter-checkbox">
           <input type="checkbox" id="hide-delivered" class="theme-checkbox" onchange="toggleHideDeliveredOrders()">
           <label for="hide-delivered" style="cursor: pointer; user-select: none; color: var(--texte-principal);">Masquer
             les commandes livrées</label>

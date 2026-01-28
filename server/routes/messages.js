@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const db = require('../models/database');
 const { Resend } = require('resend');
-const { sendNewEmailNotification } = require('../services/email');
+const { sendNewEmailNotification, forwardEmail } = require('../services/email');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -344,6 +344,7 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
 
     // Récupérer le contenu du mail et les pièces jointes via l'API Resend
     let messageContent = '';
+    let htmlContent = '';
     let attachments = [];
 
     if (emailId && process.env.RESEND_API_KEY) {
@@ -363,6 +364,7 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
 
           // Le contenu peut être dans text, html, ou dans un objet imbriqué
           messageContent = emailDetails.text || emailDetails.html || '';
+          htmlContent = emailDetails.html || '';
 
           // Récupérer les pièces jointes si présentes (plusieurs formats possibles)
           const attData = emailDetails.attachments || emailDetails.files || [];
@@ -551,6 +553,22 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
     
     console.log('📨 Contenu final:', messageContent ? messageContent.substring(0, 100) : '(vide)');
     console.log(`📎 Total pièces jointes récupérées: ${attachments.length}`);
+
+    // ========== FORWARDING AUTOMATIQUE ==========
+    // Transférer l'email vers l'adresse personnelle
+    try {
+      await forwardEmail({
+        emailId,
+        from: typeof from === 'string' ? from : (from?.email || from?.[0]?.email || 'unknown'),
+        subject,
+        text: messageContent,
+        html: htmlContent,
+        attachments
+      });
+    } catch (fwdError) {
+      console.error('⚠️ Erreur forwarding (non bloquant):', fwdError.message);
+    }
+    // ============================================
 
     // Nettoyer le contenu pour ne garder que le nouveau message (retirer les citations)
     messageContent = cleanEmailContent(messageContent);

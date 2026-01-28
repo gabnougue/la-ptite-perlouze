@@ -377,9 +377,51 @@ async function sendNewEmailNotification({ from, subject, message, threadId }) {
   }
 }
 
+// Forward un email entrant vers une adresse externe
+async function forwardEmail({ emailId, from, subject, text, html, attachments }) {
+  // Adresse de forwarding (à configurer via variable d'environnement)
+  const forwardTo = process.env.FORWARD_EMAIL || 'gabnougue@gmail.com';
+  
+  if (!process.env.RESEND_API_KEY) {
+    console.log('Resend non configuré, forwarding non effectué');
+    return;
+  }
+
+  try {
+    // Préparer les pièces jointes pour Resend
+    const resendAttachments = attachments?.map(att => ({
+      filename: att.filename,
+      content: att.content // déjà en base64
+    })) || [];
+
+    const result = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL,
+      to: forwardTo,
+      subject: `[FWD] ${subject || 'Sans sujet'}`,
+      html: `
+        <div style="background: #f5f5f5; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
+          <p><strong>📧 Email transféré automatiquement</strong></p>
+          <p><strong>De :</strong> ${from}</p>
+          <p><strong>Sujet original :</strong> ${subject || 'Sans sujet'}</p>
+        </div>
+        <hr style="margin: 20px 0;">
+        ${html || `<pre>${text || '[Pas de contenu]'}</pre>`}
+      `,
+      text: `[Email transféré de ${from}]\n\nSujet: ${subject}\n\n${text || '[Pas de contenu texte]'}`,
+      attachments: resendAttachments
+    });
+
+    console.log('📤 Email transféré vers', forwardTo);
+    return result;
+  } catch (error) {
+    console.error('❌ Erreur forwarding email:', error);
+  }
+}
+
 module.exports = {
   sendOrderNotification,
   sendContactNotification,
   sendCustomerOrderEmail,
-  sendNewEmailNotification
+  sendNewEmailNotification,
+  forwardEmail
 };

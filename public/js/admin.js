@@ -1022,9 +1022,9 @@ async function loadThreads() {
               👁️
             </button>
             ${thread.status === 'open'
-            ? `<button onclick="closeThread(${thread.id})" class="btn-icon btn-close-thread" title="Fermer"><span style="color: var(--lavande); font-weight: bold;">✓</span></button>`
-            : `<button onclick="reopenThread(${thread.id})" class="btn-icon btn-reopen" title="Rouvrir">🔄</button>`
-          }
+          ? `<button onclick="closeThread(${thread.id})" class="btn-icon btn-close-thread" title="Fermer"><span style="color: var(--lavande); font-weight: bold;">✓</span></button>`
+          : `<button onclick="reopenThread(${thread.id})" class="btn-icon btn-reopen" title="Rouvrir">🔄</button>`
+        }
             <button onclick="deleteThread(${thread.id})" class="btn-icon btn-delete" title="Supprimer">🗑️</button>
           </div>
         </td>
@@ -1095,8 +1095,9 @@ async function viewThread(threadId) {
             <h3 style="margin: 0; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.8rem;">
               ${thread.subject}
             </h3>
-            <p style="margin: 0.5rem 0 0 0; color: var(--texte-secondaire); font-size: 0.9rem;">
-              <strong>${thread.customer_name}</strong> (${thread.customer_email})
+            <p style="margin: 0.5rem 0 0 0; color: var(--texte-secondaire); font-size: 0.9rem; word-break: break-word;">
+              <strong style="display: block; word-break: break-word;">${thread.customer_name}</strong>
+              <span style="display: block; word-break: break-all;">(${thread.customer_email})</span>
             </p>
           </div>
           <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--texte-secondaire);">×</button>
@@ -1108,8 +1109,8 @@ async function viewThread(threadId) {
       return `
               <div style="margin-bottom: 1.5rem; display: flex; justify-content: ${isCustomer ? 'flex-start' : 'flex-end'};">
                 <div style="max-width: 70%; background: ${isCustomer ? 'white' : 'var(--lavande)'}; color: ${isCustomer ? 'var(--texte-principal)' : 'white'}; padding: 1rem; border-radius: 15px; box-shadow: var(--ombre-douce);">
-                  <div style="margin-bottom: 0.5rem;">
-                    <strong>${msg.sender_name}</strong>
+                  <div style="margin-bottom: 0.5rem; word-break: break-word;">
+                    <strong style="display: block; word-break: break-word;">${msg.sender_name}</strong>
                     <span style="font-size: 0.85rem; opacity: 0.8; margin-left: 0.5rem;">
                       ${new Date(msg.created_at).toLocaleString('fr-FR')}
                     </span>
@@ -1242,7 +1243,7 @@ async function compressImageClient(file, maxWidth = 1200, quality = 0.8) {
               file.name.replace(/\.[^.]+$/, '.webp'),
               { type: 'image/webp' }
             );
-            console.log(`🖼️ Compressé: ${(file.size/1024).toFixed(0)}KB → ${(blob.size/1024).toFixed(0)}KB`);
+            console.log(`🖼️ Compressé: ${(file.size / 1024).toFixed(0)}KB → ${(blob.size / 1024).toFixed(0)}KB`);
             resolve(compressedFile);
           } else {
             resolve(file);

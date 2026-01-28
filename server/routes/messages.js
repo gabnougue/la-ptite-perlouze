@@ -321,26 +321,47 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
     console.log('📧 Email entrant reçu:', { from, subject, emailId });
 
-    // Récupérer le contenu du mail via l'API Resend
+    // Récupérer le contenu du mail via l'API Resend (Received Emails API)
     let messageContent = '';
 
     if (emailId && process.env.RESEND_API_KEY) {
       try {
-        console.log('📨 Récupération contenu via API pour:', emailId);
-        const response = await fetch(`https://api.resend.com/emails/${emailId}`, {
+        console.log('📨 Récupération contenu via API /emails/receiving/ pour:', emailId);
+        const response = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
           }
         });
 
         if (response.ok) {
           const emailDetails = await response.json();
-          console.log('📨 Réponse API:', JSON.stringify(emailDetails).substring(0, 300));
+          console.log('📨 Réponse API receiving:', JSON.stringify(emailDetails).substring(0, 500));
+
+          // Le contenu peut être dans text, html, ou dans un objet imbriqué
           messageContent = emailDetails.text || emailDetails.html || '';
+
+          // Si pas de contenu direct, essayer de télécharger le fichier raw
+          if (!messageContent && emailDetails.raw && emailDetails.raw.download_url) {
+            try {
+              console.log('📨 Téléchargement du raw email...');
+              const rawResponse = await fetch(emailDetails.raw.download_url);
+              if (rawResponse.ok) {
+                const rawEmail = await rawResponse.text();
+                // Extraire le contenu texte du mail brut (après les headers)
+                const bodyMatch = rawEmail.match(/\r?\n\r?\n([\s\S]*)/);
+                if (bodyMatch) {
+                  messageContent = bodyMatch[1].trim();
+                  console.log('📨 Contenu extrait du raw:', messageContent.substring(0, 100));
+                }
+              }
+            } catch (rawError) {
+              console.error('❌ Erreur téléchargement raw:', rawError.message);
+            }
+          }
         } else {
-          console.log('⚠️ API response:', response.status, await response.text());
+          const errorText = await response.text();
+          console.log('⚠️ API receiving response:', response.status, errorText);
         }
       } catch (apiError) {
         console.error('❌ Erreur API Resend:', apiError.message);
@@ -351,7 +372,7 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
     if (!messageContent) {
       messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Réponse reçue par email]';
     }
-    console.log('📨 Contenu récupéré:', messageContent ? messageContent.substring(0, 100) : '(vide)');
+    console.log('📨 Contenu final:', messageContent ? messageContent.substring(0, 100) : '(vide)');
 
     // Nettoyer le contenu pour ne garder que le nouveau message (retirer les citations)
     messageContent = cleanEmailContent(messageContent);

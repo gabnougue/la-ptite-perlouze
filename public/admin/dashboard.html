@@ -496,54 +496,57 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: 42px;
+      height: 42px;
       border-radius: 8px;
-      border: none;
+      border: 2px solid var(--rose-poudre);
+      background: transparent;
       cursor: pointer;
-      font-size: 1rem;
+      font-size: 1.2rem;
       transition: all 0.2s ease;
       padding: 0;
+      margin: 0 0.25rem;
+    }
+
+    .btn-icon:hover {
+      background: var(--fond-secondaire);
+      transform: scale(1.1);
     }
 
     .btn-icon.btn-view {
+      border-color: var(--lavande);
+    }
+
+    .btn-icon.btn-view:hover {
       background: var(--lavande);
       color: white;
     }
 
-    .btn-icon.btn-view:hover {
-      background: var(--rose-poudre);
-      transform: scale(1.1);
+    .btn-icon.btn-close-thread {
+      border-color: #10B981;
     }
 
-    .btn-icon.btn-close-thread {
+    .btn-icon.btn-close-thread:hover {
       background: #10B981;
       color: white;
     }
 
-    .btn-icon.btn-close-thread:hover {
-      background: #059669;
-      transform: scale(1.1);
+    .btn-icon.btn-reopen {
+      border-color: #6B7280;
     }
 
-    .btn-icon.btn-reopen {
+    .btn-icon.btn-reopen:hover {
       background: #6B7280;
       color: white;
     }
 
-    .btn-icon.btn-reopen:hover {
-      background: #4B5563;
-      transform: scale(1.1);
-    }
-
     .btn-icon.btn-delete {
-      background: #EF4444;
-      color: white;
+      border-color: #EF4444;
     }
 
     .btn-icon.btn-delete:hover {
-      background: #DC2626;
-      transform: scale(1.1);
+      background: #EF4444;
+      color: white;
     }
 
     /* Section header contacts desktop */

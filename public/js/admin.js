@@ -1099,7 +1099,7 @@ async function viewThread(threadId) {
                       <strong style="font-size: 0.9rem;">📎 Pièces jointes:</strong>
                       ${msg.attachments.map(att => `
                         <div style="margin-top: 0.5rem;">
-                          <a href="/attachments/${att.file_path}" target="_blank" style="color: ${isCustomer ? 'var(--lavande)' : 'white'}; text-decoration: underline;">
+                          <a href="/api/messages/attachments/${att.file_path}" target="_blank" style="color: ${isCustomer ? 'var(--lavande)' : 'white'}; text-decoration: underline;">
                             ${att.filename}
                           </a>
                         </div>

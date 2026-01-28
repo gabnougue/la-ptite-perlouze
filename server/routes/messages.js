@@ -3,23 +3,15 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
+const sharp = require('sharp');
 const db = require('../models/database');
 const { Resend } = require('resend');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Configuration multer pour les pièces jointes
-// Sur Vercel, utiliser /tmp car le système de fichiers est en lecture seule
-const uploadDir = process.env.VERCEL ? '/tmp' : 'public/attachments/';
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + path.extname(file.originalname);
-    cb(null, uniqueName);
-  }
-});
+// Utilisation de memoryStorage pour stocker en base64 dans la BDD (compatible Vercel)
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
@@ -45,6 +37,36 @@ const requireAuth = (req, res, next) => {
   }
   next();
 };
+
+// ═══════════════════════════════════════════════════
+// FONCTION DE COMPRESSION D'IMAGES
+// ═══════════════════════════════════════════════════
+
+// Compresser une image (retourne le buffer compressé)
+async function compressImage(buffer, mimetype) {
+  // Ne compresser que les images (pas les PDF)
+  const imageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  if (!imageTypes.includes(mimetype)) {
+    return buffer; // Retourner tel quel pour les PDF
+  }
+
+  try {
+    // Compresser et redimensionner l'image
+    const compressedBuffer = await sharp(buffer)
+      .resize(1200, 1200, {
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    console.log(`🖼️ Image compressée: ${(buffer.length / 1024).toFixed(1)}KB → ${(compressedBuffer.length / 1024).toFixed(1)}KB`);
+    return compressedBuffer;
+  } catch (error) {
+    console.error('Erreur compression image:', error);
+    return buffer; // En cas d'erreur, retourner l'original
+  }
+}
 
 // ═══════════════════════════════════════════════════
 // RÉCUPÉRATION DES THREADS ET MESSAGES
@@ -160,13 +182,37 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
 
     const messageId = messageResult.id;
 
-    // Enregistrer les pièces jointes
+    // Enregistrer les pièces jointes avec compression automatique
+    const processedAttachments = [];
     if (attachments.length > 0) {
       for (const file of attachments) {
+        // Compresser si c'est une image
+        const isImage = file.mimetype.startsWith('image/');
+        let processedBuffer = file.buffer;
+        let finalMimetype = file.mimetype;
+        let finalExtension = path.extname(file.originalname);
+        let finalFilename = file.originalname;
+
+        if (isImage) {
+          processedBuffer = await compressImage(file.buffer, file.mimetype);
+          finalMimetype = 'image/webp';
+          finalExtension = '.webp';
+          finalFilename = path.basename(file.originalname, path.extname(file.originalname)) + '.webp';
+        }
+
+        const uniqueName = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + finalExtension;
+        const base64Content = processedBuffer.toString('base64');
+
         await db.run(`
-          INSERT INTO message_attachments (message_id, filename, file_path, file_size, mime_type)
-          VALUES (?, ?, ?, ?, ?)
-        `, [messageId, file.originalname, file.filename, file.size, file.mimetype]);
+          INSERT INTO message_attachments (message_id, filename, file_path, file_size, mime_type, content)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `, [messageId, finalFilename, uniqueName, processedBuffer.length, finalMimetype, base64Content]);
+
+        processedAttachments.push({
+          originalname: finalFilename,
+          buffer: processedBuffer,
+          mimetype: finalMimetype
+        });
       }
     }
 
@@ -177,10 +223,10 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
       WHERE id = ?
     `, [id]);
 
-    // Préparer les pièces jointes pour Resend (utiliser file.path directement)
-    const resendAttachments = attachments.map(file => ({
+    // Préparer les pièces jointes pour Resend (utiliser les fichiers compressés)
+    const resendAttachments = processedAttachments.map(file => ({
       filename: file.originalname,
-      path: file.path  // Chemin complet du fichier uploadé
+      content: file.buffer
     }));
 
     // Envoyer l'email via Resend
@@ -236,13 +282,7 @@ router.post('/threads/:id/reply', requireAuth, upload.array('attachments', 5), a
 
         // Ajouter les pièces jointes si présentes
         if (resendAttachments.length > 0) {
-          const fs = require('fs').promises;
-          emailData.attachments = await Promise.all(
-            resendAttachments.map(async (att) => ({
-              filename: att.filename,
-              content: await fs.readFile(att.path)
-            }))
-          );
+          emailData.attachments = resendAttachments;
         }
 
         const emailResponse = await resend.emails.send(emailData);
@@ -535,6 +575,48 @@ router.delete('/threads/:id', requireAuth, async (req, res) => {
     try { await db.run('PRAGMA foreign_keys = ON'); } catch (e) {}
     console.error('Erreur suppression thread:', error.message);
     res.status(500).json({ error: 'Erreur serveur', details: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// ENDPOINT POUR SERVIR LES PIÈCES JOINTES
+// ═══════════════════════════════════════════════════
+
+// Servir une pièce jointe depuis la base de données
+router.get('/attachments/:filename', requireAuth, async (req, res) => {
+  try {
+    const { filename } = req.params;
+
+    // Récupérer la pièce jointe depuis la BDD
+    const attachment = await db.get(
+      'SELECT * FROM message_attachments WHERE file_path = ?',
+      [filename]
+    );
+
+    if (!attachment) {
+      return res.status(404).json({ error: 'Pièce jointe non trouvée' });
+    }
+
+    // Vérifier que le contenu base64 existe
+    if (!attachment.content) {
+      return res.status(404).json({ error: 'Contenu de la pièce jointe non disponible' });
+    }
+
+    // Convertir le base64 en buffer
+    const fileBuffer = Buffer.from(attachment.content, 'base64');
+
+    // Définir les headers
+    res.set({
+      'Content-Type': attachment.mime_type,
+      'Content-Length': fileBuffer.length,
+      'Content-Disposition': `inline; filename="${attachment.filename}"`
+    });
+
+    // Envoyer le fichier
+    res.send(fileBuffer);
+  } catch (error) {
+    console.error('Erreur récupération pièce jointe:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 

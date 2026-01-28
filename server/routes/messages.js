@@ -321,9 +321,37 @@ router.post('/webhook/inbound', express.json({ limit: '10mb' }), async (req, res
 
     console.log('📧 Email entrant reçu:', { from, subject, emailId });
 
-    // Récupérer le contenu du mail depuis les données du webhook
-    let messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Réponse reçue par email]';
-    console.log('📨 Contenu brut:', messageContent ? messageContent.substring(0, 100) : '(vide)');
+    // Récupérer le contenu du mail via l'API Resend
+    let messageContent = '';
+
+    if (emailId && process.env.RESEND_API_KEY) {
+      try {
+        console.log('📨 Récupération contenu via API pour:', emailId);
+        const response = await fetch(`https://api.resend.com/emails/${emailId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const emailDetails = await response.json();
+          console.log('📨 Réponse API:', JSON.stringify(emailDetails).substring(0, 300));
+          messageContent = emailDetails.text || emailDetails.html || '';
+        } else {
+          console.log('⚠️ API response:', response.status, await response.text());
+        }
+      } catch (apiError) {
+        console.error('❌ Erreur API Resend:', apiError.message);
+      }
+    }
+
+    // Fallback sur les données du webhook si l'API n'a pas fonctionné
+    if (!messageContent) {
+      messageContent = emailData.text || emailData.html || emailData.body || emailData.plain_text || emailData.content || '[Réponse reçue par email]';
+    }
+    console.log('📨 Contenu récupéré:', messageContent ? messageContent.substring(0, 100) : '(vide)');
 
     // Nettoyer le contenu pour ne garder que le nouveau message (retirer les citations)
     messageContent = cleanEmailContent(messageContent);

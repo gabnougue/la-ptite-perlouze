@@ -445,24 +445,25 @@
         -webkit-box-orient: vertical;
       }
 
-      /* Actions - afficher sous le label et alignés horizontalement */
+      /* Actions - label au-dessus, boutons en ligne dessous */
       td[data-label="Actions"] {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        display: block !important;
+        text-align: center;
         padding: 0.8rem !important;
       }
 
       td[data-label="Actions"]::before {
+        display: block !important;
         position: static !important;
-        width: auto !important;
+        width: 100% !important;
         margin-bottom: 0.5rem;
         text-align: center;
+        font-weight: bold;
       }
 
       td[data-label="Actions"] .btn-icon {
-        margin: 0 0.3rem;
-        display: inline-flex;
+        display: inline-flex !important;
+        margin: 0 0.3rem !important;
       }
 
       td:before {

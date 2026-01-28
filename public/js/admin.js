@@ -1460,7 +1460,6 @@ async function loadGeneralSettings() {
     const response = await fetch('/api/settings');
     const settings = await response.json();
 
-    document.getElementById('setting-contact-email').value = settings.contact_email || '';
     document.getElementById('setting-boutdebois-url').value = settings.boutdebois_url || '';
   } catch (error) {
     console.error('Erreur:', error);
@@ -1470,15 +1469,7 @@ async function loadGeneralSettings() {
 // Enregistrer les paramètres généraux
 async function saveGeneralSettings() {
   try {
-    const contactEmail = document.getElementById('setting-contact-email').value;
     const boutdeboisUrl = document.getElementById('setting-boutdebois-url').value;
-
-    // Mettre à jour l'email de contact
-    await fetch('/api/settings/contact_email', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value: contactEmail })
-    });
 
     // Mettre à jour l'URL du ptit bout de bois
     await fetch('/api/settings/boutdebois_url', {

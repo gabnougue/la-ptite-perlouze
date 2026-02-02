@@ -40,6 +40,7 @@ if (MAINTENANCE_MODE) {
     // Liste des ressources autorisées
     const allowedAssets = [
       '/logo-large.png',
+      '/ptiteperlouze-maintenance.png',
       '/favicon.png',
       '/favicon.ico'
     ];

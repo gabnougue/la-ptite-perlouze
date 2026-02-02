@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La P'tite Perlouze - En Construction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f0f12;
+            background: linear-gradient(135deg, #131316 0%, #1c1c24 100%);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Subtle animated background accents like pearls/light */
+        .glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            padding: 60px 40px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            animation: fadeIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .logo {
+            max-width: 240px;
+            height: auto;
+            margin-bottom: 40px;
+            /* Drop shadow to make it pop against dark bg */
+            filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.15));
+            animation: pulse 5s ease-in-out infinite;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 3rem;
+            margin: 0 0 20px 0;
+            background: linear-gradient(to right, #ffffff, #a0a0a0);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            line-height: 1.6;
+            margin: 0 0 40px 0;
+            font-weight: 300;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 10px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.02);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            h1 {
+                font-size: 2.4rem;
+            }
+
+            .logo {
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glow"></div>
+    <div class="container">
+        <img src="/logo-large.png" alt="La P'tite Perlouze" class="logo">
+        <h1>En Préparation</h1>
+        <p>Notre boutique fait peau neuve.<br>Nous revenons très bientôt avec de nouvelles pépites.</p>
+        <span class="status-badge">Ouverture Prochaine</span>
+    </div>
+</body>
+
+</html>

@@ -32,6 +32,31 @@ app.use('/admin', (req, res, next) => {
   res.status(403).send('Accès interdit');
 });
 
+// MODE MAINTENANCE
+// Définir à false pour désactiver la page d'attente
+const MAINTENANCE_MODE = true;
+if (MAINTENANCE_MODE) {
+  app.use((req, res, next) => {
+    // Liste des ressources autorisées
+    const allowedAssets = [
+      '/logo-large.png',
+      '/favicon.png',
+      '/favicon.ico'
+    ];
+
+    // Toujours autoriser l'API, l'Admin (chemins probables) et les assets
+    if (req.path.startsWith('/api') ||
+      req.path.includes('gestion') ||
+      req.path.startsWith('/admin') ||
+      allowedAssets.includes(req.path)) {
+      return next();
+    }
+
+    // Pour tout le reste, afficher la page de maintenance
+    res.sendFile(path.join(__dirname, 'public', 'maintenance.html'));
+  });
+}
+
 // Servir les fichiers statiques AVANT le rate limiting
 app.use(express.static('public'));
 

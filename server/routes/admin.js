@@ -31,9 +31,9 @@ const upload = multer({
 
 // Rate limiting strict pour le login admin
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 tentatives max
-  message: { error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 15, // 15 tentatives max
+  message: { error: 'Trop de tentatives de connexion. Réessayez dans 5 minutes.' },
   skipSuccessfulRequests: false,
   standardHeaders: true,
   legacyHeaders: false,

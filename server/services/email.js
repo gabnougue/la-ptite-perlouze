@@ -380,7 +380,7 @@ async function sendNewEmailNotification({ from, subject, message, threadId }) {
 // Forward un email entrant vers une adresse externe
 async function forwardEmail({ emailId, from, subject, text, html, attachments }) {
   // Adresse de forwarding (à configurer via variable d'environnement)
-  const forwardTo = process.env.FORWARD_EMAIL || 'gabnougue@gmail.com';
+  const forwardTo = process.env.FORWARD_EMAIL || 'musyflore@gmail.com';
   
   if (!process.env.RESEND_API_KEY) {
     console.log('Resend non configuré, forwarding non effectué');

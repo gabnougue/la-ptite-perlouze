@@ -321,7 +321,7 @@ router.post('/webhook/inbound', express.json({ limit: '50mb' }), async (req, res
 
     // ========== FILTRE ANTI-BOUCLE ==========
     // Ignorer les emails provenant du vendeur ou du système
-    const vendorEmail = process.env.VENDOR_EMAIL || 'yvonne@laptiteperlouze.fr';
+    const vendorEmail = process.env.VENDOR_EMAIL || 'contact@laptiteperlouze.fr';
     const fromEmail = typeof from === 'string' ? from : (from?.email || from?.[0]?.email || '');
     const toEmails = Array.isArray(to) ? to.map(t => typeof t === 'string' ? t : t?.email).join(',') : (typeof to === 'string' ? to : to?.email || '');
     

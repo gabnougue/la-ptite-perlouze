@@ -21,14 +21,14 @@ function getSeasonalTheme() {
     return 'noel';
   }
 
-  // ❄️ Hiver (7 janvier - 19 mars)
-  if ((month === 1 && day >= 7) || month === 2 || (month === 3 && day <= 19)) {
-    return 'hiver';
-  }
-
   // 💝 Saint-Valentin (1-21 février) - priorité sur hiver
   if (month === 2 && day >= 1 && day <= 21) {
     return 'valentin';
+  }
+
+  // ❄️ Hiver (7 janvier - 19 mars)
+  if ((month === 1 && day >= 7) || month === 2 || (month === 3 && day <= 19)) {
+    return 'hiver';
   }
 
   // 🌸 Printemps (20 mars - 20 juin)

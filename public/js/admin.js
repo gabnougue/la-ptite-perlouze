@@ -2776,3 +2776,50 @@ function showLinkHelp(site) {
   document.body.appendChild(modal);
 }
 
+// ═══════════════════════════════════════════════════
+// Changement de mot de passe
+// ═══════════════════════════════════════════════════
+async function changePassword(e) {
+  e.preventDefault();
+  const msgEl = document.getElementById('password-message');
+  const currentPassword = document.getElementById('current-password').value;
+  const newPassword = document.getElementById('new-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+
+  if (newPassword !== confirmPassword) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = '#FEE2E2';
+    msgEl.style.color = '#DC2626';
+    msgEl.textContent = 'Les nouveaux mots de passe ne correspondent pas.';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/admin/change-password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#D1FAE5';
+      msgEl.style.color = '#059669';
+      msgEl.textContent = 'Mot de passe modifié avec succès !';
+      document.getElementById('password-form').reset();
+    } else {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#FEE2E2';
+      msgEl.style.color = '#DC2626';
+      msgEl.textContent = data.error || 'Erreur lors du changement de mot de passe.';
+    }
+  } catch (error) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = '#FEE2E2';
+    msgEl.style.color = '#DC2626';
+    msgEl.textContent = 'Erreur de connexion au serveur.';
+  }
+}
+

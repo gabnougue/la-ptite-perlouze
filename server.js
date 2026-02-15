@@ -34,7 +34,7 @@ app.use('/admin', (req, res, next) => {
 
 // MODE MAINTENANCE
 // Définir à false pour désactiver la page d'attente
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 if (MAINTENANCE_MODE) {
   app.use((req, res, next) => {
     // Liste des ressources autorisées

@@ -117,6 +117,40 @@ router.get('/check-auth', (req, res) => {
   }
 });
 
+// Changer le mot de passe admin
+router.put('/change-password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Tous les champs sont requis.' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Le nouveau mot de passe doit faire au moins 6 caractères.' });
+    }
+
+    const admin = await db.get('SELECT * FROM admins WHERE id = ?', [req.session.adminId]);
+
+    if (!admin) {
+      return res.status(404).json({ error: 'Administrateur introuvable.' });
+    }
+
+    const validPassword = await bcrypt.compare(currentPassword, admin.password);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Mot de passe actuel incorrect.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.run('UPDATE admins SET password = ? WHERE id = ?', [hashedPassword, admin.id]);
+
+    res.json({ success: true, message: 'Mot de passe modifié avec succès.' });
+  } catch (error) {
+    console.error('Erreur changement mot de passe:', error);
+    res.status(500).json({ error: 'Erreur serveur.' });
+  }
+});
+
 // Fonction helper pour enrichir un produit avec ses pierres, couleurs et images
 async function enrichProduct(product) {
   // Récupérer les pierres

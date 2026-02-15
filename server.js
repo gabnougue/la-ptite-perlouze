@@ -64,8 +64,8 @@ app.use(express.static('public'));
 // Rate limiting global (uniquement pour les routes dynamiques)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
-  message: 'Trop de requêtes, réessayez dans 15 minutes',
+  max: 1000,
+  message: 'Trop de requêtes, réessayez dans quelques minutes',
   standardHeaders: true,
   legacyHeaders: false,
 });

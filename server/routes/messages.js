@@ -278,8 +278,8 @@ function cleanEmailContent(content) {
   let cleaned = content;
 
   // Supprimer les citations Gmail/Outlook en français
-  // "Le lun. 26 janv. 2026 à 17:35, <email> a écrit :"
-  cleaned = cleaned.split(/Le\s+\w+\.?\s+\d+\s+\w+\.?\s+\d+\s+[àa]\s+\d+[h:]\d+.*?a écrit\s*:/i)[0];
+  // "Le dim. 15 févr. 2026 à 15:05, xxx a écrit :"
+  cleaned = cleaned.split(/Le\s+[^\d]+\d+\s+[^\d]+\d+\s+[àa]\s+\d+[h:]\d+.*?a\s+[eé]crit\s*:/i)[0];
 
   // Supprimer les citations en anglais
   // "On Mon, Jan 26, 2026 at 5:35 PM, <email> wrote:"

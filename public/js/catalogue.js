@@ -322,11 +322,30 @@ function updatePriceDisplay() {
   applyFilters();
 }
 
+// Charger les catégories dynamiquement depuis l'API
+async function loadCategories() {
+  try {
+    const response = await fetch('/api/settings/categories');
+    const categories = await response.json();
+    const select = document.getElementById('category-filter');
+    categories.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat.name;
+      option.textContent = cat.name;
+      select.appendChild(option);
+    });
+  } catch (e) {
+    console.error('Erreur chargement catégories:', e);
+  }
+}
+
 // Initialisation
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   updateCartCount();
 
-  // Récupérer la catégorie depuis l'URL si présente
+  // Charger les catégories puis appliquer le filtre URL
+  await loadCategories();
+
   const urlParams = new URLSearchParams(window.location.search);
   const categoryFromUrl = urlParams.get('category');
 

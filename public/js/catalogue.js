@@ -322,20 +322,20 @@ function updatePriceDisplay() {
   applyFilters();
 }
 
-// Charger les catégories dynamiquement depuis l'API
-async function loadCategories() {
+// Charger des options dynamiquement dans un select
+async function loadFilterOptions(apiUrl, selectId) {
   try {
-    const response = await fetch('/api/settings/categories');
-    const categories = await response.json();
-    const select = document.getElementById('category-filter');
-    categories.forEach(cat => {
+    const response = await fetch(apiUrl);
+    const items = await response.json();
+    const select = document.getElementById(selectId);
+    items.forEach(item => {
       const option = document.createElement('option');
-      option.value = cat.name;
-      option.textContent = cat.name;
+      option.value = item.name;
+      option.textContent = item.name;
       select.appendChild(option);
     });
   } catch (e) {
-    console.error('Erreur chargement catégories:', e);
+    console.error('Erreur chargement filtres:', e);
   }
 }
 
@@ -343,8 +343,12 @@ async function loadCategories() {
 document.addEventListener('DOMContentLoaded', async () => {
   updateCartCount();
 
-  // Charger les catégories puis appliquer le filtre URL
-  await loadCategories();
+  // Charger tous les filtres dynamiquement
+  await Promise.all([
+    loadFilterOptions('/api/settings/categories', 'category-filter'),
+    loadFilterOptions('/api/settings/stones', 'stone-filter'),
+    loadFilterOptions('/api/settings/colors', 'color-filter')
+  ]);
 
   const urlParams = new URLSearchParams(window.location.search);
   const categoryFromUrl = urlParams.get('category');

@@ -57,47 +57,9 @@ async function processAndSaveBoutiqueImage(fileBuffer) {
   return blob.url;
 }
 
-// Récupérer toutes les images de la boutique (et les importer automatiquement si nécessaire)
+// Récupérer toutes les images de la boutique
 router.get('/images', async (req, res) => {
   try {
-    // D'abord, synchroniser automatiquement les images du dossier avec la base de données
-    const boutiqueDir = path.join(__dirname, '../../public/images/boutique');
-
-    try {
-      const files = await fs.readdir(boutiqueDir);
-
-      // Filtrer uniquement les images
-      const imageFiles = files.filter(file => {
-        const ext = path.extname(file).toLowerCase();
-        return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext);
-      });
-
-      // Récupérer les images déjà en base
-      const existingImages = await db.all('SELECT image_path FROM boutique_images');
-      const existingPaths = new Set(existingImages.map(img => img.image_path));
-
-      // Obtenir le dernier display_order
-      const lastImage = await db.get('SELECT MAX(display_order) as maxOrder FROM boutique_images');
-      let currentOrder = (lastImage?.maxOrder || 0) + 1;
-
-      // Ajouter chaque image qui n'existe pas encore
-      for (const file of imageFiles) {
-        const imagePath = `/images/boutique/${file}`;
-
-        if (!existingPaths.has(imagePath)) {
-          await db.run(
-            'INSERT INTO boutique_images (image_path, display_order) VALUES (?, ?)',
-            [imagePath, currentOrder]
-          );
-          currentOrder++;
-        }
-      }
-    } catch (syncError) {
-      console.error('Erreur synchronisation images:', syncError);
-      // Continue même si la synchro échoue
-    }
-
-    // Retourner toutes les images
     const images = await db.all(
       'SELECT * FROM boutique_images ORDER BY display_order ASC'
     );

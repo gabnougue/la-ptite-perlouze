@@ -1689,7 +1689,7 @@ function displayStones() {
   }
 
   container.innerHTML = allStones.map(stone => `
-    <div style="padding: 0.75rem 1rem; background: white; border-radius: 8px; border: 2px solid var(--bordure);">
+    <div style="padding: 0.75rem 1rem; background: white; border-radius: 8px; border: 1px solid rgba(212, 165, 212, 0.4);">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
         <span style="color: var(--texte-principal); font-weight: 600; font-size: 1rem;">💎 ${stone.name}</span>
         <div style="display: flex; gap: 0.5rem;">

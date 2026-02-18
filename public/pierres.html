@@ -171,14 +171,13 @@
           </h2>
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
             ${groups[letter].map(stone => `
-              <div ${stone.description ? `onclick="showStoneModal(${stone.id})" style="cursor: pointer;"` : 'style=""'}
+              <div ${stone.description ? `onclick="showStoneModal(${stone.id})"` : ''}
                    class="card"
+                   style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1.2rem 1rem; transition: transform 0.2s ease, box-shadow 0.2s ease; ${stone.description ? 'cursor: pointer;' : ''}"
                    ${stone.description ? `onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--ombre-douce)'" onmouseout="this.style.transform=''; this.style.boxShadow=''"` : ''}>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <span style="font-size: 1.3rem;">💎</span>
-                  <h3 style="color: var(--texte-principal); font-size: 1.1rem; margin: 0;">${stone.name}</h3>
-                  ${stone.description ? '<span style="margin-left: auto; color: var(--lavande); font-size: 0.85rem;">Voir les vertus →</span>' : '<span style="margin-left: auto; color: var(--texte-secondaire); font-size: 0.8rem; font-style: italic; opacity: 0.5;">Pas encore de description</span>'}
-                </div>
+                <span style="font-size: 1.5rem; margin-bottom: 0.4rem;">💎</span>
+                <h3 style="color: var(--texte-principal); font-size: 1.05rem; margin: 0 0 0.5rem;">${stone.name}</h3>
+                ${stone.description ? '<span style="color: var(--lavande); font-size: 0.8rem; font-weight: 600;">Voir les vertus →</span>' : ''}
               </div>
             `).join('')}
           </div>

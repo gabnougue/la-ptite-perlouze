@@ -148,20 +148,47 @@ router.get('/stones', async (req, res) => {
 // Ajouter une pierre
 router.post('/stones', requireAdmin, async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, description } = req.body;
 
     if (!name || name.trim() === '') {
       return res.status(400).json({ error: 'Le nom est requis' });
     }
 
-    const result = await db.run('INSERT INTO stones (name) VALUES (?)', [name.trim()]);
-    res.json({ success: true, id: result.id, name: name.trim() });
+    const result = await db.run(
+      'INSERT INTO stones (name, description) VALUES (?, ?)',
+      [name.trim(), description || '']
+    );
+    res.json({ success: true, id: result.id, name: name.trim(), description: description || '' });
   } catch (err) {
     console.error('Erreur:', err);
     if (err.code === 'SQLITE_CONSTRAINT') {
       return res.status(400).json({ error: 'Cette pierre existe déjà' });
     }
     res.status(500).json({ error: 'Erreur lors de l\'ajout' });
+  }
+});
+
+// Modifier une pierre
+router.put('/stones/:id', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { name, description } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Nom de pierre requis' });
+  }
+
+  try {
+    await db.run(
+      'UPDATE stones SET name = ?, description = ? WHERE id = ?',
+      [name.trim(), description || '', id]
+    );
+    res.json({ success: true, stone: { id: parseInt(id), name: name.trim(), description: description || '' } });
+  } catch (error) {
+    if (error.message && error.message.includes('UNIQUE')) {
+      return res.status(400).json({ error: 'Cette pierre existe déjà' });
+    }
+    console.error('Erreur modification pierre:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

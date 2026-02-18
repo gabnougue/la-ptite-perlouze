@@ -4,6 +4,7 @@
 
 let currentProduct = null;
 let quantity = 1;
+let stoneDescriptions = {};
 
 // Mettre à jour le compteur du panier
 function updateCartCount() {
@@ -40,6 +41,7 @@ async function loadProduct() {
     const product = await response.json();
     currentProduct = product;
     displayProduct(product);
+    loadStoneDescriptions();
   } catch (error) {
     console.error('Erreur lors du chargement du produit:', error);
     showError();
@@ -145,7 +147,14 @@ function displayProduct(product) {
           <h3 style="color: var(--lavande); font-size: 1.5rem; margin-bottom: 1rem;">
             <span class="decoration-flower">✿</span> Pierres naturelles
           </h3>
-          <p style="font-size: 1.1rem; color: var(--texte-secondaire);">${product.stones}</p>
+          <div id="stones-display" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            ${product.stones.split(',').map(s => s.trim()).filter(Boolean).map(name => `
+              <span class="stone-badge" data-stone="${name}" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: var(--fond-secondaire); border-radius: 20px; font-size: 1rem; color: var(--texte-secondaire);">
+                💎 ${name}
+                <button class="stone-info-btn" data-stone="${name}" onclick="showStoneInfo('${name.replace(/'/g, "\\'")}')" style="display: none; background: var(--lavande); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 0.75rem; cursor: pointer; font-weight: 700; flex-shrink: 0; line-height: 1;" title="Vertus de cette pierre">i</button>
+              </span>
+            `).join('')}
+          </div>
         </div>
 
         <div class="card">
@@ -369,6 +378,45 @@ function showError() {
       </a>
     </div>
   `;
+}
+
+// Charger les descriptions des pierres et afficher les boutons info
+async function loadStoneDescriptions() {
+  if (!currentProduct || !currentProduct.stones) return;
+  try {
+    const response = await fetch('/api/settings/stones');
+    const stones = await response.json();
+    stones.forEach(s => {
+      if (s.description) stoneDescriptions[s.name] = s.description;
+    });
+    // Afficher les boutons info pour les pierres ayant une description
+    document.querySelectorAll('.stone-info-btn').forEach(btn => {
+      const name = btn.getAttribute('data-stone');
+      if (stoneDescriptions[name]) {
+        btn.style.display = '';
+      }
+    });
+  } catch (e) { /* silencieux */ }
+}
+
+function showStoneInfo(name) {
+  const description = stoneDescriptions[name];
+  if (!description) return;
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:1rem;';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:2rem;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--texte-secondaire);">&times;</button>
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <span style="font-size:3rem;">💎</span>
+        <h3 style="color:var(--lavande);font-size:1.4rem;margin:0.5rem 0;">${name}</h3>
+        <p style="color:var(--texte-secondaire);font-size:0.9rem;margin:0;">Vertus et propriétés</p>
+      </div>
+      <p style="color:var(--texte-principal);line-height:1.7;font-size:1rem;">${description.replace(/\n/g, '<br>')}</p>
+    </div>
+  `;
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 // Initialisation

@@ -1665,28 +1665,53 @@ async function deleteCategory(id) {
   }
 }
 
+// Variable pour l'édition de pierre
+let editingStoneId = null;
+let allStones = [];
+
 // Charger les pierres
 async function loadStones() {
   try {
     const response = await fetch('/api/settings/stones');
-    const stones = await response.json();
-
-    const container = document.getElementById('stones-list');
-    container.innerHTML = stones.map(stone => `
-      <span class="badge badge-info" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;">
-        ${stone.name}
-        <button onclick="deleteStone(${stone.id})" style="background: none; border: none; cursor: pointer; color: white; font-size: 1.2rem; line-height: 1;">×</button>
-      </span>
-    `).join('');
+    allStones = await response.json();
+    displayStones();
   } catch (error) {
     console.error('Erreur:', error);
   }
 }
 
-// Ajouter une pierre
+function displayStones() {
+  const container = document.getElementById('stones-list');
+
+  if (allStones.length === 0) {
+    container.innerHTML = '<span style="color: var(--texte-secondaire); font-style: italic;">Aucune pierre</span>';
+    return;
+  }
+
+  container.innerHTML = allStones.map(stone => `
+    <div style="padding: 0.75rem 1rem; background: white; border-radius: 8px; border: 2px solid var(--bordure);">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+        <span style="color: var(--texte-principal); font-weight: 600; font-size: 1rem;">💎 ${stone.name}</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button onclick="editStone(${stone.id})"
+                  style="background: none; border: none; cursor: pointer; color: var(--lavande); font-size: 1rem; padding: 0.25rem;"
+                  title="Modifier">✏️</button>
+          <button onclick="deleteStone(${stone.id})"
+                  style="background: none; border: none; cursor: pointer; color: #991B1B; font-size: 1rem; padding: 0.25rem;"
+                  title="Supprimer">🗑️</button>
+        </div>
+      </div>
+      ${stone.description ? `<p style="color: var(--texte-secondaire); font-size: 0.85rem; margin: 0.5rem 0 0; line-height: 1.4;">${stone.description}</p>` : '<p style="color: var(--texte-secondaire); font-size: 0.8rem; margin: 0.5rem 0 0; font-style: italic; opacity: 0.6;">Aucune description</p>'}
+    </div>
+  `).join('');
+}
+
+// Ajouter ou modifier une pierre
 async function addStone() {
   const input = document.getElementById('new-stone');
+  const descInput = document.getElementById('new-stone-description');
   const name = input.value.trim();
+  const description = descInput.value.trim();
 
   if (!name) {
     showMessage('Veuillez entrer un nom', 'error');
@@ -1694,25 +1719,58 @@ async function addStone() {
   }
 
   try {
-    const response = await fetch('/api/settings/stones', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
-    });
+    let response;
+    if (editingStoneId) {
+      response = await fetch(`/api/settings/stones/${editingStoneId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      });
+    } else {
+      response = await fetch('/api/settings/stones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      });
+    }
 
     const result = await response.json();
 
     if (result.success) {
-      showMessage('Pierre ajoutée', 'success');
-      input.value = '';
+      showMessage(editingStoneId ? 'Pierre modifiée' : 'Pierre ajoutée', 'success');
+      cancelEditStone();
       loadStones();
     } else {
-      showMessage(result.error || 'Erreur lors de l\'ajout', 'error');
+      showMessage(result.error || 'Erreur', 'error');
     }
   } catch (error) {
     console.error('Erreur:', error);
-    showMessage('Erreur lors de l\'ajout', 'error');
+    showMessage('Erreur lors de l\'opération', 'error');
   }
+}
+
+// Passer en mode édition d'une pierre
+function editStone(stoneId) {
+  const stone = allStones.find(s => s.id === stoneId);
+  if (!stone) return;
+
+  editingStoneId = stoneId;
+  document.getElementById('new-stone').value = stone.name;
+  document.getElementById('new-stone-description').value = stone.description || '';
+  document.getElementById('stone-form-label').textContent = 'Modifier la pierre';
+  document.getElementById('stone-submit-btn').textContent = 'Enregistrer';
+  document.getElementById('stone-cancel-btn').style.display = '';
+  document.getElementById('new-stone').focus();
+}
+
+// Annuler l'édition
+function cancelEditStone() {
+  editingStoneId = null;
+  document.getElementById('new-stone').value = '';
+  document.getElementById('new-stone-description').value = '';
+  document.getElementById('stone-form-label').textContent = 'Ajouter une pierre';
+  document.getElementById('stone-submit-btn').textContent = 'Ajouter';
+  document.getElementById('stone-cancel-btn').style.display = 'none';
 }
 
 // Supprimer une pierre

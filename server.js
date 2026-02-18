@@ -132,6 +132,11 @@ app.get('/boutique', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'boutique.html'));
 });
 
+// Route pierres
+app.get('/pierres', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'pierres.html'));
+});
+
 // Pages légales
 app.get('/mentions-legales', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'mentions-legales.html'));

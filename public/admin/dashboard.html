@@ -998,17 +998,25 @@
       <!-- Pierres -->
       <div class="card" style="margin-bottom: 2rem;">
         <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
-          Pierres naturelles
+          Pierres naturelles et leurs vertus
         </h3>
-        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-          <input type="text" id="new-stone" placeholder="Nouvelle pierre" style="flex: 1; min-width: 200px;">
-          <button onclick="addStone()" class="btn btn-primary">Ajouter</button>
+        <div style="margin-bottom: 1.5rem;">
+          <label id="stone-form-label" style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Ajouter une pierre</label>
+          <div style="display: grid; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <input type="text" id="new-stone" placeholder="Nom de la pierre" style="width: 100%; box-sizing: border-box;">
+            <textarea id="new-stone-description" placeholder="Description des vertus de cette pierre (optionnel)" rows="3"
+              style="width: 100%; padding: 0.75rem; border: 2px solid var(--bordure); border-radius: 8px; font-family: var(--font-texte); resize: vertical; box-sizing: border-box;"></textarea>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" onclick="addStone()" id="stone-submit-btn" class="btn btn-primary">Ajouter</button>
+              <button type="button" onclick="cancelEditStone()" id="stone-cancel-btn" class="btn btn-secondary" style="display: none;">Annuler</button>
+            </div>
+          </div>
         </div>
         <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
           <strong>Pierres existantes :</strong>
         </p>
         <div id="stones-list"
-          style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+          style="display: grid; gap: 0.75rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
           <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
         </div>
       </div>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Découvrez les pierres naturelles et leurs vertus - La p'tite perlouze">
+  <title>Nos pierres et leurs vertus - La p'tite perlouze</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script>
+    (function () { var t = localStorage.getItem('perlouze-theme'); if (!t) { var s = localStorage.getItem('perlouze-theme-setting'), m = (new Date).getMonth() + 1, d = (new Date).getDate(); t = s && s !== 'auto' ? s : (m === 10 && d >= 15) || (m === 11 && d === 1) ? 'halloween' : m === 12 || (m === 1 && d <= 6) ? 'noel' : (m === 1 && d >= 7) || m === 2 || (m === 3 && d <= 19) ? 'hiver' : (m === 3 && d >= 20) || m === 4 || m === 5 || (m === 6 && d <= 20) ? 'printemps' : (m === 6 && d >= 21) || m === 7 || m === 8 || (m === 9 && d <= 22) ? 'ete' : (m === 9 && d >= 23) || (m === 10 && d < 15) || (m === 11 && d >= 2) ? 'automne' : 'printemps'; } document.documentElement.setAttribute('data-theme', t); })();
+  </script>
+</head>
+
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <a href="/" class="logo">La p'tite perlouze</a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Ouvrir le menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav id="main-nav">
+        <ul>
+          <li><a href="/">Accueil</a></li>
+          <li><a href="/catalogue">Catalogue</a></li>
+          <li><a href="/pierres" class="active">Pierres</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li>
+            <a href="/boutique"
+              style="background: linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2)); color: var(--lavande); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; border: 2px solid var(--lavande); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(212, 165, 212, 0.2);"
+              onmouseover="this.style.background='var(--lavande)'; this.style.color='white'; this.style.boxShadow='0 4px 15px rgba(212, 165, 212, 0.4)'"
+              onmouseout="this.style.background='linear-gradient(135deg, rgba(212, 165, 212, 0.2), rgba(244, 194, 194, 0.2))'; this.style.color='var(--lavande)'; this.style.boxShadow='0 2px 8px rgba(212, 165, 212, 0.2)'">
+              🏡 La Boutique
+            </a>
+          </li>
+          <li>
+            <a href="/panier" class="cart-icon">
+              🛒
+              <span class="cart-count" id="cart-count">0</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container page-transition">
+    <h1 class="section-title">💎 Nos pierres et leurs vertus</h1>
+    <p style="text-align: center; color: var(--texte-secondaire); max-width: 600px; margin: 0 auto 2rem; line-height: 1.6;">
+      Chaque pierre possède des propriétés uniques. Découvrez leurs vertus et trouvez celle qui vous correspond.
+    </p>
+
+    <!-- Barre de recherche -->
+    <div style="max-width: 500px; margin: 0 auto 1.5rem; position: relative;">
+      <input type="text" id="stone-search" placeholder="Rechercher une pierre..."
+        style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 2px solid var(--bordure); border-radius: 25px; font-size: 1rem; font-family: var(--font-texte); box-sizing: border-box; transition: border-color 0.3s;">
+      <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.1rem;">🔍</span>
+    </div>
+
+    <!-- Index alphabétique -->
+    <div id="alpha-index" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; margin-bottom: 2rem;">
+    </div>
+
+    <!-- Grille de pierres par lettre -->
+    <div id="stones-container">
+      <p style="text-align: center; color: var(--texte-secondaire);">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>🌸 La p'tite perlouze 🌸</p>
+    <p>Créations artisanales par Yvonne Lecocq</p>
+    <p>
+      <a href="/contact">Nous contacter</a> |
+      <a href="/mentions-legales">Mentions légales</a> |
+      <a href="/confidentialite">Confidentialité</a> |
+      <a href="/cgv">CGV</a>
+    </p>
+    <p style="margin-top: 0.5rem;">
+      <a href="https://www.leptitboutdebois.fr" id="boutdebois-footer-link">Le p'tit bout de bois</a>
+    </p>
+    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+      © 2026 La p'tite perlouze - Tous droits réservés
+    </p>
+  </footer>
+
+  <script src="/js/theme.js"></script>
+  <script>
+    // Cart count
+    (function () {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const total = cart.reduce((s, i) => s + i.quantity, 0);
+      const el = document.getElementById('cart-count');
+      if (el) { el.textContent = total; el.style.display = total > 0 ? 'flex' : 'none'; }
+    })();
+
+    // Menu toggle mobile
+    document.getElementById('menu-toggle').addEventListener('click', function () {
+      document.getElementById('main-nav').classList.toggle('active');
+      this.classList.toggle('active');
+    });
+
+    // Nav active
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href') === '/pierres') a.classList.add('active');
+    });
+
+    let allStones = [];
+
+    async function loadStones() {
+      try {
+        const response = await fetch('/api/settings/stones');
+        allStones = await response.json();
+        buildAlphaIndex();
+        displayStones(allStones);
+      } catch (e) {
+        document.getElementById('stones-container').innerHTML =
+          '<p style="text-align: center; color: var(--texte-secondaire);">Impossible de charger les pierres.</p>';
+      }
+    }
+
+    function buildAlphaIndex() {
+      const letters = new Set(allStones.map(s => s.name.charAt(0).toUpperCase()));
+      const container = document.getElementById('alpha-index');
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+      container.innerHTML = alphabet.map(letter => {
+        const exists = letters.has(letter);
+        return `<button onclick="${exists ? `scrollToLetter('${letter}')` : ''}"
+          style="width: 36px; height: 36px; border-radius: 50%; border: 2px solid ${exists ? 'var(--lavande)' : 'var(--bordure)'};
+                 background: ${exists ? 'var(--lavande)' : 'transparent'}; color: ${exists ? 'white' : 'var(--texte-secondaire)'};
+                 font-weight: 600; font-size: 0.85rem; cursor: ${exists ? 'pointer' : 'default'};
+                 transition: all 0.2s ease; opacity: ${exists ? '1' : '0.4'};"
+          ${exists ? `onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"` : ''}>${letter}</button>`;
+      }).join('');
+    }
+
+    function scrollToLetter(letter) {
+      const el = document.getElementById('letter-' + letter);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function displayStones(stones) {
+      const container = document.getElementById('stones-container');
+
+      if (stones.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--texte-secondaire); padding: 2rem;">Aucune pierre trouvée.</p>';
+        return;
+      }
+
+      // Grouper par lettre
+      const groups = {};
+      stones.forEach(s => {
+        const letter = s.name.charAt(0).toUpperCase();
+        if (!groups[letter]) groups[letter] = [];
+        groups[letter].push(s);
+      });
+
+      const sortedLetters = Object.keys(groups).sort();
+
+      container.innerHTML = sortedLetters.map(letter => `
+        <div id="letter-${letter}" style="margin-bottom: 2rem; scroll-margin-top: 100px;">
+          <h2 style="color: var(--lavande); font-size: 1.8rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--bordure);">
+            ${letter}
+          </h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+            ${groups[letter].map(stone => `
+              <div ${stone.description ? `onclick="showStoneModal(${stone.id})" style="cursor: pointer;"` : 'style=""'}
+                   class="card"
+                   ${stone.description ? `onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--ombre-douce)'" onmouseout="this.style.transform=''; this.style.boxShadow=''"` : ''}>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="font-size: 1.3rem;">💎</span>
+                  <h3 style="color: var(--texte-principal); font-size: 1.1rem; margin: 0;">${stone.name}</h3>
+                  ${stone.description ? '<span style="margin-left: auto; color: var(--lavande); font-size: 0.85rem;">Voir les vertus →</span>' : '<span style="margin-left: auto; color: var(--texte-secondaire); font-size: 0.8rem; font-style: italic; opacity: 0.5;">Pas encore de description</span>'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showStoneModal(id) {
+      const stone = allStones.find(s => s.id === id);
+      if (!stone || !stone.description) return;
+
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:1rem;';
+      modal.innerHTML = `
+        <div style="background:white;border-radius:16px;padding:2rem;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">
+          <button onclick="this.closest('div[style*=fixed]').remove()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--texte-secondaire);">&times;</button>
+          <div style="text-align:center;margin-bottom:1.5rem;">
+            <span style="font-size:3rem;">💎</span>
+            <h3 style="color:var(--lavande);font-size:1.4rem;margin:0.5rem 0;">${stone.name}</h3>
+            <p style="color:var(--texte-secondaire);font-size:0.9rem;margin:0;">Vertus et propriétés</p>
+          </div>
+          <p style="color:var(--texte-principal);line-height:1.7;font-size:1rem;">${stone.description.replace(/\n/g, '<br>')}</p>
+        </div>
+      `;
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+      document.body.appendChild(modal);
+    }
+
+    // Recherche
+    document.getElementById('stone-search').addEventListener('input', function () {
+      const query = this.value.toLowerCase().trim();
+      if (!query) {
+        displayStones(allStones);
+        return;
+      }
+      const filtered = allStones.filter(s =>
+        s.name.toLowerCase().includes(query) ||
+        (s.description && s.description.toLowerCase().includes(query))
+      );
+      displayStones(filtered);
+    });
+
+    loadStones();
+  </script>
+</body>
+
+</html>

@@ -143,6 +143,14 @@ async function initDatabase() {
       // La colonne existe déjà, c'est normal
     }
 
+    // Migration: ajouter la colonne description à stones
+    try {
+      await client.execute('ALTER TABLE stones ADD COLUMN description TEXT');
+      console.log('💎 Colonne description ajoutée à stones');
+    } catch (e) {
+      // La colonne existe déjà
+    }
+
     // Créer l'administrateur par défaut
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
     const adminPassword = process.env.ADMIN_PASSWORD || '***MOT_DE_PASSE_RETIRE***';

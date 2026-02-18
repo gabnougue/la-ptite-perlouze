@@ -676,6 +676,7 @@
         </a>
       </li>
       <li><a href="#boutique" class="nav-link" onclick="showSection('boutique', event)">Boutique</a></li>
+      <li><a href="#theme" class="nav-link" onclick="showSection('theme', event)">Thème</a></li>
       <li><a href="#settings" class="nav-link" onclick="showSection('settings', event)">Paramètres</a></li>
     </ul>
   </nav>
@@ -833,59 +834,11 @@
       </div>
     </section>
 
-    <!-- Section Paramètres -->
-    <section id="settings-section" class="section-content">
-      <h2 class="section-title">Paramètres du site</h2>
+    <!-- Section Thème -->
+    <section id="theme-section" class="section-content">
+      <h2 class="section-title">Thème du site</h2>
 
-      <!-- Changer le mot de passe -->
       <div class="card" style="margin-bottom: 2rem;">
-        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
-          🔒 Changer le mot de passe
-        </h3>
-        <form id="password-form" style="max-width: 400px;" onsubmit="changePassword(event)">
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Mot de passe actuel</label>
-            <input type="password" id="current-password" required
-              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Nouveau mot de passe</label>
-            <input type="password" id="new-password" required minlength="6"
-              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
-          </div>
-          <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Confirmer le nouveau mot de passe</label>
-            <input type="password" id="confirm-password" required minlength="6"
-              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
-          </div>
-          <div id="password-message" style="display: none; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
-          <button type="submit" class="btn btn-primary">Modifier le mot de passe</button>
-        </form>
-      </div>
-
-      <!-- Paramètres généraux -->
-      <div class="card" style="margin-bottom: 2rem;">
-        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
-          ⚙️ Paramètres généraux
-        </h3>
-        <form id="settings-form" style="max-width: 600px;">
-          <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">
-              🪵 URL du P'tit bout de bois
-            </label>
-            <input type="url" id="setting-boutdebois-url" placeholder="https://www.leptitboutdebois.fr"
-              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
-          </div>
-          <button type="button" onclick="saveGeneralSettings()" class="btn btn-primary">Enregistrer les
-            paramètres</button>
-        </form>
-      </div>
-
-      <!-- Thème du site -->
-      <div class="card" style="margin-bottom: 2rem;">
-        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
-          🎨 Thème du site
-        </h3>
         <p style="color: var(--texte-secondaire); margin-bottom: 1.5rem;">
           Choisissez le thème de couleur pour personnaliser l'apparence de votre boutique selon les saisons
         </p>
@@ -966,6 +919,39 @@
           Thème actuel : <strong id="current-theme-name">Automatique</strong>
         </p>
       </div>
+    </section>
+
+    <!-- Section Paramètres -->
+    <section id="settings-section" class="section-content">
+      <h2 class="section-title">Paramètres du site</h2>
+
+      <!-- Changer le mot de passe (repliable) -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 onclick="const f=document.getElementById('password-form');const a=this.querySelector('.toggle-arrow');if(f.style.display==='none'){f.style.display='block';a.textContent='▾'}else{f.style.display='none';a.textContent='▸'}"
+          style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 0; cursor: pointer; user-select: none;">
+          🔒 Changer le mot de passe <span class="toggle-arrow" style="font-size: 0.9rem;">▸</span>
+        </h3>
+        <form id="password-form" style="max-width: 400px; display: none; margin-top: 1rem;" onsubmit="changePassword(event)">
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Mot de passe actuel</label>
+            <input type="password" id="current-password" required
+              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Nouveau mot de passe</label>
+            <input type="password" id="new-password" required minlength="6"
+              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
+          </div>
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Confirmer le nouveau mot de passe</label>
+            <input type="password" id="confirm-password" required minlength="6"
+              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
+          </div>
+          <div id="password-message" style="display: none; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
+          <button type="submit" class="btn btn-primary">Modifier le mot de passe</button>
+        </form>
+      </div>
+
 
       <!-- Catégories -->
       <div class="card" style="margin-bottom: 2rem;">

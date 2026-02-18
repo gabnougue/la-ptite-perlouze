@@ -149,6 +149,8 @@ function showSection(section, event) {
     loadThreads();
   } else if (section === 'boutique') {
     loadBoutiqueImages();
+  } else if (section === 'theme') {
+    loadCurrentTheme();
   } else if (section === 'settings') {
     loadSettings();
   }

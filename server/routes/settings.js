@@ -104,10 +104,20 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Le nom est requis' });
     }
 
+    // Récupérer l'ancien nom pour mettre à jour les produits
+    const oldCat = await db.get('SELECT name FROM categories WHERE id = ?', [id]);
+    const oldName = oldCat ? oldCat.name : null;
+
     await db.run(
       'UPDATE categories SET name = ?, emoji = ?, description = ? WHERE id = ?',
       [name.trim(), emoji || '✨', description || '', id]
     );
+
+    // Mettre à jour la catégorie dans les produits associés
+    if (oldName && oldName !== name.trim()) {
+      await db.run('UPDATE products SET category = ? WHERE category = ?', [name.trim(), oldName]);
+    }
+
     res.json({ success: true, id: parseInt(id), name: name.trim(), emoji: emoji || '✨', description: description || '' });
   } catch (err) {
     console.error('Erreur:', err);

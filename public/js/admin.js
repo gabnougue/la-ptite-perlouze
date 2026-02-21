@@ -223,8 +223,10 @@ async function loadProducts() {
         }
         </td>
         <td data-label="Actions">
-          <button onclick="editProduct(${product.id})" class="btn btn-primary btn-small">Modifier</button>
-          <button onclick="deleteProduct(${product.id})" class="btn btn-outline btn-small">Supprimer</button>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button onclick="editProduct(${product.id})" class="btn btn-primary btn-small">Modifier</button>
+            <button onclick="deleteProduct(${product.id})" class="btn btn-outline btn-small">Supprimer</button>
+          </div>
         </td>
       `;
 

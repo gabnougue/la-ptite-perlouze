@@ -2,6 +2,19 @@
 // 🌸 La p'tite perlouze - Script admin 🌸
 // ═══════════════════════════════════════════════════
 
+// Toggle section Catégories (collapse / expand)
+function toggleCategoriesSection() {
+  const content = document.getElementById('categories-collapsible');
+  const chevron = document.getElementById('categories-chevron');
+  if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+    content.style.maxHeight = '0';
+    chevron.style.transform = 'rotate(0deg)';
+  } else {
+    content.style.maxHeight = content.scrollHeight + 'px';
+    chevron.style.transform = 'rotate(90deg)';
+  }
+}
+
 // Toggle section Pierres (collapse / expand)
 function toggleStonesSection() {
   const content = document.getElementById('stones-collapsible');

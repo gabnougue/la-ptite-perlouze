@@ -36,7 +36,7 @@ async function sendOrderNotification(order, items) {
 
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL,
-      to: process.env.FORWARD_EMAIL || 'gabnouge@gmail.com',
+      to: process.env.FORWARD_EMAIL || 'gabnougue@gmail.com',
       subject: `🌸 Nouvelle commande #${order.id} - La p'tite perlouze`,
       html: `
         <!DOCTYPE html>
@@ -115,7 +115,7 @@ async function sendContactNotification(contact) {
     return;
   }
 
-  const vendorEmail = process.env.FORWARD_EMAIL || 'gabnouge@gmail.com';
+  const vendorEmail = process.env.FORWARD_EMAIL || 'gabnougue@gmail.com';
   if (!vendorEmail) {
     console.log('Email vendeur non configuré');
     return;
@@ -338,7 +338,7 @@ async function sendNewEmailNotification({ from, subject, message, threadId }) {
     return;
   }
 
-  const vendorEmail = process.env.FORWARD_EMAIL || 'gabnouge@gmail.com';
+  const vendorEmail = process.env.FORWARD_EMAIL || 'gabnougue@gmail.com';
   if (!vendorEmail) {
     console.log('Email vendeur non configuré');
     return;
@@ -408,7 +408,7 @@ async function sendNewEmailNotification({ from, subject, message, threadId }) {
 // Forward un email entrant vers une adresse externe
 async function forwardEmail({ emailId, from, subject, text, html, attachments }) {
   // Adresse de forwarding (à configurer via variable d'environnement)
-  const forwardTo = process.env.FORWARD_EMAIL || 'gabnouge@gmail.com';
+  const forwardTo = process.env.FORWARD_EMAIL || 'gabnougue@gmail.com';
   
   if (!process.env.RESEND_API_KEY) {
     console.log('Resend non configuré, forwarding non effectué');

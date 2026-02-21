@@ -2075,16 +2075,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Ajouter de nouvelles images à la sélection
-function previewNewImages(event) {
+async function previewNewImages(event) {
   const files = event.target.files;
 
   if (!files || files.length === 0) {
     return;
   }
 
-  // Ajouter les nouveaux fichiers au tableau existant (accumulation)
-  Array.from(files).forEach(file => {
-    newImagesToUpload.push(file);
+  // Compresser et ajouter les nouveaux fichiers au tableau existant (accumulation)
+  for (const file of Array.from(files)) {
+    const compressed = await compressImage(file);
+    newImagesToUpload.push(compressed);
 
     // Ajouter aussi à allImagesOrder
     if (!window.allImagesOrder) {
@@ -2092,9 +2093,9 @@ function previewNewImages(event) {
     }
     window.allImagesOrder.push({
       type: 'new',
-      data: file
+      data: compressed
     });
-  });
+  }
 
   // Réinitialiser l'input pour permettre de sélectionner à nouveau les mêmes fichiers si nécessaire
   event.target.value = '';

@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/database');
-// TODO: TEMPORAIRE - remettre process.env.STRIPE_SECRET_KEY après test
-const stripe = require('stripe')('sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { sendOrderNotification, sendCustomerOrderEmail } = require('../services/email');
 
 // Créer une intention de paiement Stripe
@@ -97,7 +96,7 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Erreur lors de la création de la commande:', error);
-    res.status(500).json({ error: 'Erreur lors de la création de la commande', details: error.message });
+    res.status(500).json({ error: 'Erreur lors de la création de la commande' });
   }
 });
 

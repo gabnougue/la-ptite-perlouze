@@ -1502,12 +1502,12 @@ async function loadCategories() {
     const container = document.getElementById('categories-list');
     container.innerHTML = categories.map(cat => `
       <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: white; border-radius: 10px; border: 2px solid var(--lavande);">
-        <div style="font-size: 2rem;">${cat.emoji || '✨'}</div>
+        ${cat.cover_image ? `<img src="${cat.cover_image}" alt="${cat.name}" style="width: 60px; height: 45px; object-fit: cover; border-radius: 6px;">` : `<div style="font-size: 2rem;">${cat.emoji || '✨'}</div>`}
         <div style="flex: 1;">
           <div style="font-weight: 600; color: var(--lavande);">${cat.name}</div>
           <div style="font-size: 0.9rem; color: var(--texte-secondaire);">${cat.description || ''}</div>
         </div>
-        <button onclick="editCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}', '${(cat.emoji || '✨').replace(/'/g, "\\'")}', '${(cat.description || '').replace(/'/g, "\\'")}')"
+        <button onclick="editCategory(${cat.id})"
                 class="btn btn-small btn-outline" style="padding: 0.3rem 0.8rem;">
           Modifier
         </button>
@@ -1526,11 +1526,32 @@ async function loadCategories() {
   }
 }
 
+// Preview de la cover catégorie
+function previewCategoryCover(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('category-cover-img').src = e.target.result;
+      document.getElementById('category-cover-preview').style.display = 'flex';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removeCategoryCoverPreview() {
+  document.getElementById('new-category-cover').value = '';
+  document.getElementById('category-cover-preview').style.display = 'none';
+  document.getElementById('category-cover-img').src = '';
+  // Marquer la suppression pour le mode édition
+  window._removeCategoryCover = true;
+}
+
 // Ajouter une catégorie
 async function addCategory() {
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
+  const coverInput = document.getElementById('new-category-cover');
 
   const name = nameInput.value.trim();
   const emoji = emojiInput.value.trim() || '✨';
@@ -1542,10 +1563,18 @@ async function addCategory() {
   }
 
   try {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('emoji', emoji);
+    formData.append('description', description);
+    if (coverInput.files && coverInput.files[0]) {
+      const compressed = await compressImage(coverInput.files[0]);
+      formData.append('cover_image', compressed);
+    }
+
     const response = await fetch('/api/settings/categories', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, emoji, description })
+      body: formData
     });
 
     const result = await response.json();
@@ -1555,6 +1584,8 @@ async function addCategory() {
       nameInput.value = '';
       emojiInput.value = '';
       descriptionInput.value = '';
+      coverInput.value = '';
+      document.getElementById('category-cover-preview').style.display = 'none';
       loadCategories();
     } else {
       showMessage(result.error || 'Erreur lors de l\'ajout', 'error');
@@ -1570,40 +1601,54 @@ function cancelEditCategory() {
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
+  const coverInput = document.getElementById('new-category-cover');
   const submitButton = document.getElementById('category-submit-btn');
   const cancelButton = document.getElementById('category-cancel-btn');
 
-  // Réinitialiser les champs
   nameInput.value = '';
   emojiInput.value = '';
   descriptionInput.value = '';
+  coverInput.value = '';
+  document.getElementById('category-cover-preview').style.display = 'none';
+  window._removeCategoryCover = false;
 
-  // Remettre le bouton en mode "Ajouter"
   submitButton.textContent = 'Ajouter la catégorie';
   submitButton.onclick = addCategory;
-
-  // Cacher le bouton annuler
   cancelButton.style.display = 'none';
 }
 
-// Modifier une catégorie
-async function editCategory(id, currentName, currentEmoji, currentDescription) {
+// Modifier une catégorie — charge les données depuis l'API
+async function editCategory(id) {
+  // Récupérer les données actuelles
+  const response = await fetch('/api/settings/categories');
+  const categories = await response.json();
+  const cat = categories.find(c => c.id === id);
+  if (!cat) return;
+
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
+  const coverInput = document.getElementById('new-category-cover');
   const submitButton = document.getElementById('category-submit-btn');
   const cancelButton = document.getElementById('category-cancel-btn');
 
-  // Pré-remplir les champs avec les valeurs actuelles
-  nameInput.value = currentName;
-  emojiInput.value = currentEmoji;
-  descriptionInput.value = currentDescription;
+  nameInput.value = cat.name;
+  emojiInput.value = cat.emoji || '✨';
+  descriptionInput.value = cat.description || '';
+  coverInput.value = '';
+  window._removeCategoryCover = false;
 
-  // Afficher le bouton annuler
+  // Afficher la cover actuelle si elle existe
+  if (cat.cover_image) {
+    document.getElementById('category-cover-img').src = cat.cover_image;
+    document.getElementById('category-cover-preview').style.display = 'flex';
+  } else {
+    document.getElementById('category-cover-preview').style.display = 'none';
+  }
+
   cancelButton.style.display = 'block';
-
-  // Changer le bouton en mode "Mettre à jour"
   submitButton.textContent = 'Mettre à jour';
+
   submitButton.onclick = async () => {
     const name = nameInput.value.trim();
     const emoji = emojiInput.value.trim() || '✨';
@@ -1615,25 +1660,29 @@ async function editCategory(id, currentName, currentEmoji, currentDescription) {
     }
 
     try {
-      const response = await fetch(`/api/settings/categories/${id}`, {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('emoji', emoji);
+      formData.append('description', description);
+
+      if (coverInput.files && coverInput.files[0]) {
+        const compressed = await compressImage(coverInput.files[0]);
+        formData.append('cover_image', compressed);
+      } else if (window._removeCategoryCover) {
+        formData.append('remove_cover', 'true');
+      }
+
+      const resp = await fetch(`/api/settings/categories/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, emoji, description })
+        body: formData
       });
 
-      const result = await response.json();
+      const result = await resp.json();
 
       if (result.success) {
         showMessage('Catégorie modifiée', 'success');
-        nameInput.value = '';
-        emojiInput.value = '';
-        descriptionInput.value = '';
+        cancelEditCategory();
         loadCategories();
-        // Remettre le bouton en mode "Ajouter"
-        submitButton.textContent = 'Ajouter la catégorie';
-        submitButton.onclick = addCategory;
-        // Cacher le bouton annuler
-        cancelButton.style.display = 'none';
       } else {
         showMessage(result.error || 'Erreur lors de la modification', 'error');
       }
@@ -1643,8 +1692,7 @@ async function editCategory(id, currentName, currentEmoji, currentDescription) {
     }
   };
 
-  // Scroll vers le haut pour voir les champs
-  document.getElementById('new-category').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // Supprimer une catégorie

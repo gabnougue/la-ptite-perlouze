@@ -163,8 +163,16 @@ function showMessage(message, type = 'info') {
 // Charger les catégories
 async function loadCategories() {
   try {
-    const response = await fetch('/api/settings/categories');
-    const categories = await response.json();
+    const [catResponse, prodResponse] = await Promise.all([
+      fetch('/api/settings/categories'),
+      fetch('/api/products')
+    ]);
+    const allCategories = await catResponse.json();
+    const allProducts = await prodResponse.json();
+
+    // Filtrer les catégories sans produits
+    const categoriesWithProducts = new Set(allProducts.map(p => p.category));
+    const categories = allCategories.filter(c => categoriesWithProducts.has(c.name));
 
     const container = document.getElementById('categories-grid');
 
@@ -173,13 +181,39 @@ async function loadCategories() {
       return;
     }
 
-    container.innerHTML = categories.map(category => `
-      <a href="/catalogue?category=${encodeURIComponent(category.name)}" class="card category-card" style="text-decoration: none;">
-        <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">${category.emoji || '✨'}</div>
-        <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">${category.name}</h3>
-        <p style="text-align: center; color: var(--texte-secondaire);">${category.description || ''}</p>
-      </a>
-    `).join('');
+    container.innerHTML = categories.map(category => {
+      if (category.cover_image) {
+        // Carte avec image de couverture — style overlay
+        return `
+          <a href="/catalogue?category=${encodeURIComponent(category.name)}" class="category-cover-card" style="
+            text-decoration: none; display: block; position: relative; overflow: hidden;
+            border-radius: 12px; height: 220px; box-shadow: var(--ombre-douce);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;"
+            onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'; this.querySelector('img').style.transform='scale(1.08)'"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--ombre-douce)'; this.querySelector('img').style.transform='scale(1)'">
+            <img src="${category.cover_image}" alt="${category.name}" style="
+              width: 100%; height: 100%; object-fit: cover;
+              transition: transform 0.4s ease;">
+            <div style="
+              position: absolute; bottom: 0; left: 0; right: 0;
+              background: linear-gradient(transparent, rgba(0,0,0,0.65));
+              padding: 1.5rem 1rem 1rem; color: white;">
+              <h3 style="font-family: var(--font-manuscrite); font-size: 1.5rem; margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">
+                ${category.emoji || ''} ${category.name}
+              </h3>
+              ${category.description ? `<p style="font-size: 0.9rem; margin: 0.3rem 0 0; opacity: 0.9; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">${category.description}</p>` : ''}
+            </div>
+          </a>`;
+      } else {
+        // Fallback sans image — carte classique avec emoji
+        return `
+          <a href="/catalogue?category=${encodeURIComponent(category.name)}" class="card category-card" style="text-decoration: none;">
+            <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">${category.emoji || '✨'}</div>
+            <h3 style="text-align: center; color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem;">${category.name}</h3>
+            <p style="text-align: center; color: var(--texte-secondaire);">${category.description || ''}</p>
+          </a>`;
+      }
+    }).join('');
   } catch (error) {
     console.error('Erreur lors du chargement des catégories:', error);
     const container = document.getElementById('categories-grid');

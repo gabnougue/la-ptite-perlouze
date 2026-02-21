@@ -151,6 +151,12 @@ async function initDatabase() {
       // La colonne existe déjà
     }
 
+    // Migration: ajouter cover_image aux catégories
+    try {
+      await client.execute('ALTER TABLE categories ADD COLUMN cover_image TEXT');
+      console.log('🖼️ Colonne cover_image ajoutée à categories');
+    } catch (e) {}
+
     // Migration: ajouter image et détails aux items de commande
     try {
       await client.execute('ALTER TABLE order_items ADD COLUMN product_image TEXT');

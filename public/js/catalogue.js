@@ -227,7 +227,9 @@ async function addToCart(productId) {
         price: product.price,
         image: product.image,
         quantity: 1,
-        stock: product.stock
+        stock: product.stock,
+        stones: product.stones || '',
+        category: product.category || ''
       });
     }
 

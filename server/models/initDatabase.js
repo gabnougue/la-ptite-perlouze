@@ -151,6 +151,14 @@ async function initDatabase() {
       // La colonne existe déjà
     }
 
+    // Migration: ajouter image et détails aux items de commande
+    try {
+      await client.execute('ALTER TABLE order_items ADD COLUMN product_image TEXT');
+    } catch (e) {}
+    try {
+      await client.execute('ALTER TABLE order_items ADD COLUMN product_details TEXT');
+    } catch (e) {}
+
     // Créer l'administrateur par défaut
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
     const adminPassword = process.env.ADMIN_PASSWORD || '***MOT_DE_PASSE_RETIRE***';

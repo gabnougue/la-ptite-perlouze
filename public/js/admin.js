@@ -878,9 +878,13 @@ function viewOrderDetails(orderId) {
       <div style="margin-top: 1.5rem;">
         <h4 style="color: var(--texte-principal); margin-bottom: 0.5rem;">Articles commandés</h4>
         ${order.items && order.items.length > 0 ? order.items.map(item => `
-          <div style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid var(--gris-clair);">
-            <span>${item.product_name} x ${item.quantity}</span>
-            <span style="font-weight: 600;">${(item.price * item.quantity).toFixed(2)} €</span>
+          <div style="display: flex; align-items: center; padding: 0.5rem; border-bottom: 1px solid var(--gris-clair); gap: 0.75rem;">
+            ${item.product_image ? `<img src="${item.product_image}" alt="${item.product_name}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px; flex-shrink: 0;">` : ''}
+            <div style="flex: 1;">
+              <a href="/produit/${item.product_id}" target="_blank" style="color: var(--lavande); text-decoration: none; font-weight: 600;">${item.product_name}</a> x ${item.quantity}
+              ${item.product_details ? `<div style="font-size: 0.8rem; color: var(--texte-secondaire);">${item.product_details}</div>` : ''}
+            </div>
+            <span style="font-weight: 600; flex-shrink: 0;">${(item.price * item.quantity).toFixed(2)} €</span>
           </div>
         `).join('') : '<p style="color: var(--texte-secondaire);">Aucun article</p>'}
         <div style="display: flex; justify-content: space-between; padding: 1rem 0.5rem; font-weight: 700; font-size: 1.2rem;">

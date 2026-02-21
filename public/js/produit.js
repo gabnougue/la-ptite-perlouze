@@ -305,7 +305,9 @@ function addToCartWithQuantity() {
       price: currentProduct.price,
       image: currentProduct.image,
       quantity: quantity,
-      stock: currentProduct.stock
+      stock: currentProduct.stock,
+      stones: currentProduct.stones || '',
+      category: currentProduct.category || ''
     });
   }
 

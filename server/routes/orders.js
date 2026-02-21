@@ -58,10 +58,18 @@ router.post('/', async (req, res) => {
 
     // Ajouter les items de commande et mettre à jour le stock
     for (const item of items) {
+      // Récupérer les détails du produit pour le snapshot
+      const product = await db.get('SELECT image, stones, category FROM products WHERE id = ?', [item.id]);
+      const details = [];
+      if (product?.category) details.push(product.category);
+      if (product?.stones) details.push(`Pierres : ${product.stones}`);
+      const productDetails = details.join(' | ');
+      const productImage = product?.image || item.image || '';
+
       await db.run(
-        `INSERT INTO order_items (order_id, product_id, product_name, quantity, price)
-         VALUES (?, ?, ?, ?, ?)`,
-        [orderId, item.id, item.name, item.quantity, item.price]
+        `INSERT INTO order_items (order_id, product_id, product_name, quantity, price, product_image, product_details)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [orderId, item.id, item.name, item.quantity, item.price, productImage, productDetails]
       );
 
       // Décrémenter le stock

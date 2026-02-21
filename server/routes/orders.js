@@ -62,10 +62,10 @@ router.post('/', async (req, res) => {
       // Récupérer les détails du produit pour le snapshot
       const product = await db.get('SELECT image, stones, category FROM products WHERE id = ?', [item.id]);
       const details = [];
-      if (product?.category) details.push(product.category);
-      if (product?.stones) details.push(`Pierres : ${product.stones}`);
+      if (product && product.category) details.push(product.category);
+      if (product && product.stones) details.push('Pierres : ' + product.stones);
       const productDetails = details.join(' | ');
-      const productImage = product?.image || item.image || '';
+      const productImage = (product && product.image) || item.image || '';
 
       await db.run(
         `INSERT INTO order_items (order_id, product_id, product_name, quantity, price, product_image, product_details)
@@ -97,7 +97,7 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Erreur lors de la création de la commande:', error);
-    res.status(500).json({ error: 'Erreur lors de la création de la commande' });
+    res.status(500).json({ error: 'Erreur lors de la création de la commande', details: error.message });
   }
 });
 

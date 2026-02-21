@@ -508,6 +508,33 @@ nav a.active::after {
   max-width: 350px;
 }
 
+/* Catégories : toutes les cartes ont la même taille */
+#categories-grid {
+  align-items: stretch;
+}
+
+#categories-grid > a {
+  width: 100%;
+  max-width: 350px;
+}
+
+#categories-grid .category-cover-card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 20px;
+  box-shadow: var(--ombre-douce);
+  overflow: hidden;
+  border: 3px solid transparent;
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+
+#categories-grid .category-cover-card:hover {
+  box-shadow: var(--ombre-hover);
+  transform: translateY(-5px);
+  border-color: var(--rose-poudre);
+}
+
 /* ═══════════════════════════════════════════════════
    Formulaires
    ═══════════════════════════════════════════════════ */

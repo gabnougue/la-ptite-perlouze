@@ -183,21 +183,16 @@ async function loadCategories() {
 
     container.innerHTML = categories.map(category => {
       if (category.cover_image) {
-        // Carte avec image de couverture — style overlay
+        // Carte avec image de couverture — style overlay (même taille que les autres)
         return `
-          <a href="/catalogue?category=${encodeURIComponent(category.name)}" class="category-cover-card" style="
-            text-decoration: none; display: block; position: relative; overflow: hidden;
-            border-radius: 12px; height: 220px; box-shadow: var(--ombre-douce);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;"
-            onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'; this.querySelector('img').style.transform='scale(1.08)'"
-            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--ombre-douce)'; this.querySelector('img').style.transform='scale(1)'">
+          <a href="/catalogue?category=${encodeURIComponent(category.name)}" class="category-cover-card" style="text-decoration: none; position: relative;">
             <img src="${category.cover_image}" alt="${category.name}" style="
-              width: 100%; height: 100%; object-fit: cover;
+              width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;
               transition: transform 0.4s ease;">
             <div style="
               position: absolute; bottom: 0; left: 0; right: 0;
               background: linear-gradient(transparent, rgba(0,0,0,0.65));
-              padding: 1.5rem 1rem 1rem; color: white;">
+              padding: 1.5rem 1rem 1rem; color: white; border-radius: 0 0 17px 17px;">
               <h3 style="font-family: var(--font-manuscrite); font-size: 1.5rem; margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">
                 ${category.emoji || ''} ${category.name}
               </h3>

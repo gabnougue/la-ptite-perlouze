@@ -933,38 +933,6 @@
     <section id="settings-section" class="section-content">
       <h2 class="section-title">Paramètres du site</h2>
 
-      <!-- Changer le mot de passe (repliable) -->
-      <div class="card" style="margin-bottom: 2rem;">
-        <div onclick="togglePasswordSection()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
-          <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin: 0;">
-            🔒 Changer le mot de passe
-          </h3>
-          <span id="password-chevron" style="font-size: 1.2rem; color: var(--lavande); transition: transform 0.3s ease; transform: rotate(0deg);">▶</span>
-        </div>
-        <div id="password-collapsible" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
-        <form id="password-form" style="max-width: 400px; margin-top: 1rem;" onsubmit="changePassword(event)">
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Mot de passe actuel</label>
-            <input type="password" id="current-password" required
-              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Nouveau mot de passe</label>
-            <input type="password" id="new-password" required minlength="6"
-              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
-          </div>
-          <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Confirmer le nouveau mot de passe</label>
-            <input type="password" id="confirm-password" required minlength="6"
-              style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
-          </div>
-          <div id="password-message" style="display: none; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
-          <button type="submit" class="btn btn-primary">Modifier le mot de passe</button>
-        </form>
-        </div>
-      </div>
-
-
       <!-- Coups de cœur -->
       <div class="card" style="margin-bottom: 2rem;">
         <div onclick="toggleFeaturedSection()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
@@ -1052,7 +1020,7 @@
       </div>
 
       <!-- Couleurs -->
-      <div class="card">
+      <div class="card" style="margin-bottom: 2rem;">
         <div onclick="toggleColorsSection()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
           <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin: 0;">
             🎨 Couleurs
@@ -1071,6 +1039,37 @@
             style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
             <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Changer le mot de passe (repliable) -->
+      <div class="card">
+        <div onclick="togglePasswordSection()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
+          <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin: 0;">
+            🔒 Changer le mot de passe
+          </h3>
+          <span id="password-chevron" style="font-size: 1.2rem; color: var(--lavande); transition: transform 0.3s ease; transform: rotate(0deg);">▶</span>
+        </div>
+        <div id="password-collapsible" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
+          <form id="password-form" style="max-width: 400px; margin-top: 1rem;" onsubmit="changePassword(event)">
+            <div style="margin-bottom: 1rem;">
+              <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Mot de passe actuel</label>
+              <input type="password" id="current-password" required
+                style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Nouveau mot de passe</label>
+              <input type="password" id="new-password" required minlength="6"
+                style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Confirmer le nouveau mot de passe</label>
+              <input type="password" id="confirm-password" required minlength="6"
+                style="width: 100%; padding: 0.75rem; border: 2px solid var(--lavande); border-radius: 12px; font-family: var(--font-texte); transition: all 0.3s ease;">
+            </div>
+            <div id="password-message" style="display: none; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
+            <button type="submit" class="btn btn-primary">Modifier le mot de passe</button>
+          </form>
         </div>
       </div>
     </section>

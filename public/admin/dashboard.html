@@ -935,11 +935,14 @@
 
       <!-- Changer le mot de passe (repliable) -->
       <div class="card" style="margin-bottom: 2rem;">
-        <h3 onclick="const f=document.getElementById('password-form');const a=this.querySelector('.toggle-arrow');if(f.style.display==='none'){f.style.display='block';a.textContent='▾'}else{f.style.display='none';a.textContent='▸'}"
-          style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 0; cursor: pointer; user-select: none;">
-          🔒 Changer le mot de passe <span class="toggle-arrow" style="font-size: 0.9rem;">▸</span>
-        </h3>
-        <form id="password-form" style="max-width: 400px; display: none; margin-top: 1rem;" onsubmit="changePassword(event)">
+        <div onclick="togglePasswordSection()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
+          <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin: 0;">
+            🔒 Changer le mot de passe
+          </h3>
+          <span id="password-chevron" style="font-size: 1.2rem; color: var(--lavande); transition: transform 0.3s ease; transform: rotate(0deg);">▶</span>
+        </div>
+        <div id="password-collapsible" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
+        <form id="password-form" style="max-width: 400px; margin-top: 1rem;" onsubmit="changePassword(event)">
           <div style="margin-bottom: 1rem;">
             <label style="display: block; margin-bottom: 0.5rem; color: var(--texte-principal); font-weight: 600;">Mot de passe actuel</label>
             <input type="password" id="current-password" required
@@ -958,6 +961,7 @@
           <div id="password-message" style="display: none; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
           <button type="submit" class="btn btn-primary">Modifier le mot de passe</button>
         </form>
+        </div>
       </div>
 
 

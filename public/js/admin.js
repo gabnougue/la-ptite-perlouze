@@ -1532,18 +1532,25 @@ function toggleFeaturedSection() {
   }
 }
 
+// Produits disponibles pour le picker (non featured)
+let _pickerProducts = [];
+
+function _getImageSrc(p) {
+  if (p.images && p.images.length > 0) {
+    const primary = p.images.find(img => img.is_primary) || p.images[0];
+    return primary.image_path.startsWith('https://') ? primary.image_path : `/images/uploads/${primary.image_path}`;
+  }
+  if (p.image) return p.image.startsWith('https://') ? p.image : `/images/uploads/${p.image}`;
+  return '/images/placeholder.jpg';
+}
+
 async function loadFeaturedAdmin() {
   try {
     const response = await fetch('/api/admin/products');
     const products = await response.json();
 
     const featured = products.filter(p => p.is_featured);
-    const notFeatured = products.filter(p => !p.is_featured);
-
-    // Peupler le select avec les produits non encore mis en avant
-    const select = document.getElementById('featured-product-select');
-    select.innerHTML = '<option value="">— Choisir un article —</option>'
-      + notFeatured.map(p => `<option value="${p.id}">${p.name} (${p.category})</option>`).join('');
+    _pickerProducts = products.filter(p => !p.is_featured);
 
     // Désactiver le bouton si déjà 3 coups de cœur
     const addBtn = document.getElementById('featured-add-btn');
@@ -1557,39 +1564,60 @@ async function loadFeaturedAdmin() {
       return;
     }
 
-    list.innerHTML = featured.map(p => {
-      let imageSrc = '/images/placeholder.jpg';
-      if (p.images && p.images.length > 0) {
-        const primary = p.images.find(img => img.is_primary) || p.images[0];
-        imageSrc = primary.image_path.startsWith('https://') ? primary.image_path : `/images/uploads/${primary.image_path}`;
-      } else if (p.image) {
-        imageSrc = p.image.startsWith('https://') ? p.image : `/images/uploads/${p.image}`;
-      }
-      return `
-        <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: white; border-radius: 10px; border: 2px solid var(--lavande);">
-          <img src="${imageSrc}" alt="${p.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 600; color: var(--lavande); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
-            <div style="font-size: 0.85rem; color: var(--texte-secondaire);">${p.category}</div>
-          </div>
-          <button onclick="removeFeaturedProduct(${p.id})"
-            style="background: var(--rose-poudre); color: white; border: none; padding: 0.4rem; border-radius: 8px; cursor: pointer; font-weight: 600; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"
-            title="Retirer des coups de cœur">✕</button>
-        </div>`;
-    }).join('');
+    list.innerHTML = featured.map(p => `
+      <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: white; border-radius: 10px; border: 2px solid var(--lavande);">
+        <img src="${_getImageSrc(p)}" alt="${p.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-weight: 600; color: var(--lavande); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.name}</div>
+          <div style="font-size: 0.85rem; color: var(--texte-secondaire);">${p.stone_names && p.stone_names.length ? p.stone_names.join(', ') : p.category}</div>
+        </div>
+        <button onclick="removeFeaturedProduct(${p.id})"
+          style="background: var(--rose-poudre); color: white; border: none; padding: 0.4rem; border-radius: 8px; cursor: pointer; font-weight: 600; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"
+          title="Retirer des coups de cœur">✕</button>
+      </div>`).join('');
   } catch (error) {
     console.error('Erreur:', error);
   }
 }
 
-async function addFeaturedProduct() {
-  const select = document.getElementById('featured-product-select');
-  const id = select.value;
-  if (!id) {
-    showMessage('Veuillez choisir un article', 'error');
+function openFeaturedPicker() {
+  document.getElementById('featured-picker-search').value = '';
+  renderPickerGrid(_pickerProducts);
+  document.getElementById('featured-picker-modal').classList.add('active');
+}
+
+function closeFeaturedPicker() {
+  document.getElementById('featured-picker-modal').classList.remove('active');
+}
+
+function filterFeaturedPicker() {
+  const q = document.getElementById('featured-picker-search').value.toLowerCase().trim();
+  const filtered = q ? _pickerProducts.filter(p => p.name.toLowerCase().includes(q)) : _pickerProducts;
+  renderPickerGrid(filtered);
+}
+
+function renderPickerGrid(products) {
+  const grid = document.getElementById('featured-picker-grid');
+  if (products.length === 0) {
+    grid.innerHTML = '<p style="color: var(--texte-secondaire); font-style: italic; grid-column: 1/-1;">Aucun article trouvé.</p>';
     return;
   }
+  grid.innerHTML = products.map(p => `
+    <div onclick="addFeaturedProduct(${p.id})"
+      style="cursor: pointer; border-radius: 12px; border: 2px solid var(--lavande); overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; background: white;"
+      onmouseover="this.style.boxShadow='var(--ombre-hover)';this.style.transform='translateY(-3px)'"
+      onmouseout="this.style.boxShadow='none';this.style.transform='none'">
+      <img src="${_getImageSrc(p)}" alt="${p.name}"
+        style="width: 100%; height: 130px; object-fit: cover; display: block;">
+      <div style="padding: 0.6rem 0.75rem;">
+        <div style="font-weight: 600; color: var(--lavande); font-size: 0.9rem; margin-bottom: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.name}</div>
+        <div style="font-size: 0.78rem; color: var(--texte-secondaire); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.stone_names && p.stone_names.length ? p.stone_names.join(', ') : ''}</div>
+        <div style="font-size: 0.78rem; color: var(--texte-secondaire);">${p.category}</div>
+      </div>
+    </div>`).join('');
+}
 
+async function addFeaturedProduct(id) {
   try {
     const response = await fetch(`/api/admin/products/${id}/featured`, {
       method: 'PUT',
@@ -1598,6 +1626,7 @@ async function addFeaturedProduct() {
     });
     const result = await response.json();
     if (result.success) {
+      closeFeaturedPicker();
       showMessage('Article ajouté aux coups de cœur', 'success');
       loadFeaturedAdmin();
     } else {

@@ -5,6 +5,53 @@
 let allProducts = [];
 let allCategories = [];
 
+// Injecter les styles du skeleton loader
+(function injectSkeletonStyles() {
+  if (document.getElementById('skeleton-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'skeleton-styles';
+  style.textContent = `
+    @keyframes skeletonPulse {
+      0%   { opacity: 1; }
+      50%  { opacity: 0.45; }
+      100% { opacity: 1; }
+    }
+    .skeleton-block {
+      background: linear-gradient(135deg, var(--pastel-bleu) 0%, var(--pastel-peche) 100%);
+      border-radius: 8px;
+      animation: skeletonPulse 1.6s ease-in-out infinite;
+    }
+    .skeleton-card { pointer-events: none; }
+  `;
+  document.head.appendChild(style);
+})();
+
+// Afficher des cartes squelettes pendant le chargement
+function showSkeletons(count = 6) {
+  const container = document.getElementById('products-grid');
+  const noProducts = document.getElementById('no-products');
+  noProducts.style.display = 'none';
+  container.innerHTML = '';
+
+  for (let i = 0; i < count; i++) {
+    const card = document.createElement('div');
+    card.className = 'card product-card skeleton-card';
+    card.innerHTML = `
+      <div class="skeleton-block product-image" style="border-radius: 15px;"></div>
+      <div class="product-info">
+        <div class="skeleton-block" style="height: 1.3rem; width: 72%; margin-bottom: 0.75rem;"></div>
+        <div class="skeleton-block" style="height: 0.9rem; width: 52%; margin-bottom: 0.5rem;"></div>
+        <div class="skeleton-block" style="height: 0.85rem; width: 90%; margin-bottom: 0.3rem;"></div>
+        <div class="skeleton-block" style="height: 0.85rem; width: 70%; margin-bottom: 1rem;"></div>
+        <div class="skeleton-block" style="height: 1.4rem; width: 38%; margin-bottom: 1rem;"></div>
+        <div class="skeleton-block" style="height: 2.8rem; border-radius: 25px; margin-bottom: 0.5rem;"></div>
+        <div class="skeleton-block" style="height: 2.8rem; border-radius: 25px;"></div>
+      </div>
+    `;
+    container.appendChild(card);
+  }
+}
+
 // Mettre à jour le compteur du panier
 function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -418,6 +465,9 @@ function onCategoryFilterChange() {
 // Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
   updateCartCount();
+
+  // Afficher les squelettes immédiatement
+  showSkeletons();
 
   // Charger tous les filtres dynamiquement
   await Promise.all([

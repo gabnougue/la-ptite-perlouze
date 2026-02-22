@@ -1053,19 +1053,24 @@
 
       <!-- Couleurs -->
       <div class="card">
-        <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin-bottom: 1rem;">
-          Couleurs
-        </h3>
-        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-          <input type="text" id="new-color" placeholder="Nouvelle couleur" style="flex: 1; min-width: 200px;">
-          <button onclick="addColor()" class="btn btn-primary">Ajouter</button>
+        <div onclick="toggleColorsSection()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
+          <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin: 0;">
+            🎨 Couleurs
+          </h3>
+          <span id="colors-chevron" style="font-size: 1.2rem; color: var(--lavande); transition: transform 0.3s ease; transform: rotate(0deg);">▶</span>
         </div>
-        <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
-          <strong>Couleurs existantes :</strong>
-        </p>
-        <div id="colors-list"
-          style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
-          <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
+        <div id="colors-collapsible" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
+          <div style="display: flex; gap: 1rem; margin-top: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <input type="text" id="new-color" placeholder="Nouvelle couleur" style="flex: 1; min-width: 200px;">
+            <button onclick="addColor()" class="btn btn-primary">Ajouter</button>
+          </div>
+          <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;">
+            <strong>Couleurs existantes :</strong>
+          </p>
+          <div id="colors-list"
+            style="display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+            <span style="color: var(--texte-secondaire); font-style: italic;">Chargement...</span>
+          </div>
         </div>
       </div>
     </section>

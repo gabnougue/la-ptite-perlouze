@@ -3,6 +3,18 @@
 // ═══════════════════════════════════════════════════
 
 // Toggle section Catégories (collapse / expand)
+function toggleColorsSection() {
+  const content = document.getElementById('colors-collapsible');
+  const chevron = document.getElementById('colors-chevron');
+  if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+    content.style.maxHeight = '0';
+    chevron.style.transform = 'rotate(0deg)';
+  } else {
+    content.style.maxHeight = content.scrollHeight + 'px';
+    chevron.style.transform = 'rotate(90deg)';
+  }
+}
+
 function togglePasswordSection() {
   const content = document.getElementById('password-collapsible');
   const chevron = document.getElementById('password-chevron');

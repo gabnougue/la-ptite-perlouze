@@ -1785,14 +1785,10 @@ async function addCategory() {
   }
 
   try {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('emoji', emoji);
-    formData.append('description', description);
-
     const response = await fetch('/api/settings/categories', {
       method: 'POST',
-      body: formData
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, emoji, description })
     });
 
     const result = await response.json();

@@ -1561,6 +1561,10 @@ async function loadFeaturedAdmin() {
     const list = document.getElementById('featured-list');
     if (featured.length === 0) {
       list.innerHTML = '<span style="color: var(--texte-secondaire); font-style: italic;">Aucun coup de cœur sélectionné — les 3 articles les plus récents s\'affichent par défaut.</span>';
+      const collapsible = document.getElementById('featured-collapsible');
+      if (collapsible.style.maxHeight && collapsible.style.maxHeight !== '0px') {
+        collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
+      }
       return;
     }
 
@@ -1575,6 +1579,12 @@ async function loadFeaturedAdmin() {
           style="background: var(--rose-poudre); color: white; border: none; padding: 0.4rem; border-radius: 8px; cursor: pointer; font-weight: 600; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"
           title="Retirer des coups de cœur">✕</button>
       </div>`).join('');
+
+    // Recalculer le max-height si la section est ouverte
+    const collapsible = document.getElementById('featured-collapsible');
+    if (collapsible.style.maxHeight && collapsible.style.maxHeight !== '0px') {
+      collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
+    }
   } catch (error) {
     console.error('Erreur:', error);
   }

@@ -54,6 +54,7 @@ let currentEditProductId = null;
 let currentProductImages = [];
 let newImagesToUpload = [];
 let imagesToDelete = []; // IDs des images à supprimer (appliqué à la sauvegarde)
+let allProducts = [];
 
 // ═══════════════════════════════════════════════════
 // Popup de confirmation personnalisée
@@ -201,66 +202,105 @@ async function loadStats() {
 async function loadProducts() {
   try {
     const response = await fetch('/api/admin/products');
-    const products = await response.json();
-
-    const tbody = document.querySelector('#products-table tbody');
-    tbody.innerHTML = '';
-
-    if (products.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" style="text-align: center; padding: 3rem; color: var(--texte-secondaire);">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
-            <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Aucun produit dans le catalogue</p>
-            <p style="font-size: 0.9rem;">Cliquez sur "Ajouter un produit" pour commencer</p>
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    products.forEach(product => {
-      const row = document.createElement('tr');
-
-      // Utiliser l'image principale du tableau images, sinon l'image de la colonne image
-      let imageSrc = '/images/placeholder.jpg';
-      if (product.images && product.images.length > 0) {
-        // Trouver l'image principale
-        const primaryImage = product.images.find(img => img.is_primary);
-        const imgPath = primaryImage ? primaryImage.image_path : product.images[0].image_path;
-        // Gérer les URLs blob (https://) et les chemins locaux
-        imageSrc = imgPath.startsWith('https://') ? imgPath : `/images/uploads/${imgPath}`;
-      } else if (product.image) {
-        // Fallback sur l'ancienne colonne image
-        imageSrc = product.image.startsWith('https://') ? product.image : `/images/uploads/${product.image}`;
-      }
-
-      row.innerHTML = `
-        <td data-label="Image"><img src="${imageSrc}" alt="${product.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px;"></td>
-        <td data-label="Nom">${product.name}</td>
-        <td data-label="Catégorie">${product.category}</td>
-        <td data-label="Prix">${product.price.toFixed(2)} €</td>
-        <td data-label="Stock">
-          ${product.stock <= 0
-          ? '<span class="badge badge-warning">Rupture</span>'
-          : product.stock <= 3
-            ? `<span class="badge badge-warning">${product.stock}</span>`
-            : `<span class="badge badge-success">${product.stock}</span>`
-        }
-        </td>
-        <td data-label="Actions">
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button onclick="editProduct(${product.id})" class="btn btn-primary btn-small">Modifier</button>
-            <button onclick="deleteProduct(${product.id})" class="btn btn-outline btn-small">Supprimer</button>
-          </div>
-        </td>
-      `;
-
-      tbody.appendChild(row);
-    });
+    allProducts = await response.json();
+    populateCategoryFilter();
+    filterProducts();
   } catch (error) {
     console.error('Erreur:', error);
   }
+}
+
+// Peupler le dropdown catégories du filtre
+function populateCategoryFilter() {
+  const select = document.getElementById('product-category-filter');
+  if (!select) return;
+  const current = select.value;
+  const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
+  select.innerHTML = '<option value="">Toutes les catégories</option>'
+    + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  select.value = current;
+}
+
+// Filtrer et afficher les produits
+function filterProducts() {
+  const search = (document.getElementById('product-search')?.value || '').toLowerCase().trim();
+  const category = document.getElementById('product-category-filter')?.value || '';
+
+  const filtered = allProducts.filter(p => {
+    const matchName = !search || p.name.toLowerCase().includes(search);
+    const matchCat = !category || p.category === category;
+    return matchName && matchCat;
+  });
+
+  renderProductRows(filtered);
+}
+
+// Réinitialiser les filtres
+function resetProductFilters() {
+  const search = document.getElementById('product-search');
+  const cat = document.getElementById('product-category-filter');
+  if (search) search.value = '';
+  if (cat) cat.value = '';
+  filterProducts();
+}
+
+// Rendre les lignes du tableau produits
+function renderProductRows(products) {
+  const tbody = document.querySelector('#products-table tbody');
+  tbody.innerHTML = '';
+
+  if (products.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 3rem; color: var(--texte-secondaire);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+          <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Aucun produit dans le catalogue</p>
+          <p style="font-size: 0.9rem;">Cliquez sur "Ajouter un produit" pour commencer</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  products.forEach(product => {
+    const row = document.createElement('tr');
+
+    // Utiliser l'image principale du tableau images, sinon l'image de la colonne image
+    let imageSrc = '/images/placeholder.jpg';
+    if (product.images && product.images.length > 0) {
+      // Trouver l'image principale
+      const primaryImage = product.images.find(img => img.is_primary);
+      const imgPath = primaryImage ? primaryImage.image_path : product.images[0].image_path;
+      // Gérer les URLs blob (https://) et les chemins locaux
+      imageSrc = imgPath.startsWith('https://') ? imgPath : `/images/uploads/${imgPath}`;
+    } else if (product.image) {
+      // Fallback sur l'ancienne colonne image
+      imageSrc = product.image.startsWith('https://') ? product.image : `/images/uploads/${product.image}`;
+    }
+
+    row.innerHTML = `
+      <td data-label="Image"><img src="${imageSrc}" alt="${product.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px;"></td>
+      <td data-label="Nom">${product.name}</td>
+      <td data-label="Catégorie">${product.category}</td>
+      <td data-label="Prix">${product.price.toFixed(2)} €</td>
+      <td data-label="Stock">
+        ${product.stock <= 0
+        ? '<span class="badge badge-warning">Rupture</span>'
+        : product.stock <= 3
+          ? `<span class="badge badge-warning">${product.stock}</span>`
+          : `<span class="badge badge-success">${product.stock}</span>`
+      }
+      </td>
+      <td data-label="Actions">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button onclick="editProduct(${product.id})" class="btn btn-primary btn-small">Modifier</button>
+          <button onclick="deleteProduct(${product.id})" class="btn btn-outline btn-small">Supprimer</button>
+        </div>
+      </td>
+    `;
+
+    tbody.appendChild(row);
+  });
 }
 
 // Ouvrir le modal produit
@@ -1528,7 +1568,7 @@ async function loadCategories() {
     const container = document.getElementById('categories-list');
     container.innerHTML = categories.map(cat => `
       <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: white; border-radius: 10px; border: 2px solid var(--lavande);">
-        ${cat.cover_image ? `<img src="${cat.cover_image}" alt="${cat.name}" style="width: 60px; height: 45px; object-fit: cover; border-radius: 6px;">` : `<div style="font-size: 2rem;">${cat.emoji || '✨'}</div>`}
+        <div style="font-size: 2rem;">${cat.emoji || '✨'}</div>
         <div style="flex: 1;">
           <div style="font-weight: 600; color: var(--lavande);">${cat.name}</div>
           <div style="font-size: 0.9rem; color: var(--texte-secondaire);">${cat.description || ''}</div>
@@ -1552,32 +1592,11 @@ async function loadCategories() {
   }
 }
 
-// Preview de la cover catégorie
-function previewCategoryCover(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      document.getElementById('category-cover-img').src = e.target.result;
-      document.getElementById('category-cover-preview').style.display = 'flex';
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-}
-
-function removeCategoryCoverPreview() {
-  document.getElementById('new-category-cover').value = '';
-  document.getElementById('category-cover-preview').style.display = 'none';
-  document.getElementById('category-cover-img').src = '';
-  // Marquer la suppression pour le mode édition
-  window._removeCategoryCover = true;
-}
-
 // Ajouter une catégorie
 async function addCategory() {
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
-  const coverInput = document.getElementById('new-category-cover');
 
   const name = nameInput.value.trim();
   const emoji = emojiInput.value.trim() || '✨';
@@ -1593,10 +1612,6 @@ async function addCategory() {
     formData.append('name', name);
     formData.append('emoji', emoji);
     formData.append('description', description);
-    if (coverInput.files && coverInput.files[0]) {
-      const compressed = await compressImage(coverInput.files[0]);
-      formData.append('cover_image', compressed);
-    }
 
     const response = await fetch('/api/settings/categories', {
       method: 'POST',
@@ -1610,8 +1625,6 @@ async function addCategory() {
       nameInput.value = '';
       emojiInput.value = '';
       descriptionInput.value = '';
-      coverInput.value = '';
-      document.getElementById('category-cover-preview').style.display = 'none';
       loadCategories();
     } else {
       showMessage(result.error || 'Erreur lors de l\'ajout', 'error');
@@ -1627,16 +1640,12 @@ function cancelEditCategory() {
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
-  const coverInput = document.getElementById('new-category-cover');
   const submitButton = document.getElementById('category-submit-btn');
   const cancelButton = document.getElementById('category-cancel-btn');
 
   nameInput.value = '';
   emojiInput.value = '';
   descriptionInput.value = '';
-  coverInput.value = '';
-  document.getElementById('category-cover-preview').style.display = 'none';
-  window._removeCategoryCover = false;
 
   submitButton.textContent = 'Ajouter la catégorie';
   submitButton.onclick = addCategory;
@@ -1654,23 +1663,12 @@ async function editCategory(id) {
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
-  const coverInput = document.getElementById('new-category-cover');
   const submitButton = document.getElementById('category-submit-btn');
   const cancelButton = document.getElementById('category-cancel-btn');
 
   nameInput.value = cat.name;
   emojiInput.value = cat.emoji || '✨';
   descriptionInput.value = cat.description || '';
-  coverInput.value = '';
-  window._removeCategoryCover = false;
-
-  // Afficher la cover actuelle si elle existe
-  if (cat.cover_image) {
-    document.getElementById('category-cover-img').src = cat.cover_image;
-    document.getElementById('category-cover-preview').style.display = 'flex';
-  } else {
-    document.getElementById('category-cover-preview').style.display = 'none';
-  }
 
   cancelButton.style.display = 'block';
   submitButton.textContent = 'Mettre à jour';
@@ -1690,13 +1688,6 @@ async function editCategory(id) {
       formData.append('name', name);
       formData.append('emoji', emoji);
       formData.append('description', description);
-
-      if (coverInput.files && coverInput.files[0]) {
-        const compressed = await compressImage(coverInput.files[0]);
-        formData.append('cover_image', compressed);
-      } else if (window._removeCategoryCover) {
-        formData.append('remove_cover', 'true');
-      }
 
       const resp = await fetch(`/api/settings/categories/${id}`, {
         method: 'PUT',

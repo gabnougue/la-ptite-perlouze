@@ -1,30 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const sharp = require('sharp');
-const { put, del } = require('@vercel/blob');
 const db = require('../models/database');
-
-// Multer en mémoire pour traitement sharp
-const uploadCover = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/jpeg|jpg|png|gif|webp/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Seules les images sont autorisées'));
-  }
-}).single('cover_image');
-
-// Traiter et uploader une image de couverture
-async function processAndUploadCover(fileBuffer) {
-  const uniqueName = `categories/cover-${Date.now()}-${Math.round(Math.random() * 1E9)}.webp`;
-  const compressed = await sharp(fileBuffer)
-    .resize(800, 600, { fit: 'cover' })
-    .webp({ quality: 85 })
-    .toBuffer();
-  const blob = await put(uniqueName, compressed, { access: 'public', contentType: 'image/webp' });
-  return blob.url;
-}
 
 // Middleware pour vérifier l'authentification admin
 function requireAdmin(req, res, next) {
@@ -96,88 +72,58 @@ router.get('/categories', async (req, res) => {
 });
 
 // Ajouter une catégorie
-router.post('/categories', requireAdmin, (req, res) => {
-  uploadCover(req, res, async (err) => {
-    if (err) return res.status(400).json({ error: err.message });
-    try {
-      const { name, emoji, description } = req.body;
+router.post('/categories', requireAdmin, async (req, res) => {
+  try {
+    const { name, emoji, description } = req.body;
 
-      if (!name || name.trim() === '') {
-        return res.status(400).json({ error: 'Le nom est requis' });
-      }
-
-      let coverUrl = '';
-      if (req.file) {
-        coverUrl = await processAndUploadCover(req.file.buffer);
-      }
-
-      const result = await db.run(
-        'INSERT INTO categories (name, emoji, description, cover_image) VALUES (?, ?, ?, ?)',
-        [name.trim(), emoji || '✨', description || '', coverUrl]
-      );
-      res.json({ success: true, id: result.id, name: name.trim(), emoji: emoji || '✨', description: description || '', cover_image: coverUrl });
-    } catch (err) {
-      console.error('Erreur:', err);
-      if (err.code === 'SQLITE_CONSTRAINT' || (err.message && err.message.includes('UNIQUE'))) {
-        return res.status(400).json({ error: 'Cette catégorie existe déjà' });
-      }
-      res.status(500).json({ error: 'Erreur lors de l\'ajout' });
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Le nom est requis' });
     }
-  });
+
+    const result = await db.run(
+      'INSERT INTO categories (name, emoji, description) VALUES (?, ?, ?)',
+      [name.trim(), emoji || '✨', description || '']
+    );
+    res.json({ success: true, id: result.id, name: name.trim(), emoji: emoji || '✨', description: description || '' });
+  } catch (err) {
+    console.error('Erreur:', err);
+    if (err.code === 'SQLITE_CONSTRAINT' || (err.message && err.message.includes('UNIQUE'))) {
+      return res.status(400).json({ error: 'Cette catégorie existe déjà' });
+    }
+    res.status(500).json({ error: 'Erreur lors de l\'ajout' });
+  }
 });
 
 // Modifier une catégorie
-router.put('/categories/:id', requireAdmin, (req, res) => {
-  uploadCover(req, res, async (err) => {
-    if (err) return res.status(400).json({ error: err.message });
-    try {
-      const { id } = req.params;
-      const { name, emoji, description, remove_cover } = req.body;
+router.put('/categories/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, emoji, description } = req.body;
 
-      if (!name || name.trim() === '') {
-        return res.status(400).json({ error: 'Le nom est requis' });
-      }
-
-      // Récupérer l'ancienne catégorie
-      const oldCat = await db.get('SELECT name, cover_image FROM categories WHERE id = ?', [id]);
-      const oldName = oldCat ? oldCat.name : null;
-
-      let coverUrl = oldCat ? oldCat.cover_image || '' : '';
-
-      // Nouvelle image uploadée
-      if (req.file) {
-        // Supprimer l'ancienne du blob si elle existe
-        if (coverUrl) {
-          try { await del(coverUrl); } catch (e) {}
-        }
-        coverUrl = await processAndUploadCover(req.file.buffer);
-      } else if (remove_cover === 'true') {
-        // Suppression demandée sans remplacement
-        if (coverUrl) {
-          try { await del(coverUrl); } catch (e) {}
-        }
-        coverUrl = '';
-      }
-
-      await db.run(
-        'UPDATE categories SET name = ?, emoji = ?, description = ?, cover_image = ? WHERE id = ?',
-        [name.trim(), emoji || '✨', description || '', coverUrl, id]
-      );
-
-      // Mettre à jour la catégorie dans les produits associés
-      if (oldName && oldName !== name.trim()) {
-        await db.run('UPDATE products SET category = ? WHERE category = ?', [name.trim(), oldName]);
-      }
-
-      res.json({ success: true, id: parseInt(id), name: name.trim(), emoji: emoji || '✨', description: description || '', cover_image: coverUrl });
-    } catch (err) {
-      console.error('Erreur:', err);
-      if (err.code === 'SQLITE_CONSTRAINT' || (err.message && err.message.includes('UNIQUE'))) {
-        return res.status(400).json({ error: 'Cette catégorie existe déjà' });
-      }
-      res.status(500).json({ error: 'Erreur lors de la modification' });
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Le nom est requis' });
     }
-  });
+
+    const oldCat = await db.get('SELECT name FROM categories WHERE id = ?', [id]);
+    const oldName = oldCat ? oldCat.name : null;
+
+    await db.run(
+      'UPDATE categories SET name = ?, emoji = ?, description = ? WHERE id = ?',
+      [name.trim(), emoji || '✨', description || '', id]
+    );
+
+    if (oldName && oldName !== name.trim()) {
+      await db.run('UPDATE products SET category = ? WHERE category = ?', [name.trim(), oldName]);
+    }
+
+    res.json({ success: true, id: parseInt(id), name: name.trim(), emoji: emoji || '✨', description: description || '' });
+  } catch (err) {
+    console.error('Erreur:', err);
+    if (err.code === 'SQLITE_CONSTRAINT' || (err.message && err.message.includes('UNIQUE'))) {
+      return res.status(400).json({ error: 'Cette catégorie existe déjà' });
+    }
+    res.status(500).json({ error: 'Erreur lors de la modification' });
+  }
 });
 
 // Supprimer une catégorie

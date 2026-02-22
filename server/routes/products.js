@@ -104,11 +104,17 @@ router.get('/meta/categories', async (req, res) => {
 // Récupérer les produits phares (pour la page d'accueil)
 router.get('/featured/home', async (req, res) => {
   try {
-    const products = await db.all(
-      'SELECT * FROM products WHERE stock > 0 ORDER BY created_at DESC LIMIT 3'
+    // Priorité aux coups de cœur sélectionnés manuellement
+    let products = await db.all(
+      'SELECT * FROM products WHERE is_featured = 1 AND stock > 0 LIMIT 3'
     );
+    // Fallback : les 3 plus récents en stock si aucun coup de cœur défini
+    if (products.length === 0) {
+      products = await db.all(
+        'SELECT * FROM products WHERE stock > 0 ORDER BY created_at DESC LIMIT 3'
+      );
+    }
 
-    // Enrichir chaque produit avec ses pierres et couleurs
     const enrichedProducts = await Promise.all(
       products.map(product => enrichProduct(product))
     );

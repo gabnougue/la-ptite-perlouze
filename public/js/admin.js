@@ -1517,12 +1517,126 @@ function showMessage(message, type = 'info') {
 }
 
 // ═══════════════════════════════════════════════════
+// COUPS DE CŒUR
+// ═══════════════════════════════════════════════════
+
+function toggleFeaturedSection() {
+  const content = document.getElementById('featured-collapsible');
+  const chevron = document.getElementById('featured-chevron');
+  if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+    content.style.maxHeight = '0';
+    chevron.style.transform = 'rotate(0deg)';
+  } else {
+    content.style.maxHeight = content.scrollHeight + 'px';
+    chevron.style.transform = 'rotate(90deg)';
+  }
+}
+
+async function loadFeaturedAdmin() {
+  try {
+    const response = await fetch('/api/admin/products');
+    const products = await response.json();
+
+    const featured = products.filter(p => p.is_featured);
+    const notFeatured = products.filter(p => !p.is_featured);
+
+    // Peupler le select avec les produits non encore mis en avant
+    const select = document.getElementById('featured-product-select');
+    select.innerHTML = '<option value="">— Choisir un article —</option>'
+      + notFeatured.map(p => `<option value="${p.id}">${p.name} (${p.category})</option>`).join('');
+
+    // Désactiver le bouton si déjà 3 coups de cœur
+    const addBtn = document.getElementById('featured-add-btn');
+    addBtn.disabled = featured.length >= 3;
+    addBtn.style.opacity = featured.length >= 3 ? '0.5' : '1';
+
+    // Afficher la liste des coups de cœur actuels
+    const list = document.getElementById('featured-list');
+    if (featured.length === 0) {
+      list.innerHTML = '<span style="color: var(--texte-secondaire); font-style: italic;">Aucun coup de cœur sélectionné — les 3 articles les plus récents s\'affichent par défaut.</span>';
+      return;
+    }
+
+    list.innerHTML = featured.map(p => {
+      let imageSrc = '/images/placeholder.jpg';
+      if (p.images && p.images.length > 0) {
+        const primary = p.images.find(img => img.is_primary) || p.images[0];
+        imageSrc = primary.image_path.startsWith('https://') ? primary.image_path : `/images/uploads/${primary.image_path}`;
+      } else if (p.image) {
+        imageSrc = p.image.startsWith('https://') ? p.image : `/images/uploads/${p.image}`;
+      }
+      return `
+        <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: white; border-radius: 10px; border: 2px solid var(--lavande);">
+          <img src="${imageSrc}" alt="${p.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 600; color: var(--lavande); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
+            <div style="font-size: 0.85rem; color: var(--texte-secondaire);">${p.category}</div>
+          </div>
+          <button onclick="removeFeaturedProduct(${p.id})"
+            style="background: var(--rose-poudre); color: white; border: none; padding: 0.4rem; border-radius: 8px; cursor: pointer; font-weight: 600; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;"
+            title="Retirer des coups de cœur">✕</button>
+        </div>`;
+    }).join('');
+  } catch (error) {
+    console.error('Erreur:', error);
+  }
+}
+
+async function addFeaturedProduct() {
+  const select = document.getElementById('featured-product-select');
+  const id = select.value;
+  if (!id) {
+    showMessage('Veuillez choisir un article', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/admin/products/${id}/featured`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ featured: true })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showMessage('Article ajouté aux coups de cœur', 'success');
+      loadFeaturedAdmin();
+    } else {
+      showMessage(result.error || 'Erreur', 'error');
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    showMessage('Erreur lors de la mise à jour', 'error');
+  }
+}
+
+async function removeFeaturedProduct(id) {
+  try {
+    const response = await fetch(`/api/admin/products/${id}/featured`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ featured: false })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showMessage('Article retiré des coups de cœur', 'success');
+      loadFeaturedAdmin();
+    } else {
+      showMessage(result.error || 'Erreur', 'error');
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    showMessage('Erreur lors de la mise à jour', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════
 // GESTION DES PARAMÈTRES
 // ═══════════════════════════════════════════════════
 
 // Charger tous les paramètres
 async function loadSettings() {
   loadGeneralSettings();
+  loadFeaturedAdmin();
   loadCategories();
   loadStones();
   loadColors();

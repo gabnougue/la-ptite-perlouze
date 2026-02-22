@@ -581,4 +581,25 @@ router.put('/products/:id/reorder-images', requireAuth, async (req, res) => {
   }
 });
 
+// Définir/retirer un produit comme coup de cœur
+router.put('/products/:id/featured', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { featured } = req.body;
+
+    if (featured) {
+      const count = await db.get('SELECT COUNT(*) as n FROM products WHERE is_featured = 1');
+      if (count.n >= 3) {
+        return res.status(400).json({ error: 'Maximum 3 coups de cœur autorisés' });
+      }
+    }
+
+    await db.run('UPDATE products SET is_featured = ? WHERE id = ?', [featured ? 1 : 0, id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour du coup de cœur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

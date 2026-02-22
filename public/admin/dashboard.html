@@ -961,6 +961,31 @@
       </div>
 
 
+      <!-- Coups de cœur -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <div onclick="toggleFeaturedSection()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
+          <h3 style="color: var(--lavande); font-family: var(--font-manuscrite); font-size: 1.5rem; margin: 0;">
+            ⭐ Coups de cœur
+          </h3>
+          <span id="featured-chevron" style="font-size: 1.2rem; color: var(--lavande); transition: transform 0.3s ease; transform: rotate(0deg);">▶</span>
+        </div>
+        <div id="featured-collapsible" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
+          <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin: 1rem 0 1.25rem;">
+            Choisissez jusqu'à <strong>3 articles</strong> mis en avant sur la page d'accueil.
+          </p>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem;">
+            <select id="featured-product-select" style="flex: 1; min-width: 220px;">
+              <option value="">— Choisir un article —</option>
+            </select>
+            <button onclick="addFeaturedProduct()" id="featured-add-btn" class="btn btn-primary btn-small">Ajouter ⭐</button>
+          </div>
+          <p style="color: var(--texte-secondaire); font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Actuellement mis en avant :</strong></p>
+          <div id="featured-list" style="display: grid; gap: 0.75rem; min-height: 50px; padding: 1rem; background: var(--fond-secondaire); border-radius: 10px;">
+            <span style="color: var(--texte-secondaire); font-style: italic;">Chargement…</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Catégories -->
       <div class="card" style="margin-bottom: 2rem;">
         <div onclick="toggleCategoriesSection()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">

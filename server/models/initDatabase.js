@@ -165,6 +165,12 @@ async function initDatabase() {
       await client.execute('ALTER TABLE order_items ADD COLUMN product_details TEXT');
     } catch (e) {}
 
+    // Migration: ajouter is_featured aux produits
+    try {
+      await client.execute('ALTER TABLE products ADD COLUMN is_featured INTEGER DEFAULT 0');
+      console.log('⭐ Colonne is_featured ajoutée à products');
+    } catch (e) {}
+
     // Créer l'administrateur par défaut
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
     const adminPassword = process.env.ADMIN_PASSWORD || '***MOT_DE_PASSE_RETIRE***';

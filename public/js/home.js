@@ -170,9 +170,16 @@ async function loadCategories() {
     const allCategories = await catResponse.json();
     const allProducts = await prodResponse.json();
 
-    // Filtrer les catégories sans produits
+    // Catégories qui ont des produits (directement ou via sous-catégories)
     const categoriesWithProducts = new Set(allProducts.map(p => p.category));
-    const categories = allCategories.filter(c => categoriesWithProducts.has(c.name));
+
+    // Ne garder que les catégories parentes (pas de parent_id) qui ont des produits
+    // (soit directement, soit via une de leurs sous-catégories)
+    const categories = allCategories.filter(c => !c.parent_id).filter(c => {
+      if (categoriesWithProducts.has(c.name)) return true;
+      const mySubs = allCategories.filter(sub => sub.parent_id === c.id).map(sub => sub.name);
+      return mySubs.some(sub => categoriesWithProducts.has(sub));
+    });
 
     const container = document.getElementById('categories-grid');
 

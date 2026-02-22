@@ -181,6 +181,10 @@ const db = require('./server/models/database');
     await db.run('ALTER TABLE products ADD COLUMN is_featured INTEGER DEFAULT 0');
     console.log('⭐ Colonne is_featured ajoutée à products');
   } catch (e) { /* colonne déjà existante */ }
+  try {
+    await db.run('ALTER TABLE categories ADD COLUMN parent_id INTEGER REFERENCES categories(id)');
+    console.log('🗂️ Colonne parent_id ajoutée à categories');
+  } catch (e) { /* colonne déjà existante */ }
 })();
 
 // Export pour Vercel

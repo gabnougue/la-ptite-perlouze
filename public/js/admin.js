@@ -368,19 +368,14 @@ async function loadProductFormOptions() {
   try {
     console.log('Chargement des options du formulaire...');
 
-    // Charger les catégories
-    const catResponse = await fetch('/api/settings/categories');
-    if (!catResponse.ok) {
-      throw new Error('Erreur lors du chargement des catégories');
+    // Charger les catégories (utilise le cache allCategories)
+    if (allCategories.length === 0) {
+      const catResponse = await fetch('/api/settings/categories');
+      if (!catResponse.ok) throw new Error('Erreur lors du chargement des catégories');
+      allCategories = await catResponse.json();
     }
-    const categories = await catResponse.json();
-    console.log('Catégories chargées:', categories.length);
-    const categorySelect = document.getElementById('product-category');
-    if (categorySelect) {
-      categorySelect.innerHTML = categories.map(cat =>
-        `<option value="${cat.name}">${cat.name}</option>`
-      ).join('');
-    }
+    console.log('Catégories chargées:', allCategories.length);
+    updateProductCategorySelect();
 
     // Charger les pierres
     const stoneResponse = await fetch('/api/settings/stones');
@@ -1737,17 +1732,43 @@ async function saveGeneralSettings() {
 }
 
 // Charger les catégories
+let allCategories = [];
+
 async function loadCategories() {
   try {
     const response = await fetch('/api/settings/categories');
-    const categories = await response.json();
+    allCategories = await response.json();
 
-    const container = document.getElementById('categories-list');
-    container.innerHTML = categories.map(cat => `
-      <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: white; border-radius: 10px; border: 2px solid var(--lavande);">
+    displayCategories();
+    updateParentCategorySelect();
+    updateProductCategorySelect();
+
+    // Recalculer la hauteur du conteneur repliable si ouvert
+    const collapsible = document.getElementById('categories-collapsible');
+    if (collapsible && collapsible.style.maxHeight && collapsible.style.maxHeight !== '0px') {
+      collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+  }
+}
+
+function displayCategories() {
+  const container = document.getElementById('categories-list');
+  const parents = allCategories.filter(c => !c.parent_id);
+  const children = allCategories.filter(c => c.parent_id);
+  const parentIds = new Set(parents.map(p => p.id));
+
+  function renderCatCard(cat, isChild) {
+    const indent = isChild ? 'margin-left: 1.5rem; border-left: 3px solid var(--lavande);' : '';
+    const badge = isChild
+      ? '<span style="display: inline-block; background: var(--lavande); color: white; font-size: 0.7rem; padding: 0.1rem 0.5rem; border-radius: 8px; margin-left: 0.5rem;">sous-cat</span>'
+      : '';
+    return `
+      <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: white; border-radius: 10px; border: 2px solid var(--lavande); ${indent}">
         <div style="font-size: 2rem;">${cat.emoji || '✨'}</div>
         <div style="flex: 1;">
-          <div style="font-weight: 600; color: var(--lavande);">${cat.name}</div>
+          <div style="font-weight: 600; color: var(--lavande);">${cat.name}${badge}</div>
           <div style="font-size: 0.9rem; color: var(--texte-secondaire);">${cat.description || ''}</div>
         </div>
         <button onclick="editCategory(${cat.id})"
@@ -1762,17 +1783,63 @@ async function loadCategories() {
                 title="Supprimer">
           ✕
         </button>
-      </div>
-    `).join('');
-
-    // Recalculer la hauteur du conteneur repliable si ouvert
-    const collapsible = document.getElementById('categories-collapsible');
-    if (collapsible && collapsible.style.maxHeight && collapsible.style.maxHeight !== '0px') {
-      collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
-    }
-  } catch (error) {
-    console.error('Erreur:', error);
+      </div>`;
   }
+
+  let html = '';
+  parents.forEach(parent => {
+    html += renderCatCard(parent, false);
+    children.filter(c => c.parent_id === parent.id).forEach(sub => {
+      html += renderCatCard(sub, true);
+    });
+  });
+  // Orphelins éventuels
+  children.filter(c => !parentIds.has(c.parent_id)).forEach(orphan => {
+    html += renderCatCard(orphan, false);
+  });
+
+  container.innerHTML = html || '<span style="color: var(--texte-secondaire); font-style: italic;">Aucune catégorie</span>';
+}
+
+// Met à jour le select parent dans le formulaire catégorie
+function updateParentCategorySelect() {
+  const select = document.getElementById('new-category-parent');
+  if (!select) return;
+  const currentValue = select.value;
+  const parents = allCategories.filter(c => !c.parent_id);
+  select.innerHTML = '<option value="">— Catégorie principale (pas de parent) —</option>'
+    + parents.map(cat => `<option value="${cat.id}">${cat.emoji || '✨'} ${cat.name}</option>`).join('');
+  select.value = currentValue;
+}
+
+// Met à jour le select catégorie dans le formulaire produit (avec optgroup)
+function updateProductCategorySelect() {
+  const select = document.getElementById('product-category');
+  if (!select) return;
+  const currentValue = select.value;
+  const parents = allCategories.filter(c => !c.parent_id);
+  const children = allCategories.filter(c => c.parent_id);
+
+  let html = '';
+  parents.forEach(parent => {
+    const subs = children.filter(c => c.parent_id === parent.id);
+    if (subs.length > 0) {
+      html += `<optgroup label="${parent.emoji || '✨'} ${parent.name}">`;
+      subs.forEach(sub => {
+        html += `<option value="${sub.name}">${sub.name}</option>`;
+      });
+      html += `</optgroup>`;
+    } else {
+      html += `<option value="${parent.name}">${parent.emoji || '✨'} ${parent.name}</option>`;
+    }
+  });
+  // Orphelins
+  children.filter(c => !parents.some(p => p.id === c.parent_id)).forEach(orphan => {
+    html += `<option value="${orphan.name}">${orphan.name}</option>`;
+  });
+
+  select.innerHTML = html;
+  if (currentValue) select.value = currentValue;
 }
 
 // Ajouter une catégorie
@@ -1780,10 +1847,12 @@ async function addCategory() {
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
+  const parentSelect = document.getElementById('new-category-parent');
 
   const name = nameInput.value.trim();
   const emoji = emojiInput.value.trim() || '✨';
   const description = descriptionInput.value.trim();
+  const parent_id = parentSelect.value ? parseInt(parentSelect.value) : null;
 
   if (!name) {
     showMessage('Veuillez entrer un nom', 'error');
@@ -1794,7 +1863,7 @@ async function addCategory() {
     const response = await fetch('/api/settings/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, emoji, description })
+      body: JSON.stringify({ name, emoji, description, parent_id })
     });
 
     const result = await response.json();
@@ -1804,6 +1873,7 @@ async function addCategory() {
       nameInput.value = '';
       emojiInput.value = '';
       descriptionInput.value = '';
+      parentSelect.value = '';
       loadCategories();
     } else {
       showMessage(result.error || 'Erreur lors de l\'ajout', 'error');
@@ -1819,12 +1889,14 @@ function cancelEditCategory() {
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
+  const parentSelect = document.getElementById('new-category-parent');
   const submitButton = document.getElementById('category-submit-btn');
   const cancelButton = document.getElementById('category-cancel-btn');
 
   nameInput.value = '';
   emojiInput.value = '';
   descriptionInput.value = '';
+  parentSelect.value = '';
 
   submitButton.textContent = 'Ajouter la catégorie';
   submitButton.onclick = addCategory;
@@ -1833,21 +1905,20 @@ function cancelEditCategory() {
 
 // Modifier une catégorie — charge les données depuis l'API
 async function editCategory(id) {
-  // Récupérer les données actuelles
-  const response = await fetch('/api/settings/categories');
-  const categories = await response.json();
-  const cat = categories.find(c => c.id === id);
+  const cat = allCategories.find(c => c.id === id);
   if (!cat) return;
 
   const nameInput = document.getElementById('new-category');
   const emojiInput = document.getElementById('new-category-emoji');
   const descriptionInput = document.getElementById('new-category-description');
+  const parentSelect = document.getElementById('new-category-parent');
   const submitButton = document.getElementById('category-submit-btn');
   const cancelButton = document.getElementById('category-cancel-btn');
 
   nameInput.value = cat.name;
   emojiInput.value = cat.emoji || '✨';
   descriptionInput.value = cat.description || '';
+  parentSelect.value = cat.parent_id || '';
 
   cancelButton.style.display = 'block';
   submitButton.textContent = 'Mettre à jour';
@@ -1856,6 +1927,7 @@ async function editCategory(id) {
     const name = nameInput.value.trim();
     const emoji = emojiInput.value.trim() || '✨';
     const description = descriptionInput.value.trim();
+    const parent_id = parentSelect.value ? parseInt(parentSelect.value) : null;
 
     if (!name) {
       showMessage('Veuillez entrer un nom', 'error');
@@ -1863,14 +1935,10 @@ async function editCategory(id) {
     }
 
     try {
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('emoji', emoji);
-      formData.append('description', description);
-
       const resp = await fetch(`/api/settings/categories/${id}`, {
         method: 'PUT',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, emoji, description, parent_id })
       });
 
       const result = await resp.json();
@@ -1910,6 +1978,8 @@ async function deleteCategory(id) {
     if (result.success) {
       showMessage('Catégorie supprimée', 'success');
       loadCategories();
+    } else {
+      showMessage(result.error || 'Erreur lors de la suppression', 'error');
     }
   } catch (error) {
     console.error('Erreur:', error);

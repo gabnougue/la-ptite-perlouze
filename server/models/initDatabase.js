@@ -157,6 +157,12 @@ async function initDatabase() {
       console.log('🖼️ Colonne cover_image ajoutée à categories');
     } catch (e) {}
 
+    // Migration: ajouter parent_id aux catégories (sous-catégories)
+    try {
+      await client.execute('ALTER TABLE categories ADD COLUMN parent_id INTEGER REFERENCES categories(id)');
+      console.log('🗂️ Colonne parent_id ajoutée à categories');
+    } catch (e) {}
+
     // Migration: ajouter image et détails aux items de commande
     try {
       await client.execute('ALTER TABLE order_items ADD COLUMN product_image TEXT');

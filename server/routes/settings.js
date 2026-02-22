@@ -74,17 +74,17 @@ router.get('/categories', async (req, res) => {
 // Ajouter une catégorie
 router.post('/categories', requireAdmin, async (req, res) => {
   try {
-    const { name, emoji, description } = req.body;
+    const { name, emoji, description, parent_id } = req.body;
 
     if (!name || name.trim() === '') {
       return res.status(400).json({ error: 'Le nom est requis' });
     }
 
     const result = await db.run(
-      'INSERT INTO categories (name, emoji, description) VALUES (?, ?, ?)',
-      [name.trim(), emoji || '✨', description || '']
+      'INSERT INTO categories (name, emoji, description, parent_id) VALUES (?, ?, ?, ?)',
+      [name.trim(), emoji || '✨', description || '', parent_id || null]
     );
-    res.json({ success: true, id: result.id, name: name.trim(), emoji: emoji || '✨', description: description || '' });
+    res.json({ success: true, id: result.id, name: name.trim(), emoji: emoji || '✨', description: description || '', parent_id: parent_id || null });
   } catch (err) {
     console.error('Erreur:', err);
     if (err.code === 'SQLITE_CONSTRAINT' || (err.message && err.message.includes('UNIQUE'))) {
@@ -98,7 +98,7 @@ router.post('/categories', requireAdmin, async (req, res) => {
 router.put('/categories/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, emoji, description } = req.body;
+    const { name, emoji, description, parent_id } = req.body;
 
     if (!name || name.trim() === '') {
       return res.status(400).json({ error: 'Le nom est requis' });
@@ -108,15 +108,15 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
     const oldName = oldCat ? oldCat.name : null;
 
     await db.run(
-      'UPDATE categories SET name = ?, emoji = ?, description = ? WHERE id = ?',
-      [name.trim(), emoji || '✨', description || '', id]
+      'UPDATE categories SET name = ?, emoji = ?, description = ?, parent_id = ? WHERE id = ?',
+      [name.trim(), emoji || '✨', description || '', parent_id || null, id]
     );
 
     if (oldName && oldName !== name.trim()) {
       await db.run('UPDATE products SET category = ? WHERE category = ?', [name.trim(), oldName]);
     }
 
-    res.json({ success: true, id: parseInt(id), name: name.trim(), emoji: emoji || '✨', description: description || '' });
+    res.json({ success: true, id: parseInt(id), name: name.trim(), emoji: emoji || '✨', description: description || '', parent_id: parent_id || null });
   } catch (err) {
     console.error('Erreur:', err);
     if (err.code === 'SQLITE_CONSTRAINT' || (err.message && err.message.includes('UNIQUE'))) {
@@ -130,6 +130,19 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
 router.delete('/categories/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Vérifier s'il y a des sous-catégories
+    const subCount = await db.get('SELECT COUNT(*) as count FROM categories WHERE parent_id = ?', [id]);
+    if (subCount && subCount.count > 0) {
+      return res.status(400).json({ error: `Impossible de supprimer : ${subCount.count} sous-catégorie(s) existent. Supprimez-les d'abord.` });
+    }
+
+    // Vérifier s'il y a des produits
+    const prodCount = await db.get('SELECT COUNT(*) as count FROM products WHERE category = (SELECT name FROM categories WHERE id = ?)', [id]);
+    if (prodCount && prodCount.count > 0) {
+      return res.status(400).json({ error: `Impossible de supprimer : ${prodCount.count} produit(s) utilisent cette catégorie` });
+    }
+
     await db.run('DELETE FROM categories WHERE id = ?', [id]);
     res.json({ success: true });
   } catch (err) {

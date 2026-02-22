@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════
 
 let allProducts = [];
+let allCategories = [];
 
 // Mettre à jour le compteur du panier
 function updateCartCount() {
@@ -76,15 +77,26 @@ function updatePriceFilterMax(products) {
 // Appliquer les filtres
 function applyFilters() {
   const categoryFilter = document.getElementById('category-filter').value;
+  const subcategoryFilter = document.getElementById('subcategory-filter').value;
   const stoneFilter = document.getElementById('stone-filter').value;
   const colorFilter = document.getElementById('color-filter').value;
   const priceFilter = parseFloat(document.getElementById('price-filter').value);
 
   // Appliquer tous les filtres en une seule fois
   let filteredProducts = allProducts.filter(product => {
-    // Filtre catégorie
-    if (categoryFilter !== 'Tous' && product.category !== categoryFilter) {
-      return false;
+    // Filtre sous-catégorie (prioritaire)
+    if (subcategoryFilter !== 'Toutes') {
+      if (product.category !== subcategoryFilter) return false;
+    }
+    // Filtre catégorie (inclut parent + ses sous-catégories)
+    else if (categoryFilter !== 'Tous') {
+      const parentCat = allCategories.find(c => c.name === categoryFilter && !c.parent_id);
+      if (parentCat) {
+        const childNames = allCategories.filter(c => c.parent_id === parentCat.id).map(c => c.name);
+        if (product.category !== categoryFilter && !childNames.includes(product.category)) return false;
+      } else {
+        if (product.category !== categoryFilter) return false;
+      }
     }
 
     // Filtre pierre
@@ -294,6 +306,8 @@ function showError() {
 // Réinitialiser les filtres
 function resetFilters() {
   document.getElementById('category-filter').value = 'Tous';
+  document.getElementById('subcategory-filter').value = 'Toutes';
+  document.getElementById('subcategory-filter-group').style.display = 'none';
   document.getElementById('stone-filter').value = 'Toutes';
   document.getElementById('color-filter').value = 'Toutes';
 
@@ -341,13 +355,73 @@ async function loadFilterOptions(apiUrl, selectId) {
   }
 }
 
+// Charger les catégories avec gestion parent/enfant
+async function loadCategoryFilter() {
+  try {
+    const response = await fetch('/api/settings/categories');
+    allCategories = await response.json();
+
+    const select = document.getElementById('category-filter');
+    // N'afficher que les catégories parentes
+    const parents = allCategories.filter(c => !c.parent_id);
+    parents.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat.name;
+      option.textContent = cat.name;
+      select.appendChild(option);
+    });
+  } catch (e) {
+    console.error('Erreur chargement catégories:', e);
+  }
+}
+
+// Mettre à jour le select sous-catégorie quand une catégorie parente est sélectionnée
+function onCategoryFilterChange() {
+  const categoryName = document.getElementById('category-filter').value;
+  const subGroup = document.getElementById('subcategory-filter-group');
+  const subSelect = document.getElementById('subcategory-filter');
+
+  subSelect.innerHTML = '<option value="Toutes">Toutes</option>';
+
+  if (categoryName === 'Tous') {
+    subGroup.style.display = 'none';
+    applyFilters();
+    return;
+  }
+
+  // Trouver la catégorie parente et ses sous-catégories
+  const parentCat = allCategories.find(c => c.name === categoryName && !c.parent_id);
+  if (!parentCat) {
+    subGroup.style.display = 'none';
+    applyFilters();
+    return;
+  }
+
+  const subs = allCategories.filter(c => c.parent_id === parentCat.id);
+  if (subs.length === 0) {
+    subGroup.style.display = 'none';
+    applyFilters();
+    return;
+  }
+
+  // Afficher les sous-catégories
+  subs.forEach(sub => {
+    const option = document.createElement('option');
+    option.value = sub.name;
+    option.textContent = sub.name;
+    subSelect.appendChild(option);
+  });
+  subGroup.style.display = '';
+  applyFilters();
+}
+
 // Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
   updateCartCount();
 
   // Charger tous les filtres dynamiquement
   await Promise.all([
-    loadFilterOptions('/api/settings/categories', 'category-filter'),
+    loadCategoryFilter(),
     loadFilterOptions('/api/settings/stones', 'stone-filter'),
     loadFilterOptions('/api/settings/colors', 'color-filter')
   ]);
@@ -358,12 +432,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (categoryFromUrl) {
     const categoryFilter = document.getElementById('category-filter');
     categoryFilter.value = categoryFromUrl;
+    onCategoryFilterChange();
   }
 
   loadProducts();
 
   // Écouter les changements de filtres
-  document.getElementById('category-filter').addEventListener('change', applyFilters);
+  document.getElementById('category-filter').addEventListener('change', onCategoryFilterChange);
+  document.getElementById('subcategory-filter').addEventListener('change', applyFilters);
   document.getElementById('stone-filter').addEventListener('change', applyFilters);
   document.getElementById('color-filter').addEventListener('change', applyFilters);
   document.getElementById('price-filter').addEventListener('input', updatePriceDisplay);

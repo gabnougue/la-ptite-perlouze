@@ -174,5 +174,14 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+// Migrations automatiques au démarrage
+const db = require('./server/models/database');
+(async () => {
+  try {
+    await db.run('ALTER TABLE products ADD COLUMN is_featured INTEGER DEFAULT 0');
+    console.log('⭐ Colonne is_featured ajoutée à products');
+  } catch (e) { /* colonne déjà existante */ }
+})();
+
 // Export pour Vercel
 module.exports = app;

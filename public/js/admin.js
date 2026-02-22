@@ -1764,6 +1764,12 @@ async function loadCategories() {
         </button>
       </div>
     `).join('');
+
+    // Recalculer la hauteur du conteneur repliable si ouvert
+    const collapsible = document.getElementById('categories-collapsible');
+    if (collapsible && collapsible.style.maxHeight && collapsible.style.maxHeight !== '0px') {
+      collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
+    }
   } catch (error) {
     console.error('Erreur:', error);
   }
@@ -1950,6 +1956,12 @@ function displayStones() {
       ${stone.description ? `<p style="color: var(--texte-secondaire); font-size: 0.85rem; margin: 0.5rem 0 0; line-height: 1.4;">${stone.description}</p>` : '<p style="color: var(--texte-secondaire); font-size: 0.8rem; margin: 0.5rem 0 0; font-style: italic; opacity: 0.6;">Aucune description</p>'}
     </div>
   `).join('');
+
+  // Recalculer la hauteur du conteneur repliable si ouvert
+  const collapsible = document.getElementById('stones-collapsible');
+  if (collapsible && collapsible.style.maxHeight && collapsible.style.maxHeight !== '0px') {
+    collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
+  }
 }
 
 // Ajouter ou modifier une pierre

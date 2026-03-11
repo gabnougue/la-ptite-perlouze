@@ -8,6 +8,34 @@
   ],
   "routes": [
     {
+      "src": "/css/(.*)",
+      "dest": "server.js",
+      "headers": {
+        "Cache-Control": "public, max-age=86400, s-maxage=86400"
+      }
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "server.js",
+      "headers": {
+        "Cache-Control": "public, max-age=86400, s-maxage=86400"
+      }
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "server.js",
+      "headers": {
+        "Cache-Control": "public, max-age=604800, s-maxage=604800"
+      }
+    },
+    {
+      "src": "/(favicon\\.png|favicon\\.ico|robots\\.txt)",
+      "dest": "server.js",
+      "headers": {
+        "Cache-Control": "public, max-age=604800, s-maxage=604800"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "server.js"
     }

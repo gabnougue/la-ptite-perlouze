@@ -84,36 +84,11 @@ async function loadTheme() {
   }
 }
 
-/**
- * Vérifie régulièrement si le thème a changé côté admin et synchronise
- */
-function startThemeSync() {
-  // Vérifier toutes les 3 secondes si le thème a changé (réduit de 10s à 3s)
-  setInterval(async () => {
-    try {
-      const response = await fetch('/api/settings/theme');
-      const data = await response.json();
-      
-      const serverThemeSetting = data.theme || 'auto';
-      const localThemeSetting = localStorage.getItem('perlouze-theme-setting');
-      
-      // Si le paramètre de thème a changé côté serveur
-      if (serverThemeSetting !== localThemeSetting) {
-        console.log(`🔄 Synchronisation du thème : ${localThemeSetting} → ${serverThemeSetting}`);
-        await loadTheme();
-      }
-    } catch (error) {
-      // Erreur silencieuse pour ne pas polluer la console
-      console.debug('Erreur synchronisation thème:', error);
-    }
-  }, 3000); // Vérifier toutes les 3 secondes (au lieu de 10)
-}
-
-// Charger le thème au démarrage
+// Charger le thème au démarrage (une seule fois par chargement de page)
+// La synchronisation en temps réel n'est pas nécessaire :
+// le thème change très rarement (action admin) et sera mis à jour
+// au prochain chargement de page par le visiteur.
 loadTheme();
-
-// Démarrer la synchronisation automatique
-startThemeSync();
 
 // ═══════════════════════════════════════════════════
 // Gestion du menu actif

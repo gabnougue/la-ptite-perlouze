@@ -17,6 +17,16 @@ if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
 // Trust proxy pour Vercel/production (nécessaire pour les cookies secure)
 app.set('trust proxy', 1);
 
+// Bloquer les bots agressifs connus (avant tout traitement)
+const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|BLEXBot|PetalBot|Bytespider|GPTBot|CCBot|ClaudeBot|Amazonbot|YandexBot|barkrowler|DataForSeoBot/i;
+app.use((req, res, next) => {
+  const ua = req.get('User-Agent') || '';
+  if (BLOCKED_BOTS.test(ua)) {
+    return res.status(403).send('Access denied');
+  }
+  next();
+});
+
 // Headers de sécurité avec Helmet
 app.use(helmet({
   contentSecurityPolicy: false,
@@ -58,13 +68,17 @@ if (MAINTENANCE_MODE) {
   });
 }
 
-// Servir les fichiers statiques AVANT le rate limiting
-app.use(express.static('public'));
+// Servir les fichiers statiques AVANT le rate limiting (avec cache)
+app.use(express.static('public', {
+  maxAge: '1d',          // Cache navigateur de 24h pour les fichiers statiques
+  etag: true,            // Activer les ETags pour la validation
+  lastModified: true     // Activer Last-Modified
+}));
 
 // Rate limiting global (uniquement pour les routes dynamiques)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000,
+  max: 200,                 // 200 requêtes par IP par 15 min (réduit de 1000)
   message: 'Trop de requêtes, réessayez dans quelques minutes',
   standardHeaders: true,
   legacyHeaders: false,

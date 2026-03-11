@@ -276,11 +276,13 @@ router.delete('/colors/:id', requireAdmin, async (req, res) => {
 // THÈME
 // ═══════════════════════════════════════════════════
 
-// Récupérer le thème actuel
+// Récupérer le thème actuel (avec cache pour réduire les requêtes)
 router.get('/theme', async (req, res) => {
   try {
     const row = await db.get('SELECT value FROM settings WHERE key = ?', ['theme']);
     const theme = row ? row.value : 'auto';
+    // Cache côté navigateur pendant 5 minutes — le thème change très rarement
+    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
     res.json({ theme });
   } catch (err) {
     console.error('Erreur:', err);

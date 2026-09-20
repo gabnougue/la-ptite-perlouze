@@ -40,3 +40,11 @@ Thumbs.db
 
 # Dossier Claude (si existant)
 .claude/
+# Dossiers de build
+dist/
+build/
+out/
+.next/
+
+# Vercel
+.vercel

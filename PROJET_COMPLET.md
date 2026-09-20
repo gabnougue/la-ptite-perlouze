@@ -142,7 +142,7 @@ http://localhost:3000
 # 3. Se connecter en admin
 http://localhost:3000/admin
 Login: admin
-Password: ***MOT_DE_PASSE_RETIRE***
+Password: celui défini dans ADMIN_PASSWORD (.env)
 ```
 
 ---

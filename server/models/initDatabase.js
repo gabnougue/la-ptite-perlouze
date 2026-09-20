@@ -179,7 +179,7 @@ async function initDatabase() {
 
     // Créer l'administrateur par défaut
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminPassword = process.env.ADMIN_PASSWORD || '***MOT_DE_PASSE_RETIRE***';
+    const adminPassword = process.env.ADMIN_PASSWORD;
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
     // Vérifier si l'admin existe déjà

@@ -20,7 +20,7 @@ Vous verrez :
 
 ✅ Base de données initialisée avec succès !
 👤 Login admin: admin
-🔑 Mot de passe: ***MOT_DE_PASSE_RETIRE***
+🔑 Mot de passe: celui défini dans ADMIN_PASSWORD (.env)
 ```
 
 ### 3. Démarrer le serveur
@@ -51,7 +51,7 @@ Allez sur **http://localhost:3000/admin**
 
 Connectez-vous avec :
 - **Identifiant** : `admin`
-- **Mot de passe** : `***MOT_DE_PASSE_RETIRE***`
+- **Mot de passe** : celui défini dans `ADMIN_PASSWORD` (`.env`)
 
 Dans le dashboard admin, vous pouvez :
 - Voir les statistiques

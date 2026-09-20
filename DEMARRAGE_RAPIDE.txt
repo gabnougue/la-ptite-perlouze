@@ -28,7 +28,7 @@
 🔐 CONNEXION ADMIN :
 
     Identifiant : admin
-    Mot de passe : ***MOT_DE_PASSE_RETIRE***
+    Mot de passe : celui defini dans ADMIN_PASSWORD (.env)
 
 
 🎯 PROCHAINES ÉTAPES :

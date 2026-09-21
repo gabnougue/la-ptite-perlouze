@@ -48,3 +48,6 @@ out/
 
 # Vercel
 .vercel
+
+# Consignes d'outil local
+CLAUDE.md

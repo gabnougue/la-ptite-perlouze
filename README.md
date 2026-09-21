@@ -4,8 +4,9 @@ Boutique en ligne réalisée pour une créatrice de bijoux fantaisie artisanaux 
 pierres naturelles. Le besoin : vendre ses créations en direct, gérer seule son
 catalogue et ses commandes, sans dépendre d'une plateforme tierce.
 
-<!-- CAPTURE D'ÉCRAN : ajouter ici une image du site (ex: ![Aperçu](docs/screenshot.png)) -->
-<!-- SITE EN LIGNE : ajouter ici le lien vers le site en production -->
+![Page d'accueil de la boutique](docs/screenshot.png)
+
+**Site en ligne :** <https://www.laptiteperlouze.fr/>
 
 ## Stack technique
 

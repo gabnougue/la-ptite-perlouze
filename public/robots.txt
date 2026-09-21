@@ -1,6 +1,5 @@
 User-agent: *
 Disallow: /admin/
-Disallow: /backoffice-perlouze/
 Disallow: /api/
 
 # Autoriser le reste du site

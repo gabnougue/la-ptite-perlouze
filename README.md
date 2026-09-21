@@ -58,8 +58,8 @@ commandes, les messages et les paramètres d'affichage de la boutique.
 ## Sécurité
 
 - **Authentification** : mots de passe administrateur hachés avec bcrypt, jamais
-  stockés en clair. Le changement de mot de passe se fait depuis le back-office
-  et exige le mot de passe courant.
+  stockés ni journalisés en clair. Le changement de mot de passe se fait depuis
+  le back-office et exige le mot de passe courant.
 - **Sessions** : cookie signé, `httpOnly`, `sameSite: strict`, transmis
   uniquement en HTTPS en production, avec expiration. La clé de signature est
   obligatoire : le serveur refuse de démarrer sans elle en production, et la
